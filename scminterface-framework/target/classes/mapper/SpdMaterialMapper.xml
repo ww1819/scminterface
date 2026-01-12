@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.SpdMaterialMapper">
+
+    <!-- 查询耗材产品列表 -->
+    <select id="selectMaterialListBySupplierId" parameterType="Long" resultType="java.util.HashMap">
+        select 
+            m.id,
+            m.code as materialCode,
+            m.name as materialName,
+            m.supplier_id as supplierId,
+            m.speci as specification,
+            m.model,
+            m.price,
+            m.register_name as registerName,
+            m.register_no as registerNo,
+            m.udi_no as udiCode,
+            m.period_date as expireDate,
+            m.sale_price as salePrice,
+            m.successful_price as bidPrice,
+            m.is_gz as productCategory,
+            m.medical_name as medicalName,
+            m.medical_no as medicalNo,
+            m.brand,
+            m.useto,
+            m.quality,
+            m.function,
+            m.is_way as isWay,
+            m.country_no as countryNo,
+            m.country_name as countryName,
+            m.description,
+            m.referred_name as pinyinCode,
+            s.name as supplierName,
+            f.factory_name as manufacturerName,
+            u.unit_name as unit
+        from fd_material m
+        left join fd_supplier s on m.supplier_id = s.id
+        left join fd_factory f on m.factory_id = f.factory_id
+        left join fd_unit u on m.unit_id = u.unit_id
+        where m.del_flag != 1
+          and m.supplier_id = #{supplierId}
+    </select>
+
+    <!-- 查询供应商信息 -->
+    <select id="selectSupplierById" parameterType="Long" resultType="java.util.HashMap">
+        select 
+            id as supplierId,
+            code as supplierCode,
+            name as supplierName
+        from fd_supplier
+        where del_flag != 1
+          and id = #{supplierId}
+    </select>
+
+</mapper>
+

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.ScmMaterialMapper">
+
+    <!-- 根据供应商名称查询供应商ID -->
+    <select id="selectSupplierByName" parameterType="String" resultType="java.util.HashMap">
+        select 
+            supplier_id as supplierId,
+            supplier_code as supplierCode,
+            company_name as supplierName
+        from scm_supplier
+        where del_flag = '0'
+          and company_name = #{supplierName}
+        limit 1
+    </select>
+
+    <!-- 根据生产厂家名称查询厂家ID -->
+    <select id="selectManufacturerByName" parameterType="String" resultType="Long">
+        select manufacturer_id
+        from scm_manufacturer
+        where del_flag = '0'
+          and manufacturer_name = #{manufacturerName}
+        limit 1
+    </select>
+
+    <!-- 检查供应商是否已有该耗材（供应商ID + 产品名称、规格、型号、价格相同） -->
+    <select id="checkSupplierMaterialExists" resultType="int">
+        select count(1)
+        from scm_material_dict
+        where supplier_id = #{supplierId}
+          and material_name = #{materialName}
+          and (specification = #{specification} or (specification is null and #{specification} is null))
+          and (model = #{model} or (model is null and #{model} is null))
+          and (purchase_price = #{price} or (purchase_price is null and #{price} is null))
+          and del_flag = '0'
+    </select>
+
+    <!-- 查询material_id -->
+    <select id="getMaterialId" parameterType="java.util.HashMap" resultType="Long">
+        select material_id
+        from scm_material_dict
+        where material_name = #{materialName}
+          and (specification = #{specification} or (specification is null and #{specification} is null))
+          and (model = #{model} or (model is null and #{model} is null))
+          and del_flag = '0'
+        limit 1
+    </select>
+
+    <!-- 插入material_dict -->
+    <insert id="insertMaterial" parameterType="java.util.HashMap" useGeneratedKeys="true" keyProperty="materialId">
+        insert into scm_material_dict(
+            material_code,
+            material_name,
+            <if test="specification != null and specification != ''">specification,</if>
+            <if test="model != null and model != ''">model,</if>
+            <if test="unit != null and unit != ''">unit,</if>
+            <if test="manufacturerId != null">manufacturer_id,</if>
+            <if test="supplierId != null">supplier_id,</if>
+            <if test="purchasePrice != null">purchase_price,</if>
+            status,
+            del_flag,
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            create_time
+        )values(
+            CONCAT('MAT', UNIX_TIMESTAMP(NOW()), FLOOR(RAND() * 10000)),
+            #{materialName},
+            <if test="specification != null and specification != ''">#{specification},</if>
+            <if test="model != null and model != ''">#{model},</if>
+            <if test="unit != null and unit != ''">#{unit},</if>
+            <if test="manufacturerId != null">#{manufacturerId},</if>
+            <if test="supplierId != null">#{supplierId},</if>
+            <if test="purchasePrice != null">#{purchasePrice},</if>
+            '0',
+            '0',
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            now()
+        )
+    </insert>
+
+</mapper>
+

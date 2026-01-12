@@ -1,0 +1,28 @@
+{
+    "mcpServers": {
+      "mysql-db1": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": ["mysql_mcp_server"],
+        "env": {
+          "MYSQL_HOST": "localhost",
+          "MYSQL_PORT": "3306",
+          "MYSQL_USER": "root",
+          "MYSQL_PASSWORD": "root",
+          "MYSQL_DATABASE": "scm"
+        }
+      },
+      "mysql-db2": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": ["mysql_mcp_server"],
+        "env": {
+          "MYSQL_HOST": "rm-bp1tov1b3948fc5inbo.mysql.rds.aliyuncs.com",
+          "MYSQL_PORT": "3306",
+          "MYSQL_USER": "spd",
+          "MYSQL_PASSWORD": "Spd@456ww",
+          "MYSQL_DATABASE": "aspt"
+        }
+      }
+    }
+  }
