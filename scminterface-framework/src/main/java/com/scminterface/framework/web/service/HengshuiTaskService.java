@@ -47,6 +47,31 @@ public class HengshuiTaskService
     private HisMzSfmxMapper hisMzSfmxMapper;
 
     /**
+     * 处理日期字段值，如果为空字符串则返回null
+     * 
+     * @param value 原始值
+     * @param sdf 日期格式化器
+     * @return 处理后的日期字符串或null
+     */
+    private String processDateValue(Object value, SimpleDateFormat sdf)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+        if (value instanceof Date)
+        {
+            return sdf.format((Date) value);
+        }
+        String strValue = value.toString().trim();
+        if (strValue.isEmpty())
+        {
+            return null;
+        }
+        return strValue;
+    }
+
+    /**
      * 同步收费项目数据
      * 从HIS数据库的v_charge_item视图读取数据，保存到SPD数据库的his_hc_info表
      * 
@@ -385,34 +410,13 @@ public class HengshuiTaskService
                             item.put("batchNo", value != null ? value.toString().trim() : null);
                             break;
                         case "expire_date":
-                            if (value instanceof Date)
-                            {
-                                item.put("expireDate", sdf.format((Date) value));
-                            }
-                            else if (value != null)
-                            {
-                                item.put("expireDate", value.toString());
-                            }
+                            item.put("expireDate", processDateValue(value, sdf));
                             break;
                         case "use_date":
-                            if (value instanceof Date)
-                            {
-                                item.put("useDate", sdf.format((Date) value));
-                            }
-                            else if (value != null)
-                            {
-                                item.put("useDate", value.toString());
-                            }
+                            item.put("useDate", processDateValue(value, sdf));
                             break;
                         case "charge_date":
-                            if (value instanceof Date)
-                            {
-                                item.put("chargeDate", sdf.format((Date) value));
-                            }
-                            else if (value != null)
-                            {
-                                item.put("chargeDate", value.toString());
-                            }
+                            item.put("chargeDate", processDateValue(value, sdf));
                             break;
                         case "quantity":
                             item.put("quantity", value);
@@ -675,24 +679,10 @@ public class HengshuiTaskService
                             item.put("batchNo", value != null ? value.toString().trim() : null);
                             break;
                         case "expire_date":
-                            if (value instanceof Date)
-                            {
-                                item.put("expireDate", sdf.format((Date) value));
-                            }
-                            else if (value != null)
-                            {
-                                item.put("expireDate", value.toString());
-                            }
+                            item.put("expireDate", processDateValue(value, sdf));
                             break;
                         case "charge_date":
-                            if (value instanceof Date)
-                            {
-                                item.put("chargeDate", sdf.format((Date) value));
-                            }
-                            else if (value != null)
-                            {
-                                item.put("chargeDate", value.toString());
-                            }
+                            item.put("chargeDate", processDateValue(value, sdf));
                             break;
                         case "quantity":
                             item.put("quantity", value);
