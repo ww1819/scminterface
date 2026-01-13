@@ -40,6 +40,10 @@ public class DruidConfig
             configuredDataSource.setInitialSize(0);
             configuredDataSource.setTestOnBorrow(false);
             configuredDataSource.setTestWhileIdle(true);
+            // 设置连接失败后停止重试，避免重复报错
+            configuredDataSource.setBreakAfterAcquireFailure(true);
+            // 设置连接失败重试次数为0，避免无限重试
+            configuredDataSource.setConnectionErrorRetryAttempts(0);
             log.info("SPD数据源配置成功");
             return configuredDataSource;
         }
@@ -63,7 +67,12 @@ public class DruidConfig
             configuredDataSource.setInitialSize(0);
             configuredDataSource.setTestOnBorrow(false);
             configuredDataSource.setTestWhileIdle(true);
-            log.info("SCM数据源配置成功");
+            // 设置连接失败后停止重试，避免重复报错
+            configuredDataSource.setBreakAfterAcquireFailure(true);
+            // 设置连接失败重试次数为0，避免无限重试
+            configuredDataSource.setConnectionErrorRetryAttempts(0);
+            // 如果部署在SPD服务器上不需要SCM数据源，可以在application-druid.yml中设置scm.enabled=false来禁用
+            log.info("SCM数据源配置成功（如果连接失败，请检查配置或设置scm.enabled=false禁用）");
             return configuredDataSource;
         }
         catch (Exception e)

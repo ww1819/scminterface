@@ -1,0 +1,11 @@
+com\scminterface\common\constant\Constants.class
+com\scminterface\common\core\domain\AjaxResult.class
+com\scminterface\common\exception\ServiceException.class
+com\scminterface\common\core\domain\MaterialArchiveDTO$MaterialArchiveItem.class
+com\scminterface\common\utils\ServletUtils.class
+com\scminterface\common\enums\DataSourceType.class
+com\scminterface\common\utils\spring\SpringUtils.class
+com\scminterface\common\core\domain\MaterialArchiveDTO.class
+com\scminterface\common\utils\StringUtils.class
+com\scminterface\common\annotation\DataSource.class
+com\scminterface\common\constant\HttpStatus.class

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页 - SCM接口服务系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .modules {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .module-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .module-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .module-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .module-desc {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .status-badge.available {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.unavailable {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SCM接口服务系统</h1>
+        <div class="user-info">
+            <span>欢迎，<strong id="username"></strong></span>
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="loading" class="loading">加载中...</div>
+        <div id="modules" class="modules" style="display: none;">
+            <!-- 模块卡片将通过JavaScript动态生成 -->
+        </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script>
+        // 检查登录状态
+        const token = getToken();
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // 显示用户名
+        const username = localStorage.getItem('username');
+        if (username) {
+            document.getElementById('username').textContent = username;
+        }
+
+        // 加载可用数据源
+        async function loadModules() {
+            try {
+                // 从localStorage获取可用数据源
+                const availableDataSourcesStr = localStorage.getItem('availableDataSources');
+                const availableDataSources = availableDataSourcesStr ? JSON.parse(availableDataSourcesStr) : [];
+
+                // 如果localStorage中没有，则从接口获取
+                let dataSources = availableDataSources;
+                if (!dataSources || dataSources.length === 0) {
+                    const result = await get('/api/datasource/status');
+                    if (result && result.code === 200) {
+                        dataSources = result.data || [];
+                    }
+                }
+
+                displayModules(dataSources);
+            } catch (error) {
+                console.error('Load modules error:', error);
+                document.getElementById('loading').textContent = '加载失败，请刷新页面';
+            }
+        }
+
+        function displayModules(dataSources) {
+            const modulesContainer = document.getElementById('modules');
+            const loading = document.getElementById('loading');
+            
+            loading.style.display = 'none';
+            modulesContainer.style.display = 'grid';
+
+            const modules = [
+                {
+                    name: 'SPD',
+                    title: 'SPD模块',
+                    desc: 'SPD数据源配置管理，包括系统参数配置和定时任务管理',
+                    url: '/spd-config.html',
+                    type: 'SPD'
+                },
+                {
+                    name: 'SCM',
+                    title: 'SCM模块',
+                    desc: 'SCM数据源配置管理，包括系统参数配置和定时任务管理',
+                    url: '/scm-config.html',
+                    type: 'SCM'
+                }
+            ];
+
+            modulesContainer.innerHTML = modules.map(module => {
+                const isAvailable = dataSources.some(ds => ds.type === module.type);
+                
+                return `
+                    <a href="${module.url}" class="module-card ${isAvailable ? '' : 'disabled'}">
+                        <div class="module-icon">📊</div>
+                        <div class="module-title">${module.title}</div>
+                        <div class="module-desc">${module.desc}</div>
+                        <span class="status-badge ${isAvailable ? 'available' : 'unavailable'}">
+                            ${isAvailable ? '✓ 可用' : '✗ 不可用'}
+                        </span>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                localStorage.removeItem('availableDataSources');
+                window.location.href = '/login.html';
+            }
+        }
+
+        // 页面加载时初始化
+        loadModules();
+    </script>
+</body>
+</html>

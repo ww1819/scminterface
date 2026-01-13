@@ -61,6 +61,13 @@
             <artifactId>scminterface-common</artifactId>
         </dependency>
 
+        <!-- SQL Server JDBC驱动 -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>12.4.2.jre8</version>
+        </dependency>
+
     </dependencies>
 
 </project>
