@@ -1,0 +1,1327 @@
+2026-03-16 16:07:15.333 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 32296 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:07:15.333 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:07:15.334 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:07:16.486 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:07:16.487 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:07:16.487 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:07:16.526 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:07:16.592 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:07:16.635 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDæ•°æ®æºé…ç½®æˆåŠŸ
+2026-03-16 16:07:16.724 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDæ•°æ®æºå·²æ·»åŠ åˆ°åŠ¨æ€æ•°æ®æº
+2026-03-16 16:07:16.725 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMæ•°æ®æºé…ç½®æˆåŠŸï¼ˆå¦‚æžœè¿žæŽ¥å¤±è´¥ï¼Œè¯·æ£€æŸ¥é…ç½®æˆ–è®¾ç½®scm.enabled=falseç¦ç”¨ï¼‰
+2026-03-16 16:07:16.734 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMæ•°æ®æºå·²æ·»åŠ åˆ°åŠ¨æ€æ•°æ®æº
+2026-03-16 16:07:16.736 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - åŠ¨æ€æ•°æ®æºåˆå§‹åŒ–å®Œæˆï¼Œå¯ç”¨æ•°æ®æºæ•°é‡: 2
+2026-03-16 16:07:17.390 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:07:17.575 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:07:17.795 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 2.775 seconds (JVM running for 3.112)
+2026-03-16 16:07:19.950 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:07:20.052 [Thread-5] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2026-03-16 16:07:20.584 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:07:20.596 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:07:20.633 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:07:20.640 [Thread-5] INFO  c.s.framework.config.ScheduledTaskConfig - å®šæ—¶ä»»åŠ¡æ³¨å†ŒæˆåŠŸ: com.scminterface.framework.web.task.HengshuiTask.syncChargeItem, Cronè¡¨è¾¾å¼: 0 0 1 * * ?
+2026-03-16 16:07:20.640 [Thread-5] INFO  c.s.framework.config.ScheduledTaskConfig - å®šæ—¶ä»»åŠ¡æ³¨å†ŒæˆåŠŸ: com.scminterface.framework.web.task.SpdScheduledTask.execute, Cronè¡¨è¾¾å¼: 0 0 1 * * ?
+2026-03-16 16:07:20.641 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:07:20.643 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:07:20.648 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPDå®šæ—¶ä»»åŠ¡(String)
+2026-03-16 16:07:20.675 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:07:20.676 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SCMæ•°æ®æº
+2026-03-16 16:07:20.678 [Thread-5] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} inited
+2026-03-16 16:07:20.797 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:07:20.798 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCMå®šæ—¶ä»»åŠ¡(String)
+2026-03-16 16:07:20.810 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:07:20.810 [Thread-5] INFO  c.s.framework.config.ScheduledTaskConfig - å®šæ—¶ä»»åŠ¡æ³¨å†ŒæˆåŠŸ: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cronè¡¨è¾¾å¼: 0 0 1 * * ?
+2026-03-16 16:09:33.311 [http-nio-8088-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-16 16:09:33.323 [http-nio-8088-exec-1] WARN  c.s.framework.security.JwtAuthenticationFilter - è¯·æ±‚è·¯å¾„: /, tokenä¸ºç©º
+2026-03-16 16:09:38.047 [ForkJoinPool.commonPool-worker-4] DEBUG c.s.framework.web.service.DataSourceCheckService - æ•°æ®æº SCM è¿žæŽ¥æ­£å¸¸
+2026-03-16 16:09:38.090 [ForkJoinPool.commonPool-worker-11] DEBUG c.s.framework.web.service.DataSourceCheckService - æ•°æ®æº SPD è¿žæŽ¥æ­£å¸¸
+2026-03-16 16:09:42.040 [http-nio-8088-exec-9] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:09:42.040 [http-nio-8088-exec-11] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:09:42.040 [http-nio-8088-exec-11] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:09:42.042 [http-nio-8088-exec-11] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:09:42.068 [http-nio-8088-exec-11] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:09:42.068 [http-nio-8088-exec-9] DEBUG c.s.f.web.mapper.SpdSystemConfigMapper.selectAll - ==>  Preparing: select config_id as configId, config_key as configKey, config_value as configValue, config_desc as configDesc, create_time as createTime, update_time as updateTime from spd_system_config order by config_key
+2026-03-16 16:09:42.069 [http-nio-8088-exec-9] DEBUG c.s.f.web.mapper.SpdSystemConfigMapper.selectAll - ==> Parameters: 
+2026-03-16 16:09:42.096 [http-nio-8088-exec-9] DEBUG c.s.f.web.mapper.SpdSystemConfigMapper.selectAll - <==      Total: 5
+2026-03-16 16:15:39.556 [http-nio-8088-exec-16] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:15:39.601 [http-nio-8088-exec-16] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.updateTask - ==>  Preparing: update spd_scheduled_task SET cron_expression = ?, max_exec_count = ?, status = ?, update_time = now() WHERE task_class = ? and task_method = ?
+2026-03-16 16:15:39.604 [http-nio-8088-exec-16] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.updateTask - ==> Parameters: 0 0 1 * * ?(String), -1(Integer), 1(String), com.scminterface.framework.web.task.HengshuiTask(String), syncChargeItem(String)
+2026-03-16 16:15:39.659 [http-nio-8088-exec-16] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.updateTask - <==    Updates: 1
+2026-03-16 16:15:39.660 [http-nio-8088-exec-16] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:15:39.661 [http-nio-8088-exec-16] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:15:39.661 [http-nio-8088-exec-16] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:15:39.689 [http-nio-8088-exec-16] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:15:39.689 [http-nio-8088-exec-16] DEBUG c.s.framework.config.ScheduledTaskConfig - ä»»åŠ¡ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem å·²åœç”¨ï¼Œè·³è¿‡æ³¨å†Œ
+2026-03-16 16:15:39.690 [http-nio-8088-exec-16] INFO  c.s.framework.config.ScheduledTaskConfig - å®šæ—¶ä»»åŠ¡æ³¨å†ŒæˆåŠŸ: com.scminterface.framework.web.task.SpdScheduledTask.execute, Cronè¡¨è¾¾å¼: 0 0 1 * * ?
+2026-03-16 16:15:39.690 [http-nio-8088-exec-16] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:15:39.690 [http-nio-8088-exec-16] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:15:39.691 [http-nio-8088-exec-16] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPDå®šæ—¶ä»»åŠ¡(String)
+2026-03-16 16:15:39.719 [http-nio-8088-exec-16] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:15:39.719 [http-nio-8088-exec-16] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SCMæ•°æ®æº
+2026-03-16 16:15:39.721 [http-nio-8088-exec-16] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:15:39.721 [http-nio-8088-exec-16] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCMå®šæ—¶ä»»åŠ¡(String)
+2026-03-16 16:15:39.724 [http-nio-8088-exec-16] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:15:39.724 [http-nio-8088-exec-16] INFO  c.s.framework.config.ScheduledTaskConfig - å®šæ—¶ä»»åŠ¡æ³¨å†ŒæˆåŠŸ: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cronè¡¨è¾¾å¼: 0 0 1 * * ?
+2026-03-16 16:15:41.388 [http-nio-8088-exec-17] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:15:41.389 [http-nio-8088-exec-17] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:15:41.390 [http-nio-8088-exec-17] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:15:41.419 [http-nio-8088-exec-17] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:15:44.835 [http-nio-8088-exec-22] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:15:44.835 [http-nio-8088-exec-22] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.updateTask - ==>  Preparing: update spd_scheduled_task SET cron_expression = ?, max_exec_count = ?, status = ?, update_time = now() WHERE task_class = ? and task_method = ?
+2026-03-16 16:15:44.836 [http-nio-8088-exec-22] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.updateTask - ==> Parameters: 0 0 1 * * ?(String), -1(Integer), 1(String), com.scminterface.framework.web.task.SpdScheduledTask(String), execute(String)
+2026-03-16 16:15:44.890 [http-nio-8088-exec-22] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.updateTask - <==    Updates: 1
+2026-03-16 16:15:44.891 [http-nio-8088-exec-22] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:15:44.892 [http-nio-8088-exec-22] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:15:44.892 [http-nio-8088-exec-22] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:15:44.921 [http-nio-8088-exec-22] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:15:44.921 [http-nio-8088-exec-22] DEBUG c.s.framework.config.ScheduledTaskConfig - ä»»åŠ¡ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem å·²åœç”¨ï¼Œè·³è¿‡æ³¨å†Œ
+2026-03-16 16:15:44.921 [http-nio-8088-exec-22] DEBUG c.s.framework.config.ScheduledTaskConfig - ä»»åŠ¡ com.scminterface.framework.web.task.SpdScheduledTask.execute å·²åœç”¨ï¼Œè·³è¿‡æ³¨å†Œ
+2026-03-16 16:15:44.921 [http-nio-8088-exec-22] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:15:44.922 [http-nio-8088-exec-22] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:15:44.922 [http-nio-8088-exec-22] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPDå®šæ—¶ä»»åŠ¡(String)
+2026-03-16 16:15:44.950 [http-nio-8088-exec-22] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:15:44.950 [http-nio-8088-exec-22] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SCMæ•°æ®æº
+2026-03-16 16:15:44.950 [http-nio-8088-exec-22] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:15:44.951 [http-nio-8088-exec-22] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCMå®šæ—¶ä»»åŠ¡(String)
+2026-03-16 16:15:44.952 [http-nio-8088-exec-22] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:15:44.954 [http-nio-8088-exec-22] INFO  c.s.framework.config.ScheduledTaskConfig - å®šæ—¶ä»»åŠ¡æ³¨å†ŒæˆåŠŸ: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cronè¡¨è¾¾å¼: 0 0 1 * * ?
+2026-03-16 16:15:45.780 [http-nio-8088-exec-23] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:15:45.781 [http-nio-8088-exec-23] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:15:45.781 [http-nio-8088-exec-23] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:15:45.809 [http-nio-8088-exec-23] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:17:28.897 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 33568 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:17:28.897 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:17:28.898 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:17:30.034 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:17:30.034 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:17:30.034 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:17:30.070 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:17:30.150 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:17:30.202 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDæ•°æ®æºé…ç½®æˆåŠŸ
+2026-03-16 16:17:30.291 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDæ•°æ®æºå·²æ·»åŠ åˆ°åŠ¨æ€æ•°æ®æº
+2026-03-16 16:17:30.291 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMæ•°æ®æºé…ç½®æˆåŠŸï¼ˆå¦‚æžœè¿žæŽ¥å¤±è´¥ï¼Œè¯·æ£€æŸ¥é…ç½®æˆ–è®¾ç½®scm.enabled=falseç¦ç”¨ï¼‰
+2026-03-16 16:17:30.304 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMæ•°æ®æºå·²æ·»åŠ åˆ°åŠ¨æ€æ•°æ®æº
+2026-03-16 16:17:30.305 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - åŠ¨æ€æ•°æ®æºåˆå§‹åŒ–å®Œæˆï¼Œå¯ç”¨æ•°æ®æºæ•°é‡: 2
+2026-03-16 16:17:30.951 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:17:31.154 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:17:31.427 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 2.837 seconds (JVM running for 3.186)
+2026-03-16 16:17:33.510 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:17:33.603 [Thread-5] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2026-03-16 16:17:34.077 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:17:34.088 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:17:34.124 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:17:34.126 [Thread-5] DEBUG c.s.framework.config.ScheduledTaskConfig - ä»»åŠ¡ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem å·²åœç”¨ï¼Œè·³è¿‡æ³¨å†Œ
+2026-03-16 16:17:34.126 [Thread-5] DEBUG c.s.framework.config.ScheduledTaskConfig - ä»»åŠ¡ com.scminterface.framework.web.task.SpdScheduledTask.execute å·²åœç”¨ï¼Œè·³è¿‡æ³¨å†Œ
+2026-03-16 16:17:34.126 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:17:34.128 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:17:34.132 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPDå®šæ—¶ä»»åŠ¡(String)
+2026-03-16 16:17:34.160 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:17:34.161 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SCMæ•°æ®æº
+2026-03-16 16:17:34.164 [Thread-5] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} inited
+2026-03-16 16:17:34.281 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:17:34.282 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCMå®šæ—¶ä»»åŠ¡(String)
+2026-03-16 16:17:34.284 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:17:34.288 [Thread-5] INFO  c.s.framework.config.ScheduledTaskConfig - å®šæ—¶ä»»åŠ¡æ³¨å†ŒæˆåŠŸ: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cronè¡¨è¾¾å¼: 0 0 1 * * ?
+2026-03-16 16:18:48.423 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} closing ...
+2026-03-16 16:18:48.426 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} closed
+2026-03-16 16:18:48.427 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closing ...
+2026-03-16 16:18:48.427 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closed
+2026-03-16 16:18:48.563 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 33568 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:18:48.563 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:18:48.563 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:18:48.886 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:18:48.886 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:18:48.888 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:18:48.891 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:18:48.909 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:18:48.930 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:18:48.982 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:18:48.982 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:18:48.996 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:18:48.996 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:18:49.265 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:18:49.345 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:18:49.407 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.872 seconds (JVM running for 81.166)
+2026-03-16 16:18:50.798 [Thread-7] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-0} closing ...
+2026-03-16 16:18:50.800 [Thread-7] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-0} closing ...
+2026-03-16 16:18:50.966 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 33568 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:18:50.966 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:18:50.966 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:18:51.204 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:18:51.204 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:18:51.204 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:18:51.207 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:18:51.225 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:18:51.239 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:18:51.278 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:18:51.279 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:18:51.287 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:18:51.288 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:18:51.501 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:18:51.571 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:18:51.623 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.676 seconds (JVM running for 83.381)
+2026-03-16 16:18:52.057 [Thread-10] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:18:52.062 [Thread-10] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-3} inited
+2026-03-16 16:18:52.299 [Thread-10] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:18:52.300 [Thread-10] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:18:52.327 [Thread-10] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:18:52.328 [Thread-10] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:18:52.328 [Thread-10] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:18:52.328 [Thread-10] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:18:52.328 [Thread-10] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:18:52.329 [Thread-10] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:18:52.355 [Thread-10] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:18:52.356 [Thread-10] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:18:52.358 [Thread-10] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-4} inited
+2026-03-16 16:18:52.368 [Thread-10] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:18:52.368 [Thread-10] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:18:52.370 [Thread-10] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:18:52.372 [Thread-10] ERROR c.s.framework.config.ScheduledTaskConfig - ×¢²á¶¨Ê±ÈÎÎñÒì³£: com.scminterface.framework.web.task.ScmScheduledTask.execute
+java.lang.IllegalStateException: org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@5319f1e1 has been closed already
+	at org.springframework.context.support.AbstractApplicationContext.assertBeanFactoryActive(AbstractApplicationContext.java:1140)
+	at org.springframework.context.support.AbstractApplicationContext.getBean(AbstractApplicationContext.java:1173)
+	at com.scminterface.framework.config.ScheduledTaskConfig.registerTask(ScheduledTaskConfig.java:167)
+	at com.scminterface.framework.config.ScheduledTaskConfig.registerLegacyTasks(ScheduledTaskConfig.java:251)
+	at com.scminterface.framework.config.ScheduledTaskConfig.refreshTasks(ScheduledTaskConfig.java:111)
+	at com.scminterface.framework.config.ScheduledTaskConfig.lambda$0(ScheduledTaskConfig.java:56)
+	at java.lang.Thread.run(Thread.java:748)
+2026-03-16 16:18:54.333 [Thread-15] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:18:54.338 [Thread-15] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-5} inited
+2026-03-16 16:18:54.585 [Thread-15] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:18:54.586 [Thread-15] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:18:54.615 [Thread-15] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:18:54.615 [Thread-15] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:18:54.615 [Thread-15] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:18:54.615 [Thread-15] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:18:54.616 [Thread-15] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:18:54.616 [Thread-15] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:18:54.644 [Thread-15] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:18:54.645 [Thread-15] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:18:54.647 [Thread-15] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-6} inited
+2026-03-16 16:18:54.654 [Thread-15] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:18:54.656 [Thread-15] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:18:54.657 [Thread-15] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:18:54.658 [Thread-15] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:24:22.853 [http-nio-8088-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-16 16:24:22.861 [http-nio-8088-exec-1] WARN  c.s.framework.security.JwtAuthenticationFilter - ÇëÇóÂ·¾¶: /api/spd/order/publish, tokenÎª¿Õ
+2026-03-16 16:24:29.976 [http-nio-8088-exec-3] WARN  c.s.framework.security.JwtAuthenticationFilter - ÇëÇóÂ·¾¶: /api/spd/order/publish, tokenÎª¿Õ
+2026-03-16 16:26:14.610 [Thread-12] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-6} closing ...
+2026-03-16 16:26:14.611 [Thread-12] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-6} closed
+2026-03-16 16:26:14.611 [Thread-12] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-5} closing ...
+2026-03-16 16:26:14.611 [Thread-12] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-5} closed
+2026-03-16 16:26:14.754 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 33568 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:26:14.754 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:26:14.754 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:26:14.987 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:26:14.987 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:26:14.987 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:26:14.990 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:26:15.007 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:26:15.017 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:26:15.049 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:26:15.049 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:26:15.058 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:26:15.058 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:26:15.246 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:26:15.316 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:26:15.361 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.626 seconds (JVM running for 527.12)
+2026-03-16 16:26:18.102 [Thread-20] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:26:18.107 [Thread-20] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-7} inited
+2026-03-16 16:26:18.410 [Thread-20] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:26:18.410 [Thread-20] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:26:18.439 [Thread-20] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:26:18.439 [Thread-20] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:26:18.439 [Thread-20] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:26:18.440 [Thread-20] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:26:18.440 [Thread-20] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:26:18.441 [Thread-20] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:26:18.468 [Thread-20] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:26:18.468 [Thread-20] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:26:18.470 [Thread-20] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-8} inited
+2026-03-16 16:26:18.479 [Thread-20] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:26:18.480 [Thread-20] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:26:18.481 [Thread-20] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:26:18.482 [Thread-20] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:26:44.895 [http-nio-8088-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-16 16:26:44.931 [http-nio-8088-exec-1] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:26:44.932 [http-nio-8088-exec-1] INFO  c.s.framework.web.service.SpdOrderPublishService - ¿ªÊ¼·¢²¼SPD²É¹º¶©µ¥£¬IDÁÐ±í: [42]
+2026-03-16 16:26:44.944 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.S.selectPurchaseOrdersByIds - ==>  Preparing: select id, order_no as orderNo, plan_no as planNo, supplier_id as supplierId, warehouse_id as warehouseId, department_id as departmentId, order_date as orderDate, total_amount as totalAmount, order_status as orderStatus, remark from purchase_order where del_flag = '0' and id in ( ? )
+2026-03-16 16:26:44.945 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.S.selectPurchaseOrdersByIds - ==> Parameters: 42(Long)
+2026-03-16 16:26:44.975 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.S.selectPurchaseOrdersByIds - <==      Total: 1
+2026-03-16 16:26:44.976 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.S.selectPurchaseOrderEntriesByOrderIds - ==>  Preparing: select id as entryId, parent_id as parentId, material_id as materialId, material_code as materialCode, material_name as materialName, material_spec as specification, material_unit as unit, order_qty as quantity, unit_price as unitPrice, total_amount as amount, remark from purchase_order_entry where del_flag = '0' and parent_id in ( ? )
+2026-03-16 16:26:44.976 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.S.selectPurchaseOrderEntriesByOrderIds - ==> Parameters: 42(Long)
+2026-03-16 16:26:45.005 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.S.selectPurchaseOrderEntriesByOrderIds - <==      Total: 1
+2026-03-16 16:26:45.005 [http-nio-8088-exec-1] INFO  c.s.framework.web.service.SpdOrderPublishService - ×é×°Íê³É²É¹º¶©µ¥DTOÁÐ±í£¬ÊýÁ¿: 1
+2026-03-16 16:26:45.006 [http-nio-8088-exec-1] INFO  com.scminterface.framework.utils.HttpClientUtils - µ÷ÓÃ¹«Íøinterface½Ó¿ÚÍÆËÍ²É¹º¶©µ¥: http://localhost:8088/api/scm/pushPurchaseOrders
+2026-03-16 16:26:45.052 [http-nio-8088-exec-3] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:26:45.053 [http-nio-8088-exec-3] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:26:45.069 [http-nio-8088-exec-1] INFO  com.scminterface.framework.utils.HttpClientUtils - ¹«Íøinterface½Ó¿ÚÏìÓ¦(²É¹º¶©µ¥): {msg=½ÓÊÕ²É¹º¶©µ¥³É¹¦, code=200, data={successCount=1, totalCount=1, message=²É¹º¶©µ¥½ÓÊÕ³É¹¦£¨Õ¼Î»ÊµÏÖ£¬´ýÍêÉÆÈë¿âÂß¼­£©}}
+2026-03-16 16:31:14.615 [Thread-17] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-8} closing ...
+2026-03-16 16:31:14.616 [Thread-17] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-8} closed
+2026-03-16 16:31:14.616 [Thread-17] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-7} closing ...
+2026-03-16 16:31:14.616 [Thread-17] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-7} closed
+2026-03-16 16:31:14.807 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 33568 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:31:14.807 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:31:14.807 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:31:15.060 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:31:15.060 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:31:15.060 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:31:15.063 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:31:15.077 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:31:15.088 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:31:15.117 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:31:15.117 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:31:15.125 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:31:15.125 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:31:15.308 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:31:15.367 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:31:15.407 [restartedMain] ERROR s.d.s.web.plugins.DocumentationPluginsBootstrapper - Unable to scan documentation context default
+java.lang.TypeNotPresentException: Type PurchaseOrderDTO not present
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:117)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:125)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.visitor.Reifier.reifyTypeArguments(Reifier.java:68)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:138)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.repository.ConstructorRepository.getParameterTypes(ConstructorRepository.java:94)
+	at java.lang.reflect.Executable.getGenericParameterTypes(Executable.java:283)
+	at java.lang.reflect.Method.getGenericParameterTypes(Method.java:283)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMethod(ResolvedTypeWithMembers.java:572)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMemberMethods(ResolvedTypeWithMembers.java:388)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.getMemberMethods(ResolvedTypeWithMembers.java:201)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.getMemberMethods(HandlerMethodResolver.java:151)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.resolvedMethod(HandlerMethodResolver.java:136)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.methodReturnType(HandlerMethodResolver.java:65)
+	at springfox.documentation.spring.web.WebMvcRequestHandler.getReturnType(WebMvcRequestHandler.java:147)
+	at springfox.documentation.spi.service.contexts.RequestMappingContext.getReturnType(RequestMappingContext.java:216)
+	at springfox.documentation.spi.service.contexts.Orderings.qualifiedMethodName(Orderings.java:76)
+	at java.util.Comparator.lambda$comparing$77a9974f$1(Comparator.java:469)
+	at java.util.TimSort.countRunAndMakeAscending(TimSort.java:355)
+	at java.util.TimSort.sort(TimSort.java:220)
+	at java.util.Arrays.sort(Arrays.java:1512)
+	at java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:348)
+	at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:482)
+	at java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:471)
+	at java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:708)
+	at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:499)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.sortedByMethods(ApiListingScanner.java:229)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.scan(ApiListingScanner.java:152)
+	at springfox.documentation.spring.web.scanners.ApiDocumentationScanner.scan(ApiDocumentationScanner.java:67)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.scanDocumentation(AbstractDocumentationPluginsBootstrapper.java:96)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.bootstrapDocumentationPlugins(AbstractDocumentationPluginsBootstrapper.java:82)
+	at springfox.documentation.spring.web.plugins.DocumentationPluginsBootstrapper.start(DocumentationPluginsBootstrapper.java:100)
+	at org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:178)
+	at org.springframework.context.support.DefaultLifecycleProcessor.access$200(DefaultLifecycleProcessor.java:54)
+	at org.springframework.context.support.DefaultLifecycleProcessor$LifecycleGroup.start(DefaultLifecycleProcessor.java:356)
+	at java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.context.support.DefaultLifecycleProcessor.startBeans(DefaultLifecycleProcessor.java:155)
+	at org.springframework.context.support.DefaultLifecycleProcessor.onRefresh(DefaultLifecycleProcessor.java:123)
+	at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:937)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:586)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:780)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:453)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:343)
+	at com.scminterface.ScminterfaceApplication.main(ScminterfaceApplication.java:22)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: java.lang.ClassNotFoundException: PurchaseOrderDTO
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.springframework.boot.devtools.restart.classloader.RestartClassLoader.loadClass(RestartClassLoader.java:145)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:114)
+	... 51 common frames omitted
+2026-03-16 16:31:15.410 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.628 seconds (JVM running for 827.169)
+2026-03-16 16:31:18.174 [Thread-25] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:31:18.178 [Thread-25] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-9} inited
+2026-03-16 16:31:18.466 [Thread-25] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:31:18.466 [Thread-25] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:31:18.496 [Thread-25] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:31:18.497 [Thread-25] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:31:18.497 [Thread-25] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:31:18.497 [Thread-25] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:31:18.498 [Thread-25] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:31:18.498 [Thread-25] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:31:18.528 [Thread-25] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:31:18.529 [Thread-25] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:31:18.531 [Thread-25] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-10} inited
+2026-03-16 16:31:18.539 [Thread-25] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:31:18.539 [Thread-25] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:31:18.541 [Thread-25] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:31:18.542 [Thread-25] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:32:15.363 [Thread-22] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-10} closing ...
+2026-03-16 16:32:15.364 [Thread-22] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-10} closed
+2026-03-16 16:32:15.364 [Thread-22] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-9} closing ...
+2026-03-16 16:32:15.365 [Thread-22] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-9} closed
+2026-03-16 16:32:15.488 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 33568 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:32:15.489 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:32:15.489 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:32:15.729 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:32:15.729 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:32:15.729 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:32:15.732 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:32:15.745 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:32:15.756 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:32:15.786 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:32:15.787 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:32:15.798 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:32:15.798 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:32:15.977 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:32:16.032 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:32:16.058 [restartedMain] ERROR s.d.s.web.plugins.DocumentationPluginsBootstrapper - Unable to scan documentation context default
+java.lang.TypeNotPresentException: Type PurchaseOrderDTO not present
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:117)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:125)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.visitor.Reifier.reifyTypeArguments(Reifier.java:68)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:138)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.repository.ConstructorRepository.getParameterTypes(ConstructorRepository.java:94)
+	at java.lang.reflect.Executable.getGenericParameterTypes(Executable.java:283)
+	at java.lang.reflect.Method.getGenericParameterTypes(Method.java:283)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMethod(ResolvedTypeWithMembers.java:572)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMemberMethods(ResolvedTypeWithMembers.java:388)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.getMemberMethods(ResolvedTypeWithMembers.java:201)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.getMemberMethods(HandlerMethodResolver.java:151)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.resolvedMethod(HandlerMethodResolver.java:136)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.methodReturnType(HandlerMethodResolver.java:65)
+	at springfox.documentation.spring.web.WebMvcRequestHandler.getReturnType(WebMvcRequestHandler.java:147)
+	at springfox.documentation.spi.service.contexts.RequestMappingContext.getReturnType(RequestMappingContext.java:216)
+	at springfox.documentation.spi.service.contexts.Orderings.qualifiedMethodName(Orderings.java:76)
+	at java.util.Comparator.lambda$comparing$77a9974f$1(Comparator.java:469)
+	at java.util.TimSort.countRunAndMakeAscending(TimSort.java:355)
+	at java.util.TimSort.sort(TimSort.java:220)
+	at java.util.Arrays.sort(Arrays.java:1512)
+	at java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:348)
+	at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:482)
+	at java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:471)
+	at java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:708)
+	at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:499)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.sortedByMethods(ApiListingScanner.java:229)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.scan(ApiListingScanner.java:152)
+	at springfox.documentation.spring.web.scanners.ApiDocumentationScanner.scan(ApiDocumentationScanner.java:67)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.scanDocumentation(AbstractDocumentationPluginsBootstrapper.java:96)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.bootstrapDocumentationPlugins(AbstractDocumentationPluginsBootstrapper.java:82)
+	at springfox.documentation.spring.web.plugins.DocumentationPluginsBootstrapper.start(DocumentationPluginsBootstrapper.java:100)
+	at org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:178)
+	at org.springframework.context.support.DefaultLifecycleProcessor.access$200(DefaultLifecycleProcessor.java:54)
+	at org.springframework.context.support.DefaultLifecycleProcessor$LifecycleGroup.start(DefaultLifecycleProcessor.java:356)
+	at java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.context.support.DefaultLifecycleProcessor.startBeans(DefaultLifecycleProcessor.java:155)
+	at org.springframework.context.support.DefaultLifecycleProcessor.onRefresh(DefaultLifecycleProcessor.java:123)
+	at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:937)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:586)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:780)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:453)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:343)
+	at com.scminterface.ScminterfaceApplication.main(ScminterfaceApplication.java:22)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: java.lang.ClassNotFoundException: PurchaseOrderDTO
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.springframework.boot.devtools.restart.classloader.RestartClassLoader.loadClass(RestartClassLoader.java:145)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:114)
+	... 51 common frames omitted
+2026-03-16 16:32:16.060 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.597 seconds (JVM running for 887.819)
+2026-03-16 16:32:18.841 [Thread-30] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:32:18.846 [Thread-30] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-11} inited
+2026-03-16 16:32:19.094 [Thread-30] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:32:19.095 [Thread-30] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:32:19.124 [Thread-30] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:32:19.124 [Thread-30] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:32:19.124 [Thread-30] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:32:19.124 [Thread-30] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:32:19.125 [Thread-30] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:32:19.125 [Thread-30] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:32:19.153 [Thread-30] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:32:19.154 [Thread-30] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:32:19.156 [Thread-30] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-12} inited
+2026-03-16 16:32:19.163 [Thread-30] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:32:19.164 [Thread-30] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:32:19.165 [Thread-30] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:32:19.166 [Thread-30] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:32:24.623 [Thread-27] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-12} closing ...
+2026-03-16 16:32:24.623 [Thread-27] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-12} closed
+2026-03-16 16:32:24.624 [Thread-27] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-11} closing ...
+2026-03-16 16:32:24.624 [Thread-27] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-11} closed
+2026-03-16 16:32:24.770 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 33568 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:32:24.770 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:32:24.770 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:32:24.965 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:32:24.965 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:32:24.965 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:32:24.968 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:32:24.982 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:32:24.993 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:32:25.020 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:32:25.021 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:32:25.028 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:32:25.029 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:32:25.194 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:32:25.240 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:32:25.293 [restartedMain] ERROR s.d.s.web.plugins.DocumentationPluginsBootstrapper - Unable to scan documentation context default
+java.lang.TypeNotPresentException: Type PurchaseOrderDTO not present
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:117)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:125)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.visitor.Reifier.reifyTypeArguments(Reifier.java:68)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:138)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.repository.ConstructorRepository.getParameterTypes(ConstructorRepository.java:94)
+	at java.lang.reflect.Executable.getGenericParameterTypes(Executable.java:283)
+	at java.lang.reflect.Method.getGenericParameterTypes(Method.java:283)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMethod(ResolvedTypeWithMembers.java:572)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMemberMethods(ResolvedTypeWithMembers.java:388)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.getMemberMethods(ResolvedTypeWithMembers.java:201)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.getMemberMethods(HandlerMethodResolver.java:151)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.resolvedMethod(HandlerMethodResolver.java:136)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.methodReturnType(HandlerMethodResolver.java:65)
+	at springfox.documentation.spring.web.WebMvcRequestHandler.getReturnType(WebMvcRequestHandler.java:147)
+	at springfox.documentation.spi.service.contexts.RequestMappingContext.getReturnType(RequestMappingContext.java:216)
+	at springfox.documentation.spi.service.contexts.Orderings.qualifiedMethodName(Orderings.java:76)
+	at java.util.Comparator.lambda$comparing$77a9974f$1(Comparator.java:469)
+	at java.util.TimSort.countRunAndMakeAscending(TimSort.java:355)
+	at java.util.TimSort.sort(TimSort.java:220)
+	at java.util.Arrays.sort(Arrays.java:1512)
+	at java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:348)
+	at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:482)
+	at java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:471)
+	at java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:708)
+	at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:499)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.sortedByMethods(ApiListingScanner.java:229)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.scan(ApiListingScanner.java:152)
+	at springfox.documentation.spring.web.scanners.ApiDocumentationScanner.scan(ApiDocumentationScanner.java:67)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.scanDocumentation(AbstractDocumentationPluginsBootstrapper.java:96)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.bootstrapDocumentationPlugins(AbstractDocumentationPluginsBootstrapper.java:82)
+	at springfox.documentation.spring.web.plugins.DocumentationPluginsBootstrapper.start(DocumentationPluginsBootstrapper.java:100)
+	at org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:178)
+	at org.springframework.context.support.DefaultLifecycleProcessor.access$200(DefaultLifecycleProcessor.java:54)
+	at org.springframework.context.support.DefaultLifecycleProcessor$LifecycleGroup.start(DefaultLifecycleProcessor.java:356)
+	at java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.context.support.DefaultLifecycleProcessor.startBeans(DefaultLifecycleProcessor.java:155)
+	at org.springframework.context.support.DefaultLifecycleProcessor.onRefresh(DefaultLifecycleProcessor.java:123)
+	at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:937)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:586)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:780)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:453)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:343)
+	at com.scminterface.ScminterfaceApplication.main(ScminterfaceApplication.java:22)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: java.lang.ClassNotFoundException: PurchaseOrderDTO
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.springframework.boot.devtools.restart.classloader.RestartClassLoader.loadClass(RestartClassLoader.java:145)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:114)
+	... 51 common frames omitted
+2026-03-16 16:32:25.300 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.547 seconds (JVM running for 897.058)
+2026-03-16 16:32:28.078 [Thread-35] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:32:28.083 [Thread-35] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-13} inited
+2026-03-16 16:32:28.341 [Thread-35] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:32:28.342 [Thread-35] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:32:28.373 [Thread-35] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:32:28.374 [Thread-35] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:32:28.374 [Thread-35] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:32:28.374 [Thread-35] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:32:28.374 [Thread-35] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:32:28.375 [Thread-35] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:32:28.405 [Thread-35] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:32:28.406 [Thread-35] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:32:28.408 [Thread-35] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-14} inited
+2026-03-16 16:32:28.416 [Thread-35] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:32:28.418 [Thread-35] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:32:28.420 [Thread-35] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:32:28.420 [Thread-35] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:32:41.942 [Thread-32] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-14} closing ...
+2026-03-16 16:32:41.942 [Thread-32] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-14} closed
+2026-03-16 16:32:41.943 [Thread-32] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-13} closing ...
+2026-03-16 16:32:41.943 [Thread-32] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-13} closed
+2026-03-16 16:32:42.082 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 33568 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:32:42.082 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:32:42.082 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:32:42.280 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:32:42.280 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:32:42.280 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:32:42.283 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:32:42.297 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:32:42.307 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:32:42.336 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:32:42.336 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:32:42.344 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:32:42.344 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:32:42.528 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:32:42.584 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:32:42.615 [restartedMain] ERROR s.d.s.web.plugins.DocumentationPluginsBootstrapper - Unable to scan documentation context default
+java.lang.TypeNotPresentException: Type PurchaseOrderDTO not present
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:117)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:125)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.visitor.Reifier.reifyTypeArguments(Reifier.java:68)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:138)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.repository.ConstructorRepository.getParameterTypes(ConstructorRepository.java:94)
+	at java.lang.reflect.Executable.getGenericParameterTypes(Executable.java:283)
+	at java.lang.reflect.Method.getGenericParameterTypes(Method.java:283)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMethod(ResolvedTypeWithMembers.java:572)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMemberMethods(ResolvedTypeWithMembers.java:388)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.getMemberMethods(ResolvedTypeWithMembers.java:201)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.getMemberMethods(HandlerMethodResolver.java:151)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.resolvedMethod(HandlerMethodResolver.java:136)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.methodReturnType(HandlerMethodResolver.java:65)
+	at springfox.documentation.spring.web.WebMvcRequestHandler.getReturnType(WebMvcRequestHandler.java:147)
+	at springfox.documentation.spi.service.contexts.RequestMappingContext.getReturnType(RequestMappingContext.java:216)
+	at springfox.documentation.spi.service.contexts.Orderings.qualifiedMethodName(Orderings.java:76)
+	at java.util.Comparator.lambda$comparing$77a9974f$1(Comparator.java:469)
+	at java.util.TimSort.countRunAndMakeAscending(TimSort.java:355)
+	at java.util.TimSort.sort(TimSort.java:220)
+	at java.util.Arrays.sort(Arrays.java:1512)
+	at java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:348)
+	at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:482)
+	at java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:471)
+	at java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:708)
+	at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:499)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.sortedByMethods(ApiListingScanner.java:229)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.scan(ApiListingScanner.java:152)
+	at springfox.documentation.spring.web.scanners.ApiDocumentationScanner.scan(ApiDocumentationScanner.java:67)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.scanDocumentation(AbstractDocumentationPluginsBootstrapper.java:96)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.bootstrapDocumentationPlugins(AbstractDocumentationPluginsBootstrapper.java:82)
+	at springfox.documentation.spring.web.plugins.DocumentationPluginsBootstrapper.start(DocumentationPluginsBootstrapper.java:100)
+	at org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:178)
+	at org.springframework.context.support.DefaultLifecycleProcessor.access$200(DefaultLifecycleProcessor.java:54)
+	at org.springframework.context.support.DefaultLifecycleProcessor$LifecycleGroup.start(DefaultLifecycleProcessor.java:356)
+	at java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.context.support.DefaultLifecycleProcessor.startBeans(DefaultLifecycleProcessor.java:155)
+	at org.springframework.context.support.DefaultLifecycleProcessor.onRefresh(DefaultLifecycleProcessor.java:123)
+	at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:937)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:586)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:780)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:453)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:343)
+	at com.scminterface.ScminterfaceApplication.main(ScminterfaceApplication.java:22)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: java.lang.ClassNotFoundException: PurchaseOrderDTO
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.springframework.boot.devtools.restart.classloader.RestartClassLoader.loadClass(RestartClassLoader.java:145)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:114)
+	... 51 common frames omitted
+2026-03-16 16:32:42.617 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.556 seconds (JVM running for 914.376)
+2026-03-16 16:32:45.395 [Thread-40] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:32:45.400 [Thread-40] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-15} inited
+2026-03-16 16:32:45.667 [Thread-40] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:32:45.667 [Thread-40] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:32:45.697 [Thread-40] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:32:45.698 [Thread-40] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:32:45.698 [Thread-40] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:32:45.698 [Thread-40] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:32:45.698 [Thread-40] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:32:45.699 [Thread-40] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:32:45.727 [Thread-40] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:32:45.728 [Thread-40] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:32:45.730 [Thread-40] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-16} inited
+2026-03-16 16:32:45.740 [Thread-40] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:32:45.740 [Thread-40] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:32:45.742 [Thread-40] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:32:45.743 [Thread-40] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:32:50.124 [Thread-37] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-16} closing ...
+2026-03-16 16:32:50.124 [Thread-37] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-16} closed
+2026-03-16 16:32:50.124 [Thread-37] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-15} closing ...
+2026-03-16 16:32:50.125 [Thread-37] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-15} closed
+2026-03-16 16:32:50.336 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 33568 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:32:50.337 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:32:50.337 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:32:50.539 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:32:50.539 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:32:50.539 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:32:50.542 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:32:50.555 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:32:50.567 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:32:50.595 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:32:50.595 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:32:50.601 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:32:50.601 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:32:50.774 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:32:50.828 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:32:50.856 [restartedMain] ERROR s.d.s.web.plugins.DocumentationPluginsBootstrapper - Unable to scan documentation context default
+java.lang.TypeNotPresentException: Type PurchaseOrderDTO not present
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:117)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:125)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.visitor.Reifier.reifyTypeArguments(Reifier.java:68)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:138)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.repository.ConstructorRepository.getParameterTypes(ConstructorRepository.java:94)
+	at java.lang.reflect.Executable.getGenericParameterTypes(Executable.java:283)
+	at java.lang.reflect.Method.getGenericParameterTypes(Method.java:283)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMethod(ResolvedTypeWithMembers.java:572)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMemberMethods(ResolvedTypeWithMembers.java:388)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.getMemberMethods(ResolvedTypeWithMembers.java:201)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.getMemberMethods(HandlerMethodResolver.java:151)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.resolvedMethod(HandlerMethodResolver.java:136)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.methodReturnType(HandlerMethodResolver.java:65)
+	at springfox.documentation.spring.web.WebMvcRequestHandler.getReturnType(WebMvcRequestHandler.java:147)
+	at springfox.documentation.spi.service.contexts.RequestMappingContext.getReturnType(RequestMappingContext.java:216)
+	at springfox.documentation.spi.service.contexts.Orderings.qualifiedMethodName(Orderings.java:76)
+	at java.util.Comparator.lambda$comparing$77a9974f$1(Comparator.java:469)
+	at java.util.TimSort.countRunAndMakeAscending(TimSort.java:355)
+	at java.util.TimSort.sort(TimSort.java:220)
+	at java.util.Arrays.sort(Arrays.java:1512)
+	at java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:348)
+	at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:482)
+	at java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:471)
+	at java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:708)
+	at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:499)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.sortedByMethods(ApiListingScanner.java:229)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.scan(ApiListingScanner.java:152)
+	at springfox.documentation.spring.web.scanners.ApiDocumentationScanner.scan(ApiDocumentationScanner.java:67)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.scanDocumentation(AbstractDocumentationPluginsBootstrapper.java:96)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.bootstrapDocumentationPlugins(AbstractDocumentationPluginsBootstrapper.java:82)
+	at springfox.documentation.spring.web.plugins.DocumentationPluginsBootstrapper.start(DocumentationPluginsBootstrapper.java:100)
+	at org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:178)
+	at org.springframework.context.support.DefaultLifecycleProcessor.access$200(DefaultLifecycleProcessor.java:54)
+	at org.springframework.context.support.DefaultLifecycleProcessor$LifecycleGroup.start(DefaultLifecycleProcessor.java:356)
+	at java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.context.support.DefaultLifecycleProcessor.startBeans(DefaultLifecycleProcessor.java:155)
+	at org.springframework.context.support.DefaultLifecycleProcessor.onRefresh(DefaultLifecycleProcessor.java:123)
+	at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:937)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:586)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:780)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:453)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:343)
+	at com.scminterface.ScminterfaceApplication.main(ScminterfaceApplication.java:22)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: java.lang.ClassNotFoundException: PurchaseOrderDTO
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.springframework.boot.devtools.restart.classloader.RestartClassLoader.loadClass(RestartClassLoader.java:145)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:114)
+	... 51 common frames omitted
+2026-03-16 16:32:50.858 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.539 seconds (JVM running for 922.616)
+2026-03-16 16:32:53.650 [Thread-45] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:32:53.654 [Thread-45] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-17} inited
+2026-03-16 16:32:53.892 [Thread-45] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:32:53.892 [Thread-45] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:32:53.920 [Thread-45] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:32:53.921 [Thread-45] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:32:53.921 [Thread-45] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:32:53.921 [Thread-45] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:32:53.921 [Thread-45] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:32:53.922 [Thread-45] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:32:53.949 [Thread-45] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:32:53.950 [Thread-45] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:32:53.952 [Thread-45] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-18} inited
+2026-03-16 16:32:53.959 [Thread-45] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:32:53.960 [Thread-45] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:32:53.961 [Thread-45] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:32:53.962 [Thread-45] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:36:04.816 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 37364 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:36:04.816 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:36:04.817 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:36:05.880 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:36:05.880 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:36:05.880 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:36:05.916 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:36:05.980 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:36:06.016 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:36:06.095 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:36:06.095 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:36:06.109 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:36:06.112 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:36:06.754 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:36:06.970 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:36:07.164 [restartedMain] ERROR s.d.s.web.plugins.DocumentationPluginsBootstrapper - Unable to scan documentation context default
+java.lang.TypeNotPresentException: Type PurchaseOrderDTO not present
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:117)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:125)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.visitor.Reifier.reifyTypeArguments(Reifier.java:68)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:138)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.repository.ConstructorRepository.getParameterTypes(ConstructorRepository.java:94)
+	at java.lang.reflect.Executable.getGenericParameterTypes(Executable.java:283)
+	at java.lang.reflect.Method.getGenericParameterTypes(Method.java:283)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMethod(ResolvedTypeWithMembers.java:572)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMemberMethods(ResolvedTypeWithMembers.java:388)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.getMemberMethods(ResolvedTypeWithMembers.java:201)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.getMemberMethods(HandlerMethodResolver.java:151)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.resolvedMethod(HandlerMethodResolver.java:136)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.methodReturnType(HandlerMethodResolver.java:65)
+	at springfox.documentation.spring.web.WebMvcRequestHandler.getReturnType(WebMvcRequestHandler.java:147)
+	at springfox.documentation.spi.service.contexts.RequestMappingContext.getReturnType(RequestMappingContext.java:216)
+	at springfox.documentation.spi.service.contexts.Orderings.qualifiedMethodName(Orderings.java:76)
+	at java.util.Comparator.lambda$comparing$77a9974f$1(Comparator.java:469)
+	at java.util.TimSort.countRunAndMakeAscending(TimSort.java:355)
+	at java.util.TimSort.sort(TimSort.java:220)
+	at java.util.Arrays.sort(Arrays.java:1512)
+	at java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:348)
+	at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:482)
+	at java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:471)
+	at java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:708)
+	at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:499)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.sortedByMethods(ApiListingScanner.java:229)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.scan(ApiListingScanner.java:152)
+	at springfox.documentation.spring.web.scanners.ApiDocumentationScanner.scan(ApiDocumentationScanner.java:67)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.scanDocumentation(AbstractDocumentationPluginsBootstrapper.java:96)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.bootstrapDocumentationPlugins(AbstractDocumentationPluginsBootstrapper.java:82)
+	at springfox.documentation.spring.web.plugins.DocumentationPluginsBootstrapper.start(DocumentationPluginsBootstrapper.java:100)
+	at org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:178)
+	at org.springframework.context.support.DefaultLifecycleProcessor.access$200(DefaultLifecycleProcessor.java:54)
+	at org.springframework.context.support.DefaultLifecycleProcessor$LifecycleGroup.start(DefaultLifecycleProcessor.java:356)
+	at java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.context.support.DefaultLifecycleProcessor.startBeans(DefaultLifecycleProcessor.java:155)
+	at org.springframework.context.support.DefaultLifecycleProcessor.onRefresh(DefaultLifecycleProcessor.java:123)
+	at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:937)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:586)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:780)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:453)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:343)
+	at com.scminterface.ScminterfaceApplication.main(ScminterfaceApplication.java:22)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: java.lang.ClassNotFoundException: PurchaseOrderDTO
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.springframework.boot.devtools.restart.classloader.RestartClassLoader.loadClass(RestartClassLoader.java:145)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:114)
+	... 51 common frames omitted
+2026-03-16 16:36:07.174 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 2.645 seconds (JVM running for 2.928)
+2026-03-16 16:36:09.310 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:36:09.415 [Thread-5] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2026-03-16 16:36:09.919 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:36:09.930 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:36:09.968 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:36:09.971 [Thread-5] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:36:09.971 [Thread-5] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:36:09.971 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:36:09.973 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:36:09.976 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:36:10.005 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:36:10.006 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:36:10.010 [Thread-5] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} inited
+2026-03-16 16:36:10.121 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:36:10.121 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:36:10.124 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:36:10.129 [Thread-5] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:37:57.365 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} closing ...
+2026-03-16 16:37:57.368 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} closed
+2026-03-16 16:37:57.368 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closing ...
+2026-03-16 16:37:57.370 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closed
+2026-03-16 16:37:57.520 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 37364 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:37:57.520 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:37:57.520 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:37:58.072 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:37:58.072 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:37:58.073 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:37:58.077 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:37:58.104 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:37:58.125 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDæ•°æ®æºé…ç½®æˆåŠŸ
+2026-03-16 16:37:58.184 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDæ•°æ®æºå·²æ·»åŠ åˆ°åŠ¨æ€æ•°æ®æº
+2026-03-16 16:37:58.187 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMæ•°æ®æºé…ç½®æˆåŠŸï¼ˆå¦‚æžœè¿žæŽ¥å¤±è´¥ï¼Œè¯·æ£€æŸ¥é…ç½®æˆ–è®¾ç½®scm.enabled=falseç¦ç”¨ï¼‰
+2026-03-16 16:37:58.229 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMæ•°æ®æºå·²æ·»åŠ åˆ°åŠ¨æ€æ•°æ®æº
+2026-03-16 16:37:58.232 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - åŠ¨æ€æ•°æ®æºåˆå§‹åŒ–å®Œæˆï¼Œå¯ç”¨æ•°æ®æºæ•°é‡: 2
+2026-03-16 16:37:58.584 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:37:58.670 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:37:58.713 [restartedMain] ERROR s.d.s.web.plugins.DocumentationPluginsBootstrapper - Unable to scan documentation context default
+java.lang.TypeNotPresentException: Type PurchaseOrderDTO not present
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:117)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:125)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.visitor.Reifier.reifyTypeArguments(Reifier.java:68)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:138)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.repository.ConstructorRepository.getParameterTypes(ConstructorRepository.java:94)
+	at java.lang.reflect.Executable.getGenericParameterTypes(Executable.java:283)
+	at java.lang.reflect.Method.getGenericParameterTypes(Method.java:283)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMethod(ResolvedTypeWithMembers.java:572)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMemberMethods(ResolvedTypeWithMembers.java:388)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.getMemberMethods(ResolvedTypeWithMembers.java:201)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.getMemberMethods(HandlerMethodResolver.java:151)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.resolvedMethod(HandlerMethodResolver.java:136)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.methodReturnType(HandlerMethodResolver.java:65)
+	at springfox.documentation.spring.web.WebMvcRequestHandler.getReturnType(WebMvcRequestHandler.java:147)
+	at springfox.documentation.spi.service.contexts.RequestMappingContext.getReturnType(RequestMappingContext.java:216)
+	at springfox.documentation.spi.service.contexts.Orderings.qualifiedMethodName(Orderings.java:76)
+	at java.util.Comparator.lambda$comparing$77a9974f$1(Comparator.java:469)
+	at java.util.TimSort.countRunAndMakeAscending(TimSort.java:355)
+	at java.util.TimSort.sort(TimSort.java:220)
+	at java.util.Arrays.sort(Arrays.java:1512)
+	at java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:348)
+	at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:482)
+	at java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:471)
+	at java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:708)
+	at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:499)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.sortedByMethods(ApiListingScanner.java:229)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.scan(ApiListingScanner.java:152)
+	at springfox.documentation.spring.web.scanners.ApiDocumentationScanner.scan(ApiDocumentationScanner.java:67)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.scanDocumentation(AbstractDocumentationPluginsBootstrapper.java:96)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.bootstrapDocumentationPlugins(AbstractDocumentationPluginsBootstrapper.java:82)
+	at springfox.documentation.spring.web.plugins.DocumentationPluginsBootstrapper.start(DocumentationPluginsBootstrapper.java:100)
+	at org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:178)
+	at org.springframework.context.support.DefaultLifecycleProcessor.access$200(DefaultLifecycleProcessor.java:54)
+	at org.springframework.context.support.DefaultLifecycleProcessor$LifecycleGroup.start(DefaultLifecycleProcessor.java:356)
+	at java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.context.support.DefaultLifecycleProcessor.startBeans(DefaultLifecycleProcessor.java:155)
+	at org.springframework.context.support.DefaultLifecycleProcessor.onRefresh(DefaultLifecycleProcessor.java:123)
+	at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:937)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:586)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:780)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:453)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:343)
+	at com.scminterface.ScminterfaceApplication.main(ScminterfaceApplication.java:22)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: java.lang.ClassNotFoundException: PurchaseOrderDTO
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.springframework.boot.devtools.restart.classloader.RestartClassLoader.loadClass(RestartClassLoader.java:145)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:114)
+	... 51 common frames omitted
+2026-03-16 16:37:58.716 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 1.229 seconds (JVM running for 114.469)
+2026-03-16 16:38:01.362 [Thread-10] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:38:01.369 [Thread-10] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-3} inited
+2026-03-16 16:38:01.595 [Thread-10] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:38:01.596 [Thread-10] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:38:01.623 [Thread-10] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:38:01.623 [Thread-10] DEBUG c.s.framework.config.ScheduledTaskConfig - ä»»åŠ¡ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem å·²åœç”¨ï¼Œè·³è¿‡æ³¨å†Œ
+2026-03-16 16:38:01.623 [Thread-10] DEBUG c.s.framework.config.ScheduledTaskConfig - ä»»åŠ¡ com.scminterface.framework.web.task.SpdScheduledTask.execute å·²åœç”¨ï¼Œè·³è¿‡æ³¨å†Œ
+2026-03-16 16:38:01.624 [Thread-10] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SPDæ•°æ®æº
+2026-03-16 16:38:01.624 [Thread-10] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:38:01.624 [Thread-10] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPDå®šæ—¶ä»»åŠ¡(String)
+2026-03-16 16:38:01.651 [Thread-10] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:38:01.651 [Thread-10] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - åˆ‡æ¢åˆ°SCMæ•°æ®æº
+2026-03-16 16:38:01.654 [Thread-10] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-4} inited
+2026-03-16 16:38:01.665 [Thread-10] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:38:01.665 [Thread-10] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCMå®šæ—¶ä»»åŠ¡(String)
+2026-03-16 16:38:01.668 [Thread-10] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:38:01.670 [Thread-10] INFO  c.s.framework.config.ScheduledTaskConfig - å®šæ—¶ä»»åŠ¡æ³¨å†ŒæˆåŠŸ: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cronè¡¨è¾¾å¼: 0 0 1 * * ?
+2026-03-16 16:39:19.683 [Thread-7] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-4} closing ...
+2026-03-16 16:39:19.683 [Thread-7] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-4} closed
+2026-03-16 16:39:19.684 [Thread-7] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-3} closing ...
+2026-03-16 16:39:19.684 [Thread-7] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-3} closed
+2026-03-16 16:39:19.849 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 37364 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:39:19.849 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:39:19.849 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:39:20.134 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:39:20.134 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:39:20.134 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:39:20.138 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:39:20.152 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:39:20.165 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:39:20.198 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:39:20.199 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:39:20.207 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:39:20.207 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:39:20.420 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:39:20.483 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:39:20.521 [restartedMain] ERROR s.d.s.web.plugins.DocumentationPluginsBootstrapper - Unable to scan documentation context default
+java.lang.TypeNotPresentException: Type PurchaseOrderDTO not present
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:117)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:125)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.visitor.Reifier.reifyTypeArguments(Reifier.java:68)
+	at sun.reflect.generics.visitor.Reifier.visitClassTypeSignature(Reifier.java:138)
+	at sun.reflect.generics.tree.ClassTypeSignature.accept(ClassTypeSignature.java:49)
+	at sun.reflect.generics.repository.ConstructorRepository.getParameterTypes(ConstructorRepository.java:94)
+	at java.lang.reflect.Executable.getGenericParameterTypes(Executable.java:283)
+	at java.lang.reflect.Method.getGenericParameterTypes(Method.java:283)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMethod(ResolvedTypeWithMembers.java:572)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.resolveMemberMethods(ResolvedTypeWithMembers.java:388)
+	at com.fasterxml.classmate.ResolvedTypeWithMembers.getMemberMethods(ResolvedTypeWithMembers.java:201)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.getMemberMethods(HandlerMethodResolver.java:151)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.resolvedMethod(HandlerMethodResolver.java:136)
+	at springfox.documentation.spring.web.readers.operation.HandlerMethodResolver.methodReturnType(HandlerMethodResolver.java:65)
+	at springfox.documentation.spring.web.WebMvcRequestHandler.getReturnType(WebMvcRequestHandler.java:147)
+	at springfox.documentation.spi.service.contexts.RequestMappingContext.getReturnType(RequestMappingContext.java:216)
+	at springfox.documentation.spi.service.contexts.Orderings.qualifiedMethodName(Orderings.java:76)
+	at java.util.Comparator.lambda$comparing$77a9974f$1(Comparator.java:469)
+	at java.util.TimSort.countRunAndMakeAscending(TimSort.java:355)
+	at java.util.TimSort.sort(TimSort.java:220)
+	at java.util.Arrays.sort(Arrays.java:1512)
+	at java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:348)
+	at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:482)
+	at java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:471)
+	at java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:708)
+	at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:499)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.sortedByMethods(ApiListingScanner.java:229)
+	at springfox.documentation.spring.web.scanners.ApiListingScanner.scan(ApiListingScanner.java:152)
+	at springfox.documentation.spring.web.scanners.ApiDocumentationScanner.scan(ApiDocumentationScanner.java:67)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.scanDocumentation(AbstractDocumentationPluginsBootstrapper.java:96)
+	at springfox.documentation.spring.web.plugins.AbstractDocumentationPluginsBootstrapper.bootstrapDocumentationPlugins(AbstractDocumentationPluginsBootstrapper.java:82)
+	at springfox.documentation.spring.web.plugins.DocumentationPluginsBootstrapper.start(DocumentationPluginsBootstrapper.java:100)
+	at org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:178)
+	at org.springframework.context.support.DefaultLifecycleProcessor.access$200(DefaultLifecycleProcessor.java:54)
+	at org.springframework.context.support.DefaultLifecycleProcessor$LifecycleGroup.start(DefaultLifecycleProcessor.java:356)
+	at java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.context.support.DefaultLifecycleProcessor.startBeans(DefaultLifecycleProcessor.java:155)
+	at org.springframework.context.support.DefaultLifecycleProcessor.onRefresh(DefaultLifecycleProcessor.java:123)
+	at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:937)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:586)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:780)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:453)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:343)
+	at com.scminterface.ScminterfaceApplication.main(ScminterfaceApplication.java:22)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: java.lang.ClassNotFoundException: PurchaseOrderDTO
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.springframework.boot.devtools.restart.classloader.RestartClassLoader.loadClass(RestartClassLoader.java:145)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at sun.reflect.generics.factory.CoreReflectionFactory.makeNamedType(CoreReflectionFactory.java:114)
+	... 51 common frames omitted
+2026-03-16 16:39:20.524 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.693 seconds (JVM running for 196.278)
+2026-03-16 16:39:23.256 [Thread-15] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:39:23.261 [Thread-15] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-5} inited
+2026-03-16 16:39:23.740 [Thread-15] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:39:23.741 [Thread-15] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:39:23.770 [Thread-15] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:39:23.771 [Thread-15] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:39:23.771 [Thread-15] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:39:23.771 [Thread-15] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:39:23.771 [Thread-15] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:39:23.772 [Thread-15] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:39:23.800 [Thread-15] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:39:23.800 [Thread-15] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:39:23.802 [Thread-15] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-6} inited
+2026-03-16 16:39:23.811 [Thread-15] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:39:23.811 [Thread-15] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:39:23.812 [Thread-15] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:39:23.813 [Thread-15] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:56:17.859 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 35596 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:56:17.860 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:56:17.860 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:56:18.925 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:56:18.925 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:56:18.925 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:56:18.958 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:56:19.023 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:56:19.065 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:56:19.151 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:56:19.152 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:56:19.162 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:56:19.163 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:56:19.785 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:56:19.956 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:56:20.165 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 2.589 seconds (JVM running for 2.899)
+2026-03-16 16:56:22.393 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:56:22.488 [Thread-5] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2026-03-16 16:56:23.003 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:56:23.014 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:56:23.053 [Thread-5] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:56:23.055 [Thread-5] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:56:23.055 [Thread-5] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:56:23.055 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:56:23.057 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:56:23.060 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:56:23.090 [Thread-5] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:56:23.091 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:56:23.093 [Thread-5] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} inited
+2026-03-16 16:56:23.202 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:56:23.203 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:56:23.205 [Thread-5] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:56:23.211 [Thread-5] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:57:05.353 [http-nio-8088-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-16 16:57:05.365 [http-nio-8088-exec-1] WARN  c.s.framework.security.JwtAuthenticationFilter - ÇëÇóÂ·¾¶: /, tokenÎª¿Õ
+2026-03-16 16:57:09.685 [ForkJoinPool.commonPool-worker-4] DEBUG c.s.framework.web.service.DataSourceCheckService - Êý¾ÝÔ´ SCM Á¬½ÓÕý³£
+2026-03-16 16:57:09.713 [ForkJoinPool.commonPool-worker-11] DEBUG c.s.framework.web.service.DataSourceCheckService - Êý¾ÝÔ´ SPD Á¬½ÓÕý³£
+2026-03-16 16:57:33.122 [http-nio-8088-exec-6] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:57:33.125 [http-nio-8088-exec-6] INFO  c.s.framework.web.service.SpdOrderPublishService - ¿ªÊ¼·¢²¼SPD²É¹º¶©µ¥£¬IDÁÐ±í: [42]
+2026-03-16 16:57:33.137 [http-nio-8088-exec-6] DEBUG c.s.f.w.m.S.selectPurchaseOrdersByIds - ==>  Preparing: select id, order_no as orderNo, plan_no as planNo, supplier_id as supplierId, warehouse_id as warehouseId, department_id as departmentId, order_date as orderDate, total_amount as totalAmount, order_status as orderStatus, remark from purchase_order where del_flag = '0' and id in ( ? )
+2026-03-16 16:57:33.139 [http-nio-8088-exec-6] DEBUG c.s.f.w.m.S.selectPurchaseOrdersByIds - ==> Parameters: 42(Long)
+2026-03-16 16:57:33.171 [http-nio-8088-exec-6] DEBUG c.s.f.w.m.S.selectPurchaseOrdersByIds - <==      Total: 1
+2026-03-16 16:57:33.172 [http-nio-8088-exec-6] DEBUG c.s.f.w.m.S.selectPurchaseOrderEntriesByOrderIds - ==>  Preparing: select id as entryId, parent_id as parentId, material_id as materialId, material_code as materialCode, material_name as materialName, material_spec as specification, material_unit as unit, order_qty as quantity, unit_price as unitPrice, total_amount as amount, remark from purchase_order_entry where del_flag = '0' and parent_id in ( ? )
+2026-03-16 16:57:33.173 [http-nio-8088-exec-6] DEBUG c.s.f.w.m.S.selectPurchaseOrderEntriesByOrderIds - ==> Parameters: 42(Long)
+2026-03-16 16:57:33.204 [http-nio-8088-exec-6] DEBUG c.s.f.w.m.S.selectPurchaseOrderEntriesByOrderIds - <==      Total: 1
+2026-03-16 16:57:33.204 [http-nio-8088-exec-6] INFO  c.s.framework.web.service.SpdOrderPublishService - ×é×°Íê³É²É¹º¶©µ¥DTOÁÐ±í£¬ÊýÁ¿: 1
+2026-03-16 16:57:33.205 [http-nio-8088-exec-6] INFO  com.scminterface.framework.utils.HttpClientUtils - µ÷ÓÃ¹«Íøinterface½Ó¿ÚÍÆËÍ²É¹º¶©µ¥: http://localhost:8088/api/scm/pushPurchaseOrders
+2026-03-16 16:57:33.251 [http-nio-8088-exec-7] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:57:33.253 [http-nio-8088-exec-7] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:57:33.261 [http-nio-8088-exec-7] DEBUG c.s.f.w.m.ScmOrderMapper.selectOrderIdByOrderNo - ==>  Preparing: select order_id from scm_order where order_no = ? and del_flag = '0' limit 1
+2026-03-16 16:57:33.262 [http-nio-8088-exec-7] DEBUG c.s.f.w.m.ScmOrderMapper.selectOrderIdByOrderNo - ==> Parameters: PO2026031600001(String)
+2026-03-16 16:57:33.264 [http-nio-8088-exec-7] DEBUG c.s.f.w.m.ScmOrderMapper.selectOrderIdByOrderNo - <==      Total: 0
+2026-03-16 16:57:33.265 [http-nio-8088-exec-7] DEBUG c.s.f.web.mapper.ScmOrderMapper.insertOrder - ==>  Preparing: insert into scm_order( order_no, hospital_id, supplier_id, warehouse_name, order_date, order_amount, order_status, apply_dept, remark, create_by, create_time, del_flag ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), '0' )
+2026-03-16 16:57:33.346 [http-nio-8088-exec-7] DEBUG c.s.f.web.mapper.ScmOrderMapper.insertOrder - ==> Parameters: PO2026031600001(String), null, 5(Long), 4(String), 2026-03-16 00:00:00.0(Timestamp), 1000.00(BigDecimal), 0(String), null, ´Ó²É¹º¼Æ»®JH2026031600001Éú³É(String), spd-sync(String)
+2026-03-16 16:57:33.350 [http-nio-8088-exec-7] DEBUG c.s.f.web.mapper.ScmOrderMapper.insertOrder - <==    Updates: 1
+2026-03-16 16:57:33.354 [http-nio-8088-exec-7] ERROR c.s.framework.web.service.ScmDataService - ²É¹º¶©µ¥Ð´ÈëSCMÊ§°Ü£¬orderNo: PO2026031600001
+java.lang.ClassCastException: java.math.BigInteger cannot be cast to java.lang.Long
+	at com.scminterface.framework.web.service.ScmDataService.savePurchaseOrders(ScmDataService.java:216)
+	at com.scminterface.framework.web.service.ScmDataService$$FastClassBySpringCGLIB$$6fdd7f56.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:388)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint.proceed(MethodInvocationProceedingJoinPoint.java:89)
+	at com.scminterface.framework.aspect.DataSourceAspect.around(DataSourceAspect.java:47)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethodWithGivenArgs(AbstractAspectJAdvice.java:634)
+	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethod(AbstractAspectJAdvice.java:624)
+	at org.springframework.aop.aspectj.AspectJAroundAdvice.invoke(AspectJAroundAdvice.java:72)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:175)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:708)
+	at com.scminterface.framework.web.service.ScmDataService$$EnhancerBySpringCGLIB$$4be9e455.savePurchaseOrders(<generated>)
+	at com.scminterface.framework.web.controller.ScmDataController.pushPurchaseOrders(ScmDataController.java:121)
+	at com.scminterface.framework.web.controller.ScmDataController$$FastClassBySpringCGLIB$$b00f62c0.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:793)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint.proceed(MethodInvocationProceedingJoinPoint.java:89)
+	at com.scminterface.framework.aspect.DataSourceAspect.around(DataSourceAspect.java:47)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethodWithGivenArgs(AbstractAspectJAdvice.java:634)
+	at org.springframework.aop.aspectj.AbstractAspectJAdvice.invokeAdviceMethod(AbstractAspectJAdvice.java:624)
+	at org.springframework.aop.aspectj.AspectJAroundAdvice.invoke(AspectJAroundAdvice.java:72)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:175)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:763)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:708)
+	at com.scminterface.framework.web.controller.ScmDataController$$EnhancerBySpringCGLIB$$a749bab0.pushPurchaseOrders(<generated>)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:205)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:150)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1072)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:965)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:909)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:555)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:883)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:623)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:209)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153)
+	at com.alibaba.druid.support.http.WebStatFilter.doFilter(WebStatFilter.java:114)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153)
+	at com.scminterface.framework.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:68)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:153)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:481)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:130)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:343)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:390)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:926)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1791)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+	at java.lang.Thread.run(Thread.java:748)
+2026-03-16 16:57:33.362 [http-nio-8088-exec-6] INFO  com.scminterface.framework.utils.HttpClientUtils - ¹«Íøinterface½Ó¿ÚÏìÓ¦(²É¹º¶©µ¥): {msg=²É¹º¶©µ¥½ÓÊÕÍê³É£¬×Ü¼Æ: 1, ³É¹¦: 0, Ê§°Ü: 1, code=601, data={errorMessages=[PO2026031600001: java.math.BigInteger cannot be cast to java.lang.Long], successCount=0, totalCount=1, message=²É¹º¶©µ¥½ÓÊÕÍê³É£¬×Ü¼Æ: 1, ³É¹¦: 0, Ê§°Ü: 1, errorCount=1}}
+2026-03-16 16:58:33.197 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} closing ...
+2026-03-16 16:58:33.199 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} closed
+2026-03-16 16:58:33.199 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closing ...
+2026-03-16 16:58:33.200 [Thread-1] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closed
+2026-03-16 16:58:33.354 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 35596 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-03-16 16:58:33.354 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-03-16 16:58:33.354 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-03-16 16:58:33.672 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:58:33.672 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-03-16 16:58:33.673 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-03-16 16:58:33.677 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-03-16 16:58:33.696 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-03-16 16:58:33.710 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÅäÖÃ³É¹¦
+2026-03-16 16:58:33.754 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPDÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:58:33.754 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÅäÖÃ³É¹¦£¨Èç¹ûÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÅäÖÃ»òÉèÖÃscm.enabled=false½ûÓÃ£©
+2026-03-16 16:58:33.766 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCMÊý¾ÝÔ´ÒÑÌí¼Óµ½¶¯Ì¬Êý¾ÝÔ´
+2026-03-16 16:58:33.766 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - ¶¯Ì¬Êý¾ÝÔ´³õÊ¼»¯Íê³É£¬¿ÉÓÃÊý¾ÝÔ´ÊýÁ¿: 2
+2026-03-16 16:58:34.064 [restartedMain] WARN  o.s.b.d.autoconfigure.OptionalLiveReloadServer - Unable to start LiveReload server
+2026-03-16 16:58:34.133 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-03-16 16:58:34.195 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.87 seconds (JVM running for 136.929)
+2026-03-16 16:58:36.841 [Thread-10] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:58:36.847 [Thread-10] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-3} inited
+2026-03-16 16:58:37.144 [Thread-10] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-03-16 16:58:37.144 [Thread-10] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-03-16 16:58:37.173 [Thread-10] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-03-16 16:58:37.173 [Thread-10] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.HengshuiTask.syncChargeItem ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:58:37.173 [Thread-10] DEBUG c.s.framework.config.ScheduledTaskConfig - ÈÎÎñ com.scminterface.framework.web.task.SpdScheduledTask.execute ÒÑÍ£ÓÃ£¬Ìø¹ý×¢²á
+2026-03-16 16:58:37.173 [Thread-10] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:58:37.174 [Thread-10] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-03-16 16:58:37.174 [Thread-10] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:58:37.201 [Thread-10] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:58:37.201 [Thread-10] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:58:37.205 [Thread-10] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-4} inited
+2026-03-16 16:58:37.214 [Thread-10] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-16 16:58:37.215 [Thread-10] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-16 16:58:37.216 [Thread-10] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-16 16:58:37.217 [Thread-10] INFO  c.s.framework.config.ScheduledTaskConfig - ¶¨Ê±ÈÎÎñ×¢²á³É¹¦: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron±í´ïÊ½: 0 0 1 * * ?
+2026-03-16 16:58:55.891 [http-nio-8088-exec-3] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-16 16:58:55.893 [http-nio-8088-exec-3] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SPDÊý¾ÝÔ´
+2026-03-16 16:58:55.895 [http-nio-8088-exec-3] INFO  c.s.framework.web.service.SpdOrderPublishService - ¿ªÊ¼·¢²¼SPD²É¹º¶©µ¥£¬IDÁÐ±í: [42]
+2026-03-16 16:58:55.895 [http-nio-8088-exec-3] DEBUG c.s.f.w.m.S.selectPurchaseOrdersByIds - ==>  Preparing: select id, order_no as orderNo, plan_no as planNo, supplier_id as supplierId, warehouse_id as warehouseId, department_id as departmentId, order_date as orderDate, total_amount as totalAmount, order_status as orderStatus, remark from purchase_order where del_flag = '0' and id in ( ? )
+2026-03-16 16:58:55.896 [http-nio-8088-exec-3] DEBUG c.s.f.w.m.S.selectPurchaseOrdersByIds - ==> Parameters: 42(Long)
+2026-03-16 16:58:55.923 [http-nio-8088-exec-3] DEBUG c.s.f.w.m.S.selectPurchaseOrdersByIds - <==      Total: 1
+2026-03-16 16:58:55.924 [http-nio-8088-exec-3] DEBUG c.s.f.w.m.S.selectPurchaseOrderEntriesByOrderIds - ==>  Preparing: select id as entryId, parent_id as parentId, material_id as materialId, material_code as materialCode, material_name as materialName, material_spec as specification, material_unit as unit, order_qty as quantity, unit_price as unitPrice, total_amount as amount, remark from purchase_order_entry where del_flag = '0' and parent_id in ( ? )
+2026-03-16 16:58:55.925 [http-nio-8088-exec-3] DEBUG c.s.f.w.m.S.selectPurchaseOrderEntriesByOrderIds - ==> Parameters: 42(Long)
+2026-03-16 16:58:55.952 [http-nio-8088-exec-3] DEBUG c.s.f.w.m.S.selectPurchaseOrderEntriesByOrderIds - <==      Total: 1
+2026-03-16 16:58:55.953 [http-nio-8088-exec-3] INFO  c.s.framework.web.service.SpdOrderPublishService - ×é×°Íê³É²É¹º¶©µ¥DTOÁÐ±í£¬ÊýÁ¿: 1
+2026-03-16 16:58:55.953 [http-nio-8088-exec-3] INFO  com.scminterface.framework.utils.HttpClientUtils - µ÷ÓÃ¹«Íøinterface½Ó¿ÚÍÆËÍ²É¹º¶©µ¥: http://localhost:8088/api/scm/pushPurchaseOrders
+2026-03-16 16:58:55.964 [http-nio-8088-exec-1] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:58:55.966 [http-nio-8088-exec-1] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-16 16:58:55.969 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.ScmOrderMapper.selectOrderIdByOrderNo - ==>  Preparing: select order_id from scm_order where order_no = ? and del_flag = '0' limit 1
+2026-03-16 16:58:55.969 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.ScmOrderMapper.selectOrderIdByOrderNo - ==> Parameters: PO2026031600001(String)
+2026-03-16 16:58:55.970 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.ScmOrderMapper.selectOrderIdByOrderNo - <==      Total: 1
+2026-03-16 16:58:55.970 [http-nio-8088-exec-1] DEBUG c.s.f.web.mapper.ScmOrderMapper.updateOrder - ==>  Preparing: update scm_order set hospital_id = ?, supplier_id = ?, warehouse_name = ?, order_date = ?, order_amount = ?, order_status = ?, apply_dept = ?, remark = ?, update_by = ?, update_time = now() where order_id = ?
+2026-03-16 16:58:55.973 [http-nio-8088-exec-1] DEBUG c.s.f.web.mapper.ScmOrderMapper.updateOrder - ==> Parameters: null, 5(Long), 4(String), 2026-03-16 00:00:00.0(Timestamp), 1000.00(BigDecimal), 0(String), null, ´Ó²É¹º¼Æ»®JH2026031600001Éú³É(String), spd-sync(String), 6(Long)
+2026-03-16 16:58:55.974 [http-nio-8088-exec-1] DEBUG c.s.f.web.mapper.ScmOrderMapper.updateOrder - <==    Updates: 1
+2026-03-16 16:58:55.974 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.S.deleteOrderDetailsByOrderId - ==>  Preparing: delete from scm_order_detail where order_id = ?
+2026-03-16 16:58:55.974 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.S.deleteOrderDetailsByOrderId - ==> Parameters: 6(Long)
+2026-03-16 16:58:55.981 [http-nio-8088-exec-1] DEBUG c.s.f.w.m.S.deleteOrderDetailsByOrderId - <==    Updates: 0
+2026-03-16 16:58:55.982 [http-nio-8088-exec-1] DEBUG c.s.f.web.mapper.ScmOrderMapper.insertOrderDetail - ==>  Preparing: insert into scm_order_detail( order_id, material_id, material_code, material_name, specification, model, unit, purchase_price, order_quantity, remaining_quantity, amount, manufacturer_name, register_no, remark, create_by, create_time, del_flag ) values ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), '0' )
+2026-03-16 16:58:55.983 [http-nio-8088-exec-1] DEBUG c.s.f.web.mapper.ScmOrderMapper.insertOrderDetail - ==> Parameters: 6(Long), 4994(Long), 888888(String), ²âÊÔºÄ²Ä(String), gg(String), null, ¸ö(String), 100.0000(BigDecimal), 10.0000(BigDecimal), 10(Integer), 1000.00(BigDecimal), null, null, null, spd-sync(String)
+2026-03-16 16:58:55.985 [http-nio-8088-exec-1] DEBUG c.s.f.web.mapper.ScmOrderMapper.insertOrderDetail - <==    Updates: 1
+2026-03-16 16:58:55.985 [http-nio-8088-exec-1] INFO  c.s.framework.web.service.ScmDataService - ²É¹º¶©µ¥Ð´ÈëSCM³É¹¦£¬orderNo: PO2026031600001
+2026-03-16 16:58:55.990 [http-nio-8088-exec-3] INFO  com.scminterface.framework.utils.HttpClientUtils - ¹«Íøinterface½Ó¿ÚÏìÓ¦(²É¹º¶©µ¥): {msg=²É¹º¶©µ¥½ÓÊÕÍê³É£¬×Ü¼Æ: 1, ³É¹¦: 1, Ê§°Ü: 0, code=200, data={errorMessages=[], successCount=1, totalCount=1, message=²É¹º¶©µ¥½ÓÊÕÍê³É£¬×Ü¼Æ: 1, ³É¹¦: 1, Ê§°Ü: 0, errorCount=0}}
+2026-03-17 01:00:00.016 [pool-2-thread-1] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-17 01:00:00.038 [pool-2-thread-1] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-17 01:00:00.083 [pool-2-thread-1] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-03-17 01:00:00.084 [pool-2-thread-1] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-17 01:00:00.091 [pool-2-thread-1] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-03-17 01:00:00.092 [pool-2-thread-1] INFO  c.scminterface.framework.web.task.ScmScheduledTask - ========== SCM¶¨Ê±ÈÎÎñÖ´ÐÐ ==========
+2026-03-17 01:00:00.092 [pool-2-thread-1] INFO  c.scminterface.framework.web.task.ScmScheduledTask - µ±Ç°Ê±¼ä: 2026-03-17 01:00:00
+2026-03-17 01:00:00.092 [pool-2-thread-1] INFO  c.scminterface.framework.web.task.ScmScheduledTask - Ö´ÐÐ´ÎÊý: 1
+2026-03-17 01:00:00.092 [pool-2-thread-1] INFO  c.scminterface.framework.web.task.ScmScheduledTask - ===================================
+2026-03-17 01:00:00.093 [pool-2-thread-1] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - ÇÐ»»µ½SCMÊý¾ÝÔ´
+2026-03-17 01:00:00.093 [pool-2-thread-1] DEBUG c.s.f.w.m.S.incrementExecCount - ==>  Preparing: update scm_scheduled_task set current_exec_count = current_exec_count + 1, update_time = now() where task_name = ?
+2026-03-17 01:00:00.094 [pool-2-thread-1] DEBUG c.s.f.w.m.S.incrementExecCount - ==> Parameters: SCM¶¨Ê±ÈÎÎñ(String)
+2026-03-17 01:00:00.105 [pool-2-thread-1] DEBUG c.s.f.w.m.S.incrementExecCount - <==    Updates: 1

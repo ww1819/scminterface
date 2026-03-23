@@ -2,6 +2,7 @@ E:\workspace\scminterface\scminterface-common\src\main\java\com\scminterface\com
 E:\workspace\scminterface\scminterface-common\src\main\java\com\scminterface\common\constant\Constants.java
 E:\workspace\scminterface\scminterface-common\src\main\java\com\scminterface\common\utils\spring\SpringUtils.java
 E:\workspace\scminterface\scminterface-common\src\main\java\com\scminterface\common\enums\DataSourceType.java
+E:\workspace\scminterface\scminterface-common\src\main\java\com\scminterface\common\core\domain\PurchaseOrderDTO.java
 E:\workspace\scminterface\scminterface-common\src\main\java\com\scminterface\common\core\domain\AjaxResult.java
 E:\workspace\scminterface\scminterface-common\src\main\java\com\scminterface\common\core\domain\MaterialArchiveDTO.java
 E:\workspace\scminterface\scminterface-common\src\main\java\com\scminterface\common\annotation\DataSource.java

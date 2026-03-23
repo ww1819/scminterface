@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.SpdPurchaseOrderMapper">
+
+    <!-- 根据ID列表查询采购订单主表 -->
+    <select id="selectPurchaseOrdersByIds" parameterType="java.util.List" resultType="java.util.HashMap">
+        select
+            id,
+            order_no       as orderNo,
+            plan_no        as planNo,
+            supplier_id    as supplierId,
+            warehouse_id   as warehouseId,
+            department_id  as departmentId,
+            order_date     as orderDate,
+            total_amount   as totalAmount,
+            order_status   as orderStatus,
+            remark
+        from purchase_order
+        where del_flag = '0'
+          and id in
+          <foreach collection="ids" item="id" open="(" separator="," close=")">
+              #{id}
+          </foreach>
+    </select>
+
+    <!-- 根据订单ID列表查询采购订单明细 -->
+    <select id="selectPurchaseOrderEntriesByOrderIds" parameterType="java.util.List" resultType="java.util.HashMap">
+        select
+            id               as entryId,
+            parent_id        as parentId,
+            material_id      as materialId,
+            material_code    as materialCode,
+            material_name    as materialName,
+            material_spec    as specification,
+            material_unit    as unit,
+            order_qty        as quantity,
+            unit_price       as unitPrice,
+            total_amount     as amount,
+            remark
+        from purchase_order_entry
+        where del_flag = '0'
+          and parent_id in
+          <foreach collection="orderIds" item="id" open="(" separator="," close=")">
+              #{id}
+          </foreach>
+    </select>
+
+</mapper>
+

@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.scminterface.common.annotation.DataSource;
 import com.scminterface.common.core.domain.MaterialArchiveDTO;
+import com.scminterface.common.core.domain.PurchaseOrderDTO;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.framework.web.mapper.ScmMaterialMapper;
+import com.scminterface.framework.web.mapper.ScmOrderMapper;
 
 /**
  * SCM数据服务
@@ -25,6 +27,9 @@ public class ScmDataService
 
     @Autowired
     private ScmMaterialMapper scmMaterialMapper;
+
+    @Autowired
+    private ScmOrderMapper scmOrderMapper;
 
     /**
      * 保存示例数据
@@ -154,6 +159,133 @@ public class ScmDataService
         log.info("保存完成，成功: {}, 跳过: {}, 失败: {}, 总计: {}", 
             successCount, skipCount, errorCount, archiveList.size());
 
+        return result;
+    }
+
+    /**
+     * 保存采购订单到SCM
+     *
+     * @param orders 订单列表
+     * @return 结果统计
+     */
+    @DataSource(DataSourceType.SCM)
+    @Transactional(rollbackFor = Exception.class)
+    public Map<String, Object> savePurchaseOrders(java.util.List<PurchaseOrderDTO> orders)
+    {
+        Map<String, Object> result = new HashMap<>();
+        if (orders == null || orders.isEmpty())
+        {
+            result.put("totalCount", 0);
+            result.put("successCount", 0);
+            result.put("message", "订单列表为空");
+            return result;
+        }
+
+        int successCount = 0;
+        int errorCount = 0;
+        java.util.List<String> errorMessages = new java.util.ArrayList<>();
+
+        for (PurchaseOrderDTO order : orders)
+        {
+            try
+            {
+                if (order.getOrderNo() == null || order.getOrderNo().trim().isEmpty())
+                {
+                    throw new RuntimeException("订单号为空");
+                }
+
+                Long orderId = scmOrderMapper.selectOrderIdByOrderNo(order.getOrderNo());
+
+                Map<String, Object> orderMap = new HashMap<>();
+                orderMap.put("orderNo", order.getOrderNo());
+                orderMap.put("hospitalId", null);
+                orderMap.put("supplierId", order.getSupplierId());
+                orderMap.put("warehouseName", order.getWarehouseId() != null ? String.valueOf(order.getWarehouseId()) : null);
+                orderMap.put("orderDate", order.getOrderDate());
+                orderMap.put("orderAmount", order.getTotalAmount());
+                // SPD“已审核”到 SCM 默认转为“待接收”
+                orderMap.put("orderStatus", "0");
+                orderMap.put("applyDept", order.getDepartmentId() != null ? String.valueOf(order.getDepartmentId()) : null);
+                orderMap.put("remark", order.getRemark());
+                orderMap.put("createBy", "spd-sync");
+                orderMap.put("updateBy", "spd-sync");
+
+                if (orderId == null)
+                {
+                    scmOrderMapper.insertOrder(orderMap);
+                    Object idObj = orderMap.get("orderId");
+                    if (idObj instanceof Number)
+                    {
+                        orderId = ((Number) idObj).longValue();
+                    }
+                    else
+                    {
+                        orderId = null;
+                    }
+                    if (orderId == null)
+                    {
+                        orderId = scmOrderMapper.selectOrderIdByOrderNo(order.getOrderNo());
+                    }
+                }
+                else
+                {
+                    orderMap.put("orderId", orderId);
+                    scmOrderMapper.updateOrder(orderMap);
+                    scmOrderMapper.deleteOrderDetailsByOrderId(orderId);
+                }
+
+                if (orderId == null)
+                {
+                    throw new RuntimeException("订单主表写入失败: " + order.getOrderNo());
+                }
+
+                if (order.getItems() != null)
+                {
+                    for (PurchaseOrderDTO.PurchaseOrderItem item : order.getItems())
+                    {
+                        if (item.getMaterialId() == null)
+                        {
+                            throw new RuntimeException("订单明细物资ID为空: " + order.getOrderNo());
+                        }
+
+                        Map<String, Object> detailMap = new HashMap<>();
+                        detailMap.put("orderId", orderId);
+                        detailMap.put("materialId", item.getMaterialId());
+                        detailMap.put("materialCode", item.getMaterialCode());
+                        detailMap.put("materialName", item.getMaterialName());
+                        detailMap.put("specification", item.getSpecification());
+                        detailMap.put("model", null);
+                        detailMap.put("unit", item.getUnit());
+                        detailMap.put("purchasePrice", item.getUnitPrice());
+                        detailMap.put("orderQuantity", item.getQuantity());
+                        detailMap.put("remainingQuantity", item.getQuantity() != null ? item.getQuantity().intValue() : 0);
+                        detailMap.put("amount", item.getAmount());
+                        detailMap.put("manufacturerName", item.getManufacturerName());
+                        detailMap.put("registerNo", item.getRegisterNo());
+                        detailMap.put("remark", item.getRemark());
+                        detailMap.put("createBy", "spd-sync");
+
+                        scmOrderMapper.insertOrderDetail(detailMap);
+                    }
+                }
+
+                successCount++;
+                log.info("采购订单写入SCM成功，orderNo: {}", order.getOrderNo());
+            }
+            catch (Exception e)
+            {
+                errorCount++;
+                String orderNo = order != null ? order.getOrderNo() : "unknown";
+                errorMessages.add(orderNo + ": " + e.getMessage());
+                log.error("采购订单写入SCM失败，orderNo: {}", orderNo, e);
+            }
+        }
+
+        result.put("totalCount", orders.size());
+        result.put("successCount", successCount);
+        result.put("errorCount", errorCount);
+        result.put("errorMessages", errorMessages);
+        result.put("message", String.format("采购订单接收完成，总计: %d, 成功: %d, 失败: %d", orders.size(), successCount, errorCount));
         return result;
     }
 }

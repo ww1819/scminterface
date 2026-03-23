@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.scminterface.common.core.domain.AjaxResult;
+import com.scminterface.common.core.domain.PurchaseOrderDTO;
 import com.scminterface.framework.config.properties.PublicInterfaceProperties;
 
 /**
@@ -33,7 +34,7 @@ public class HttpClientUtils
 
     /**
      * 调用公网interface接口推送档案数据
-     * 
+     *
      * @param data 档案数据
      * @return 响应结果
      */
@@ -81,6 +82,59 @@ public class HttpClientUtils
         catch (Exception e)
         {
             log.error("调用公网interface接口发生未知异常: {}", e.getMessage(), e);
+            return AjaxResult.error("调用公网interface接口失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 调用公网interface接口推送采购订单
+     *
+     * @param orders 采购订单列表
+     * @return 响应结果
+     */
+    public AjaxResult pushPurchaseOrders(java.util.List<PurchaseOrderDTO> orders)
+    {
+        String url = publicInterfaceProperties.getUrl();
+        if (url == null || url.isEmpty() || url.contains("公网IP"))
+        {
+            log.error("公网interface URL未配置或配置不正确");
+            return AjaxResult.error("公网interface URL未配置");
+        }
+
+        if (!url.endsWith("/"))
+        {
+            url += "/";
+        }
+        url += "api/scm/pushPurchaseOrders";
+
+        try
+        {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+
+            HttpEntity<java.util.List<PurchaseOrderDTO>> requestEntity = new HttpEntity<>(orders, headers);
+
+            log.info("调用公网interface接口推送采购订单: {}", url);
+            ResponseEntity<AjaxResult> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    requestEntity,
+                    AjaxResult.class
+            );
+
+            AjaxResult result = response.getBody();
+            log.info("公网interface接口响应(采购订单): {}", result);
+            return result != null ? result : AjaxResult.error("接口返回为空");
+        }
+        catch (RestClientException e)
+        {
+            log.error("调用公网interface接口推送采购订单异常: {}", e.getMessage(), e);
+            return AjaxResult.error("调用公网interface接口失败: " + e.getMessage());
+        }
+        catch (Exception e)
+        {
+            log.error("调用公网interface接口推送采购订单发生未知异常: {}", e.getMessage(), e);
             return AjaxResult.error("调用公网interface接口失败: " + e.getMessage());
         }
     }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.scminterface.common.annotation.DataSource;
 import com.scminterface.common.core.domain.AjaxResult;
 import com.scminterface.common.core.domain.MaterialArchiveDTO;
+import com.scminterface.common.core.domain.PurchaseOrderDTO;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.framework.web.service.ScmDataService;
 import io.swagger.annotations.Api;
@@ -101,6 +102,35 @@ public class ScmDataController
         {
             log.error("保存档案数据异常", e);
             return AjaxResult.error("保存档案数据失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 接收SPD推送的采购订单并保存到SCM
+     *
+     * @param orders 订单列表
+     * @return 结果
+     */
+    @ApiOperation("接收SPD采购订单")
+    @PostMapping("/pushPurchaseOrders")
+    @DataSource(DataSourceType.SCM)
+    public AjaxResult pushPurchaseOrders(@RequestBody java.util.List<PurchaseOrderDTO> orders)
+    {
+        try
+        {
+            Map<String, Object> result = scmDataService.savePurchaseOrders(orders);
+            Integer errorCount = (Integer) result.get("errorCount");
+            String message = String.valueOf(result.get("message"));
+            if (errorCount != null && errorCount > 0)
+            {
+                return AjaxResult.warn(message, result);
+            }
+            return AjaxResult.success(message, result);
+        }
+        catch (Exception e)
+        {
+            log.error("接收采购订单异常", e);
+            return AjaxResult.error("接收采购订单失败: " + e.getMessage());
         }
     }
 }

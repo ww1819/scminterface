@@ -1,3 +1,4 @@
+com\scminterface\framework\web\mapper\SpdPurchaseOrderMapper.class
 com\scminterface\framework\web\task\ScmScheduledTask.class
 com\scminterface\framework\web\service\TokenService.class
 com\scminterface\framework\web\controller\SpdDataController.class
@@ -12,6 +13,7 @@ com\scminterface\framework\security\JwtAuthenticationFilter.class
 com\scminterface\framework\web\mapper\SpdMaterialMapper.class
 com\scminterface\framework\web\service\HengshuiTaskService.class
 com\scminterface\framework\web\mapper\SpdSystemConfigMapper.class
+com\scminterface\framework\web\service\SpdOrderPublishService.class
 com\scminterface\framework\web\mapper\HisZySfmxMapper.class
 com\scminterface\framework\web\service\ScmDataService.class
 com\scminterface\framework\web\mapper\ScmMaterialMapper.class
@@ -25,6 +27,7 @@ com\scminterface\framework\web\task\HengshuiTask.class
 com\scminterface\framework\web\controller\HengshuisanController.class
 com\scminterface\framework\datasource\DynamicDataSource.class
 com\scminterface\framework\config\SecurityConfig.class
+com\scminterface\framework\web\mapper\ScmOrderMapper.class
 com\scminterface\framework\datasource\DynamicDataSourceContextHolder.class
 com\scminterface\framework\web\controller\ScmDataController.class
 com\scminterface\framework\web\task\SpdScheduledTask.class
@@ -39,4 +42,5 @@ com\scminterface\framework\aspect\DataSourceAspect.class
 com\scminterface\framework\web\controller\LoginController.class
 com\scminterface\framework\web\controller\SystemConfigController.class
 com\scminterface\framework\config\ScheduledTaskConfig.class
+com\scminterface\framework\web\controller\SpdOrderController.class
 com\scminterface\framework\web\service\DataSourceCheckService.class
