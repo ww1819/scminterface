@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.ZsTpOrderMapper">
+
+    <select id="selectActiveOrderIdByCustomerAndDh" resultType="java.lang.String">
+        select id
+        from zs_tp_order
+        where customer = #{customer}
+          and dh = #{dh}
+          and del_flag = '0'
+        limit 1
+    </select>
+
+    <insert id="insertOrder" parameterType="java.util.HashMap">
+        insert into zs_tp_order (
+            id, third_party_pk, customer,
+            sheet_je, dh, supno, sup, supno2, sup2, ckno, ck, pc, oper, bz, jsfs, ksbh, ksmc, zjly,
+            create_by, create_time, del_flag
+        ) values (
+            #{id}, #{thirdPartyPk}, #{customer},
+            #{sheetJe}, #{dh}, #{supno}, #{sup}, #{supno2}, #{sup2}, #{ckno}, #{ck}, #{pc}, #{oper}, #{bz}, #{jsfs}, #{ksbh}, #{ksmc}, #{zjly},
+            #{createBy}, now(), '0'
+        )
+    </insert>
+
+    <insert id="insertDetail" parameterType="java.util.HashMap">
+        insert into zs_tp_order_detail (
+            id, order_id, third_party_pk,
+            dh, code, name, gg, dw, bzl, sccj, zcz, phflag, sl, dj, je, jm, cgj, bz, bz1, bz2, dsb,
+            create_time, del_flag
+        ) values (
+            #{id}, #{orderId}, #{thirdPartyPk},
+            #{dh}, #{code}, #{name}, #{gg}, #{dw}, #{bzl}, #{sccj}, #{zcz}, #{phflag}, #{sl}, #{dj}, #{je}, #{jm}, #{cgj}, #{bz}, #{bz1}, #{bz2}, #{dsb},
+            now(), '0'
+        )
+    </insert>
+
+    <update id="softDeleteOrderById">
+        update zs_tp_order
+        set del_flag = '1',
+            del_by = #{delBy},
+            del_time = now()
+        where id = #{id}
+          and del_flag = '0'
+    </update>
+
+    <update id="softDeleteDetailsByOrderId">
+        update zs_tp_order_detail
+        set del_flag = '1',
+            del_by = #{delBy},
+            del_time = now()
+        where order_id = #{orderId}
+          and del_flag = '0'
+    </update>
+</mapper>
