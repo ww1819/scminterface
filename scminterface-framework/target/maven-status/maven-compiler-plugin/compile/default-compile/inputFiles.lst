@@ -28,10 +28,12 @@ D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterfa
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\SpdScheduledTaskMapper.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\example\ZsOrderReceiveClientExample.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\ScmMaterialMapper.java
+D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\ScmBarcodeSeedInitMapper.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\ZsTpOrderMapper.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\config\properties\DruidProperties.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\config\HttpClientConfig.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\task\SpdScheduledTask.java
+D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\service\ZsBarcodeSeedConstants.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\controller\ScheduledTaskController.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\HisZySfmxMapper.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\HisMzSfmxMapper.java

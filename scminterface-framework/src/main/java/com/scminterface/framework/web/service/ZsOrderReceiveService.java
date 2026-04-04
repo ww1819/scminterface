@@ -17,6 +17,7 @@ import com.scminterface.common.annotation.DataSource;
 import com.scminterface.common.core.domain.AjaxResult;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.framework.util.ZsUuid7;
+import com.scminterface.framework.web.mapper.ScmBarcodeSeedInitMapper;
 import com.scminterface.framework.web.mapper.ZsTpOrderMapper;
 
 /**
@@ -33,6 +34,9 @@ public class ZsOrderReceiveService
 
     @Autowired
     private ZsTpOrderMapper zsTpOrderMapper;
+
+    @Autowired
+    private ScmBarcodeSeedInitMapper scmBarcodeSeedInitMapper;
 
     @DataSource(DataSourceType.SCM)
     @Transactional(rollbackFor = Exception.class)
@@ -83,9 +87,34 @@ public class ZsOrderReceiveService
             zsTpOrderMapper.softDeleteOrderById(existingId, DEL_BY_PUSH);
         }
 
+        String receiveChannel = firstNonBlank(str(body.get("RECEIVE_CHANNEL")), str(masterRow.get("RECEIVE_CHANNEL")));
+        if (isBlank(receiveChannel))
+        {
+            receiveChannel = ZsBarcodeSeedConstants.CHANNEL_ZS;
+        }
+
         String orderId = ZsUuid7.newString();
-        Map<String, Object> orderInsert = buildOrderInsert(orderId, customer, masterRow);
+        Map<String, Object> orderInsert = buildOrderInsert(orderId, customer, masterRow, receiveChannel);
         zsTpOrderMapper.insertOrder(orderInsert);
+
+        String tenantId = str(body.get("TENANT_ID"));
+        if (tenantId == null)
+        {
+            tenantId = "";
+        }
+        String ckno = str(masterRow.get("CKNO"));
+        if (ckno == null)
+        {
+            ckno = "";
+        }
+        if (ZsBarcodeSeedConstants.CHANNEL_TENANT.equalsIgnoreCase(receiveChannel))
+        {
+            scmBarcodeSeedInitMapper.ensureTenantSeed(ZsUuid7.newString(), tenantId, ckno, "L");
+        }
+        else
+        {
+            scmBarcodeSeedInitMapper.ensureZsCustomerSeed(ZsUuid7.newString(), tenantId, customer, ckno, "L");
+        }
 
         int line = 0;
         for (Map<String, Object> d : detailRows)
@@ -221,12 +250,13 @@ public class ZsOrderReceiveService
         return fallback;
     }
 
-    private static Map<String, Object> buildOrderInsert(String id, String customer, Map<String, Object> row)
+    private static Map<String, Object> buildOrderInsert(String id, String customer, Map<String, Object> row, String receiveChannel)
     {
         Map<String, Object> m = new HashMap<>(32);
         m.put("id", id);
         m.put("thirdPartyPk", Objects.toString(row.get("thirdPartyPk"), ""));
         m.put("customer", customer);
+        m.put("receiveChannel", receiveChannel);
         m.put("sheetJe", toDecimal(row.get("SHEET_JE")));
         m.put("dh", str(row.get("DH")));
         m.put("supno", str(row.get("SUPNO")));
