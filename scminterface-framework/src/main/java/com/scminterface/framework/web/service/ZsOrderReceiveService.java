@@ -102,18 +102,16 @@ public class ZsOrderReceiveService
         {
             tenantId = "";
         }
-        String ckno = str(masterRow.get("CKNO"));
-        if (ckno == null)
-        {
-            ckno = "";
-        }
+        String hl = ZsBarcodeSeedConstants.highLowFlagFromJsfs(str(masterRow.get("JSFS")));
         if (ZsBarcodeSeedConstants.CHANNEL_TENANT.equalsIgnoreCase(receiveChannel))
         {
-            scmBarcodeSeedInitMapper.ensureTenantSeed(ZsUuid7.newString(), tenantId, ckno, "L");
+            scmBarcodeSeedInitMapper.ensureTenantSeed(ZsUuid7.newString(), tenantId,
+                ZsBarcodeSeedConstants.ZS_SEED_WAREHOUSE_ID, hl);
         }
         else
         {
-            scmBarcodeSeedInitMapper.ensureZsCustomerSeed(ZsUuid7.newString(), tenantId, customer, ckno, "L");
+            scmBarcodeSeedInitMapper.ensureZsCustomerSeed(ZsUuid7.newString(), tenantId, customer,
+                ZsBarcodeSeedConstants.ZS_SEED_WAREHOUSE_ID, hl);
         }
 
         int line = 0;
