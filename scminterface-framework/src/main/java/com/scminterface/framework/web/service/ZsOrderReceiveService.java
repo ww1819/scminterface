@@ -24,6 +24,7 @@ import com.scminterface.framework.web.mapper.ZsTpOrderMapper;
  * 解析第三方推送的订单主表/明细 JSON，落库 zs_tp_order / zs_tp_order_detail。
  * <p>
  * CUSTOMER：第三方服务标识，用于区分不同上游系统。
+ * SCMSUPCODE（可选）：根或 master 内，写入主表 scm_sup_code，标识 SCM 平台侧供应商编码。
  */
 @Service
 public class ZsOrderReceiveService
@@ -93,8 +94,10 @@ public class ZsOrderReceiveService
             receiveChannel = ZsBarcodeSeedConstants.CHANNEL_ZS;
         }
 
+        String scmSupCode = firstNonBlank(str(body.get("SCMSUPCODE")), str(masterRow.get("SCMSUPCODE")));
+
         String orderId = ZsUuid7.newString();
-        Map<String, Object> orderInsert = buildOrderInsert(orderId, customer, masterRow, receiveChannel);
+        Map<String, Object> orderInsert = buildOrderInsert(orderId, customer, masterRow, receiveChannel, scmSupCode);
         zsTpOrderMapper.insertOrder(orderInsert);
 
         String tenantId = str(body.get("TENANT_ID"));
@@ -248,13 +251,15 @@ public class ZsOrderReceiveService
         return fallback;
     }
 
-    private static Map<String, Object> buildOrderInsert(String id, String customer, Map<String, Object> row, String receiveChannel)
+    private static Map<String, Object> buildOrderInsert(String id, String customer, Map<String, Object> row, String receiveChannel,
+        String scmSupCode)
     {
         Map<String, Object> m = new HashMap<>(32);
         m.put("id", id);
         m.put("thirdPartyPk", Objects.toString(row.get("thirdPartyPk"), ""));
         m.put("customer", customer);
         m.put("receiveChannel", receiveChannel);
+        m.put("scmSupCode", scmSupCode);
         m.put("sheetJe", toDecimal(row.get("SHEET_JE")));
         m.put("dh", str(row.get("DH")));
         m.put("supno", str(row.get("SUPNO")));

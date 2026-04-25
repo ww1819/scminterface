@@ -49,3 +49,6 @@ END;
 /
 -- ========== 以下为 ZS 表后续增量列示例（无需求可保持注释）==========
 -- CALL add_table_column('zs_tp_order', 'ext_json', 'varchar(2000)', '扩展JSON', NULL);
+/
+CALL add_table_column('zs_tp_order', 'scm_sup_code', 'varchar(64)', '接口 SCMSUPCODE：SCM平台供应商编码（客户端随单传递）', NULL);
+/

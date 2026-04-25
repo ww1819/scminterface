@@ -17,6 +17,7 @@ SELECT
   pc,
   oper,
   jsfs,
+  scm_sup_code,
   create_time,
   update_time
 FROM zs_tp_order
