@@ -196,11 +196,36 @@ public class ScmDataService
 
                 Long orderId = scmOrderMapper.selectOrderIdByOrderNo(order.getOrderNo());
 
+                String supplierName = trimToNull(order.getSupplierName());
+                if (supplierName == null)
+                {
+                    throw new RuntimeException("无对应供应商（SPD 订单未带出供应商名称，无法与 SCM 匹配）");
+                }
+                String hospitalName = trimToNull(order.getHospitalName());
+                if (hospitalName == null)
+                {
+                    throw new RuntimeException("无对应医院（SPD 订单未带出医院/客户名称，无法与 SCM 匹配）");
+                }
+
+                Map<String, Object> scmSupplier = scmMaterialMapper.selectSupplierByName(supplierName);
+                if (scmSupplier == null || scmSupplier.isEmpty())
+                {
+                    throw new RuntimeException("无对应供应商（SCM 中未找到名称：" + supplierName + "）");
+                }
+                Long scmSupplierId = ((Number) scmSupplier.get("supplierId")).longValue();
+
+                Map<String, Object> scmHospital = scmMaterialMapper.selectHospitalByName(hospitalName);
+                if (scmHospital == null || scmHospital.isEmpty())
+                {
+                    throw new RuntimeException("无对应医院（SCM 中未找到名称：" + hospitalName + "）");
+                }
+                Long scmHospitalId = ((Number) scmHospital.get("hospitalId")).longValue();
+
                 Map<String, Object> orderMap = new HashMap<>();
                 orderMap.put("orderNo", order.getOrderNo());
-                orderMap.put("hospitalId", null);
-                orderMap.put("supplierId", order.getSupplierId());
-                orderMap.put("warehouseName", order.getWarehouseId() != null ? String.valueOf(order.getWarehouseId()) : null);
+                orderMap.put("hospitalId", scmHospitalId);
+                orderMap.put("supplierId", scmSupplierId);
+                orderMap.put("warehouseName", trimToNull(order.getWarehouseName()));
                 orderMap.put("orderDate", order.getOrderDate());
                 orderMap.put("orderAmount", order.getTotalAmount());
                 // SPD“已审核”到 SCM 默认转为“待接收”
@@ -287,6 +312,16 @@ public class ScmDataService
         result.put("errorMessages", errorMessages);
         result.put("message", String.format("采购订单接收完成，总计: %d, 成功: %d, 失败: %d", orders.size(), successCount, errorCount));
         return result;
+    }
+
+    private static String trimToNull(String s)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
     }
 }
 

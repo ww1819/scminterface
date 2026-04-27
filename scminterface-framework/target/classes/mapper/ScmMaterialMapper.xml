@@ -12,7 +12,26 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             company_name as supplierName
         from scm_supplier
         where del_flag = '0'
-          and company_name = #{supplierName}
+          and (
+            company_name = #{supplierName}
+            or (company_short_name is not null and company_short_name != '' and company_short_name = #{supplierName})
+          )
+        limit 1
+    </select>
+
+    <!-- 根据医院名称或简称匹配 SCM 医院（名称需与 scm_hospital 维护一致） -->
+    <select id="selectHospitalByName" parameterType="String" resultType="java.util.HashMap">
+        select
+            hospital_id as hospitalId,
+            hospital_code as hospitalCode,
+            hospital_name as hospitalName
+        from scm_hospital
+        where del_flag = '0'
+          and status = '0'
+          and (
+            hospital_name = #{hospitalName}
+            or (hospital_short_name is not null and hospital_short_name != '' and hospital_short_name = #{hospitalName})
+          )
         limit 1
     </select>
 

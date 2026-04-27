@@ -18,6 +18,7 @@ com\scminterface\framework\web\mapper\HisZySfmxMapper.class
 com\scminterface\framework\web\service\ScmDataService.class
 com\scminterface\framework\web\mapper\ScmMaterialMapper.class
 com\scminterface\framework\web\mapper\SpdScheduledTaskMapper.class
+com\scminterface\framework\web\controller\ZSController.class
 com\scminterface\framework\config\WebConfig.class
 com\scminterface\framework\web\service\SpdDataService.class
 com\scminterface\framework\web\mapper\HisMzSfmxMapper.class

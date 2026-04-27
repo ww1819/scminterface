@@ -30,7 +30,7 @@ scminterface:
   # 公网interface配置
   public:
     interface:
-      url: http://localhost:8088
+      url: http://106.53.83.190:8088
 
 # 开发环境配置
 server:

@@ -86,7 +86,10 @@ public class SpdOrderPublishService
             dto.setOrderNo(getString(order, "orderNo"));
             dto.setPlanNo(getString(order, "planNo"));
             dto.setSupplierId(getLong(order, "supplierId"));
+            dto.setSupplierName(trimToNull(getString(order, "supplierName")));
+            dto.setHospitalName(trimToNull(getString(order, "hospitalName")));
             dto.setWarehouseId(getLong(order, "warehouseId"));
+            dto.setWarehouseName(trimToNull(getString(order, "warehouseName")));
             dto.setDepartmentId(getLong(order, "departmentId"));
             dto.setOrderDate((java.util.Date) order.get("orderDate"));
             dto.setTotalAmount(getBigDecimal(order, "totalAmount"));
@@ -122,6 +125,16 @@ public class SpdOrderPublishService
     {
         Object value = map.get(key);
         return value != null ? value.toString() : null;
+    }
+
+    private static String trimToNull(String s)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
     }
 
     private Long getLong(Map<String, Object> map, String key)

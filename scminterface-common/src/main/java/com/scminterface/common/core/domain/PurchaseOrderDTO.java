@@ -26,8 +26,17 @@ public class PurchaseOrderDTO implements Serializable
     /** 供应商ID（SPD端） */
     private Long supplierId;
 
+    /** 供应商名称（SPD fd_supplier.name，用于与 SCM scm_supplier.company_name 匹配） */
+    private String supplierName;
+
+    /** 医院/客户名称（SPD sb_customer.customer_name，用于与 SCM scm_hospital 名称匹配） */
+    private String hospitalName;
+
     /** 仓库ID（SPD端） */
     private Long warehouseId;
+
+    /** 要货仓库名称（SPD fd_warehouse.name，写入 SCM scm_order.warehouse_name） */
+    private String warehouseName;
 
     /** 科室ID（SPD端，可能为空） */
     private Long departmentId;
@@ -87,6 +96,26 @@ public class PurchaseOrderDTO implements Serializable
         this.supplierId = supplierId;
     }
 
+    public String getSupplierName()
+    {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName)
+    {
+        this.supplierName = supplierName;
+    }
+
+    public String getHospitalName()
+    {
+        return hospitalName;
+    }
+
+    public void setHospitalName(String hospitalName)
+    {
+        this.hospitalName = hospitalName;
+    }
+
     public Long getWarehouseId()
     {
         return warehouseId;
@@ -95,6 +124,16 @@ public class PurchaseOrderDTO implements Serializable
     public void setWarehouseId(Long warehouseId)
     {
         this.warehouseId = warehouseId;
+    }
+
+    public String getWarehouseName()
+    {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName)
+    {
+        this.warehouseName = warehouseName;
     }
 
     public Long getDepartmentId()

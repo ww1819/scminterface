@@ -21,6 +21,14 @@ public interface ScmMaterialMapper
     Map<String, Object> selectSupplierByName(@Param("supplierName") String supplierName);
 
     /**
+     * 根据医院名称（或简称）查询医院
+     *
+     * @param hospitalName 医院名称
+     * @return hospitalId 等
+     */
+    Map<String, Object> selectHospitalByName(@Param("hospitalName") String hospitalName);
+
+    /**
      * 根据生产厂家名称查询厂家ID
      * 
      * @param manufacturerName 生产厂家名称
