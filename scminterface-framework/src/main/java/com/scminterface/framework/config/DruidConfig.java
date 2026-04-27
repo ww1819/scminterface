@@ -2,6 +2,8 @@ package com.scminterface.framework.config;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.sql.Connection;
+import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.datasource.AbstractDataSource;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import com.scminterface.common.enums.DataSourceType;
@@ -84,7 +87,7 @@ public class DruidConfig
 
     @Bean(name = "dynamicDataSource")
     @Primary
-    public DynamicDataSource dataSource()
+    public DataSource dataSource()
     {
         Map<Object, Object> targetDataSources = new HashMap<>();
         DataSource defaultDataSource = null;
@@ -135,10 +138,11 @@ public class DruidConfig
             log.warn("SCM数据源不可用，已跳过: {}", e.getMessage());
         }
         
-        // 如果没有任何数据源可用，抛出异常
+        // 如果没有任何数据源可用，进入“无数据库模式”
         if (targetDataSources.isEmpty())
         {
-            throw new RuntimeException("至少需要配置一个可用的数据源（SPD或SCM）");
+            log.warn("SPD/SCM 数据源均未启用，系统将以无数据库模式启动，仅支持不访问数据库的接口调用");
+            defaultDataSource = new DisabledDataSource();
         }
         
         // 如果只有一个数据源，使用它作为默认数据源
@@ -149,6 +153,25 @@ public class DruidConfig
         
         log.info("动态数据源初始化完成，可用数据源数量: {}", targetDataSources.size());
         return new DynamicDataSource(defaultDataSource, targetDataSources);
+    }
+
+    /**
+     * 占位数据源：用于“两个数据源都禁用”场景下保证应用可启动。
+     * 任何数据库连接请求都会抛出明确异常，避免误操作。
+     */
+    private static class DisabledDataSource extends AbstractDataSource
+    {
+        @Override
+        public Connection getConnection() throws SQLException
+        {
+            throw new SQLException("当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作");
+        }
+
+        @Override
+        public Connection getConnection(String username, String password) throws SQLException
+        {
+            throw new SQLException("当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作");
+        }
     }
 }
 
