@@ -1,0 +1,42 @@
+2026-04-04 15:07:52.591 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_441 on DESKTOP-SHT552S with PID 3484 (D:\aspt_project\scminterface\scminterface-admin\target\classes started by 74306 in D:\aspt_project\scminterface)
+2026-04-04 15:07:52.592 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-04-04 15:07:52.592 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-04-04 15:07:54.438 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-04-04 15:07:54.438 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-04 15:07:54.438 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-04-04 15:07:54.534 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-04-04 15:07:54.672 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-04-04 15:07:54.735 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPD数据源配置成功
+2026-04-04 15:07:54.871 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPD数据源已添加到动态数据源
+2026-04-04 15:07:54.871 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCM数据源配置成功（如果连接失败，请检查配置或设置scm.enabled=false禁用）
+2026-04-04 15:07:54.888 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SCM数据源已添加到动态数据源
+2026-04-04 15:07:54.888 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - 动态数据源初始化完成，可用数据源数量: 2
+2026-04-04 15:07:56.100 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-04-04 15:07:56.414 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 4.238 seconds (JVM running for 6.668)
+2026-04-04 15:07:58.250 [Thread-6] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-04-04 15:07:58.333 [Thread-6] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2026-04-04 15:07:59.327 [Thread-6] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-04-04 15:07:59.349 [Thread-6] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-04-04 15:07:59.461 [Thread-6] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-04-04 15:07:59.463 [Thread-6] DEBUG c.s.framework.config.ScheduledTaskConfig - 任务 com.scminterface.framework.web.task.HengshuiTask.syncChargeItem 已停用，跳过注册
+2026-04-04 15:07:59.463 [Thread-6] DEBUG c.s.framework.config.ScheduledTaskConfig - 任务 com.scminterface.framework.web.task.SpdScheduledTask.execute 已停用，跳过注册
+2026-04-04 15:07:59.463 [Thread-6] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-04-04 15:07:59.466 [Thread-6] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-04-04 15:07:59.474 [Thread-6] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD定时任务(String)
+2026-04-04 15:07:59.526 [Thread-6] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-04-04 15:07:59.526 [Thread-6] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SCM数据源
+2026-04-04 15:07:59.531 [Thread-6] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} inited
+2026-04-04 15:08:01.240 [Thread-6] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-04-04 15:08:01.240 [Thread-6] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM定时任务(String)
+2026-04-04 15:08:01.292 [Thread-6] DEBUG c.s.framework.config.ScheduledTaskConfig - 注册旧版本SCM任务失败: 
+### Error querying database.  Cause: java.sql.SQLSyntaxErrorException: Table 'scm.scm_scheduled_task' doesn't exist
+### The error may exist in file [D:\aspt_project\scminterface\scminterface-framework\target\classes\mapper\ScmScheduledTaskMapper.xml]
+### The error may involve com.scminterface.framework.web.mapper.ScmScheduledTaskMapper.selectByTaskName-Inline
+### The error occurred while setting parameters
+### SQL: select              task_id as taskId,             task_name as taskName,             cron_expression as cronExpression,             max_exec_count as maxExecCount,             current_exec_count as currentExecCount,             status,             create_time as createTime,             update_time as updateTime         from scm_scheduled_task         where task_name = ?         limit 1
+### Cause: java.sql.SQLSyntaxErrorException: Table 'scm.scm_scheduled_task' doesn't exist
+; bad SQL grammar []; nested exception is java.sql.SQLSyntaxErrorException: Table 'scm.scm_scheduled_task' doesn't exist
+2026-04-04 15:31:39.165 [SpringApplicationShutdownHook] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} closing ...
+2026-04-04 15:31:39.166 [SpringApplicationShutdownHook] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} closed
+2026-04-04 15:31:39.166 [SpringApplicationShutdownHook] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closing ...
+2026-04-04 15:31:39.166 [SpringApplicationShutdownHook] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closed

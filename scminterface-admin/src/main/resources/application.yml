@@ -31,6 +31,12 @@ scminterface:
   public:
     interface:
       url: http://106.53.83.190:8088
+  # SCM 库结构补全：启动时执行 classpath:sql/mysql/scm/ 下脚本（表、字段、视图、触发器、菜单等）
+  scm:
+    schema:
+      bootstrap: true
+      # 某段 SQL 失败时是否中止启动（false 仅打日志，便于联调）
+      fail-on-error: false
 
 # 开发环境配置
 server:
