@@ -34,6 +34,7 @@ public class ZSOrderController
     private static final Logger log = LoggerFactory.getLogger(ZSOrderController.class);
 
     private static final String ZS_BASE_URL = "http://106.53.83.190:8088";
+    // private static final String ZS_BASE_URL = "http://127.0.0.1:8088";
     @Autowired
     private RestTemplate restTemplate;
 
