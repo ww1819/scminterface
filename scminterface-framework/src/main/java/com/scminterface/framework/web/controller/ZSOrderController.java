@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Objects;
 
 /**
  * ZS 订单转发控制器（透明代理）。
@@ -33,6 +34,7 @@ public class ZSOrderController
     private static final Logger log = LoggerFactory.getLogger(ZSOrderController.class);
 
     private static final String ZS_BASE_URL = "http://106.53.83.190:8088";
+    private static final String LOCAL_ZS_API_PREFIX = "/api/scm/zs/";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -54,7 +56,12 @@ public class ZSOrderController
             relativePath = "/";
         }
         String query = request.getQueryString();
-        String targetUrl = ZS_BASE_URL + relativePath + (StringUtils.hasText(query) ? "?" + query : "");
+        String targetUrl = buildTargetUrl(request, relativePath, query);
+        if (!StringUtils.hasText(targetUrl))
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("目标地址不能为空".getBytes());
+        }
+        String safeTargetUrl = Objects.requireNonNull(targetUrl);
 
         HttpMethod method = HttpMethod.resolve(request.getMethod());
         if (method == null)
@@ -70,7 +77,7 @@ public class ZSOrderController
         {
             log.info("ZS转发开始，method={}, targetUrl={}", method, targetUrl);
             ResponseEntity<byte[]> response = restTemplate.exchange(
-                targetUrl,
+                safeTargetUrl,
                 method,
                 new org.springframework.http.HttpEntity<>(body, headers),
                 byte[].class
@@ -93,6 +100,26 @@ public class ZSOrderController
             log.error("ZS转发异常，targetUrl={}", targetUrl, e);
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(("转发失败: " + e.getMessage()).getBytes());
         }
+    }
+
+    private String buildTargetUrl(HttpServletRequest request, String relativePath, String query)
+    {
+        String baseUrl;
+        // 兼容客户端把完整 "/api/scm/zs/**" 拼到 "/api/scm/zs/order" 后的场景：
+        // 这类接口本机已有实现，优先回环到本机，避免错误转发到外网导致 404。
+        if (relativePath.startsWith(LOCAL_ZS_API_PREFIX))
+        {
+            baseUrl = request.getScheme() + "://127.0.0.1:" + request.getServerPort();
+            if (StringUtils.hasText(request.getContextPath()))
+            {
+                baseUrl += request.getContextPath();
+            }
+        }
+        else
+        {
+            baseUrl = ZS_BASE_URL;
+        }
+        return baseUrl + relativePath + (StringUtils.hasText(query) ? "?" + query : "");
     }
 
     private HttpHeaders copyRequestHeaders(HttpServletRequest request)
