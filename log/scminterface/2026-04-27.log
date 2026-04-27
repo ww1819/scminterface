@@ -1,0 +1,139 @@
+2026-04-27 15:56:53.443 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 1512 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-04-27 15:56:53.444 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-04-27 15:56:53.444 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-04-27 15:56:53.897 [restartedMain] ERROR org.springframework.boot.SpringApplication - Application run failed
+java.lang.IllegalStateException: Error processing condition on org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration.propertySourcesPlaceholderConfigurer
+	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:60)
+	at org.springframework.context.annotation.ConditionEvaluator.shouldSkip(ConditionEvaluator.java:108)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForBeanMethod(ConfigurationClassBeanDefinitionReader.java:193)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsForConfigurationClass(ConfigurationClassBeanDefinitionReader.java:153)
+	at org.springframework.context.annotation.ConfigurationClassBeanDefinitionReader.loadBeanDefinitions(ConfigurationClassBeanDefinitionReader.java:129)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.processConfigBeanDefinitions(ConfigurationClassPostProcessor.java:343)
+	at org.springframework.context.annotation.ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry(ConfigurationClassPostProcessor.java:247)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanDefinitionRegistryPostProcessors(PostProcessorRegistrationDelegate.java:311)
+	at org.springframework.context.support.PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(PostProcessorRegistrationDelegate.java:112)
+	at org.springframework.context.support.AbstractApplicationContext.invokeBeanFactoryPostProcessors(AbstractApplicationContext.java:748)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:564)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:780)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:453)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:343)
+	at com.scminterface.ScminterfaceApplication.main(ScminterfaceApplication.java:22)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: java.lang.IllegalStateException: Failed to introspect Class [com.scminterface.framework.config.DruidConfig] from ClassLoader [org.springframework.boot.devtools.restart.classloader.RestartClassLoader@71c7b6ec]
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:485)
+	at org.springframework.util.ReflectionUtils.doWithMethods(ReflectionUtils.java:361)
+	at org.springframework.util.ReflectionUtils.getUniqueDeclaredMethods(ReflectionUtils.java:418)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.lambda$getTypeForFactoryMethod$2(AbstractAutowireCapableBeanFactory.java:765)
+	at java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1660)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.getTypeForFactoryMethod(AbstractAutowireCapableBeanFactory.java:764)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.determineTargetType(AbstractAutowireCapableBeanFactory.java:703)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.predictBeanType(AbstractAutowireCapableBeanFactory.java:674)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.isFactoryBean(AbstractBeanFactory.java:1684)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doGetBeanNamesForType(DefaultListableBeanFactory.java:570)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeanNamesForType(DefaultListableBeanFactory.java:542)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.collectBeanNamesForType(OnBeanCondition.java:250)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getBeanNamesForType(OnBeanCondition.java:243)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getBeanNamesForType(OnBeanCondition.java:233)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getMatchingBeans(OnBeanCondition.java:181)
+	at org.springframework.boot.autoconfigure.condition.OnBeanCondition.getMatchOutcome(OnBeanCondition.java:156)
+	at org.springframework.boot.autoconfigure.condition.SpringBootCondition.matches(SpringBootCondition.java:47)
+	... 20 common frames omitted
+Caused by: java.lang.NoClassDefFoundError: DynamicDataSource
+	at java.lang.Class.getDeclaredMethods0(Native Method)
+	at java.lang.Class.privateGetDeclaredMethods(Class.java:2701)
+	at java.lang.Class.getDeclaredMethods(Class.java:1975)
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:467)
+	... 36 common frames omitted
+Caused by: java.lang.ClassNotFoundException: DynamicDataSource
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.springframework.boot.devtools.restart.classloader.RestartClassLoader.loadClass(RestartClassLoader.java:145)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	... 40 common frames omitted
+2026-04-27 15:56:53.900 [restartedMain] WARN  org.springframework.boot.SpringApplication - Unable to close ApplicationContext
+java.lang.IllegalStateException: Failed to introspect Class [com.scminterface.framework.config.DruidConfig] from ClassLoader [org.springframework.boot.devtools.restart.classloader.RestartClassLoader@71c7b6ec]
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:485)
+	at org.springframework.util.ReflectionUtils.doWithMethods(ReflectionUtils.java:361)
+	at org.springframework.util.ReflectionUtils.getUniqueDeclaredMethods(ReflectionUtils.java:418)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.lambda$getTypeForFactoryMethod$2(AbstractAutowireCapableBeanFactory.java:765)
+	at java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1660)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.getTypeForFactoryMethod(AbstractAutowireCapableBeanFactory.java:764)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.determineTargetType(AbstractAutowireCapableBeanFactory.java:703)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.predictBeanType(AbstractAutowireCapableBeanFactory.java:674)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.isFactoryBean(AbstractBeanFactory.java:1684)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doGetBeanNamesForType(DefaultListableBeanFactory.java:570)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeanNamesForType(DefaultListableBeanFactory.java:542)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeansOfType(DefaultListableBeanFactory.java:669)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.getBeansOfType(DefaultListableBeanFactory.java:661)
+	at org.springframework.context.support.AbstractApplicationContext.getBeansOfType(AbstractApplicationContext.java:1302)
+	at org.springframework.boot.SpringApplication.getExitCodeFromMappedException(SpringApplication.java:913)
+	at org.springframework.boot.SpringApplication.getExitCodeFromException(SpringApplication.java:901)
+	at org.springframework.boot.SpringApplication.handleExitCode(SpringApplication.java:888)
+	at org.springframework.boot.SpringApplication.handleRunFailure(SpringApplication.java:828)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:353)
+	at com.scminterface.ScminterfaceApplication.main(ScminterfaceApplication.java:22)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+Caused by: java.lang.NoClassDefFoundError: DynamicDataSource
+	at java.lang.Class.getDeclaredMethods0(Native Method)
+	at java.lang.Class.privateGetDeclaredMethods(Class.java:2701)
+	at java.lang.Class.getDeclaredMethods(Class.java:1975)
+	at org.springframework.util.ReflectionUtils.getDeclaredMethods(ReflectionUtils.java:467)
+	... 24 common frames omitted
+Caused by: java.lang.ClassNotFoundException: DynamicDataSource
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:348)
+	at org.springframework.boot.devtools.restart.classloader.RestartClassLoader.loadClass(RestartClassLoader.java:145)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	... 28 common frames omitted
+2026-04-27 16:01:14.720 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 7172 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-04-27 16:01:14.720 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-04-27 16:01:14.721 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-04-27 16:01:15.833 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8088"]
+2026-04-27 16:01:15.834 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-04-27 16:01:15.834 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-04-27 16:01:15.866 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-04-27 16:01:15.922 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-04-27 16:01:15.948 [restartedMain] WARN  com.scminterface.framework.config.DruidConfig - SPD/SCM 数据源均未启用，系统将以无数据库模式启动，仅支持不访问数据库的接口调用
+2026-04-27 16:01:15.949 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - 动态数据源初始化完成，可用数据源数量: 0
+2026-04-27 16:01:16.794 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8088"]
+2026-04-27 16:01:17.045 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 2.63 seconds (JVM running for 2.92)
+2026-04-27 16:01:19.153 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-04-27 16:01:19.218 [Thread-5] WARN  c.s.framework.config.ScheduledTaskConfig - 获取SPD任务配置失败: nested exception is org.apache.ibatis.exceptions.PersistenceException: 
+### Error querying database.  Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+### The error may exist in file [E:\workspace\scminterface\scminterface-framework\target\classes\mapper\SpdScheduledTaskMapper.xml]
+### The error may involve com.scminterface.framework.web.mapper.SpdScheduledTaskMapper.selectAll
+### The error occurred while executing a query
+### Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+2026-04-27 16:01:19.218 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-04-27 16:01:19.221 [Thread-5] DEBUG c.s.framework.config.ScheduledTaskConfig - 注册旧版本SPD任务失败: nested exception is org.apache.ibatis.exceptions.PersistenceException: 
+### Error querying database.  Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+### The error may exist in file [E:\workspace\scminterface\scminterface-framework\target\classes\mapper\SpdScheduledTaskMapper.xml]
+### The error may involve com.scminterface.framework.web.mapper.SpdScheduledTaskMapper.selectByTaskName
+### The error occurred while executing a query
+### Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+2026-04-27 16:01:19.221 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SCM数据源
+2026-04-27 16:01:19.222 [Thread-5] DEBUG c.s.framework.config.ScheduledTaskConfig - 注册旧版本SCM任务失败: nested exception is org.apache.ibatis.exceptions.PersistenceException: 
+### Error querying database.  Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+### The error may exist in file [E:\workspace\scminterface\scminterface-framework\target\classes\mapper\ScmScheduledTaskMapper.xml]
+### The error may involve com.scminterface.framework.web.mapper.ScmScheduledTaskMapper.selectByTaskName
+### The error occurred while executing a query
+### Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+2026-04-27 16:01:39.121 [http-nio-8088-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-27 16:01:39.132 [http-nio-8088-exec-1] WARN  c.s.framework.security.JwtAuthenticationFilter - 请求路径: /, token为空
