@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.ScmScheduledTaskMapper">
+
+    <!-- 查询定时任务配置 -->
+    <select id="selectByTaskName" parameterType="String" resultType="java.util.HashMap">
+        select 
+            task_id as taskId,
+            task_name as taskName,
+            cron_expression as cronExpression,
+            max_exec_count as maxExecCount,
+            current_exec_count as currentExecCount,
+            status,
+            create_time as createTime,
+            update_time as updateTime
+        from scm_scheduled_task
+        where task_name = #{taskName}
+        limit 1
+    </select>
+
+    <!-- 更新定时任务配置 -->
+    <update id="updateTask" parameterType="java.util.HashMap">
+        update scm_scheduled_task
+        <set>
+            <if test="cronExpression != null and cronExpression != ''">cron_expression = #{cronExpression},</if>
+            <if test="maxExecCount != null">max_exec_count = #{maxExecCount},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            update_time = now()
+        </set>
+        where task_name = #{taskName}
+    </update>
+
+    <!-- 增加执行次数 -->
+    <update id="incrementExecCount" parameterType="String">
+        update scm_scheduled_task
+        set current_exec_count = current_exec_count + 1,
+            update_time = now()
+        where task_name = #{taskName}
+    </update>
+
+    <!-- 重置执行次数 -->
+    <update id="resetExecCount" parameterType="String">
+        update scm_scheduled_task
+        set current_exec_count = 0,
+            update_time = now()
+        where task_name = #{taskName}
+    </update>
+
+</mapper>

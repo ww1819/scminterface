@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.SpdPurchaseOrderMapper">
+
+    <!-- 根据ID列表查询采购订单主表 -->
+    <select id="selectPurchaseOrdersByIds" parameterType="java.util.List" resultType="java.util.HashMap">
+        select
+            po.id,
+            po.order_no       as orderNo,
+            po.plan_no        as planNo,
+            po.supplier_id    as supplierId,
+            po.warehouse_id   as warehouseId,
+            po.department_id  as departmentId,
+            po.order_date     as orderDate,
+            po.total_amount   as totalAmount,
+            po.order_status   as orderStatus,
+            po.remark,
+            s.name            as supplierName,
+            c.customer_name   as hospitalName,
+            wh.name           as warehouseName
+        from purchase_order po
+        left join fd_supplier s on po.supplier_id = s.id and (s.del_flag = 0 or s.del_flag is null)
+        left join sb_customer c on po.tenant_id = c.customer_id
+        left join fd_warehouse wh on po.warehouse_id = wh.id and (wh.del_flag = 0 or wh.del_flag is null)
+        where po.del_flag = '0'
+          and po.id in
+          <foreach collection="ids" item="id" open="(" separator="," close=")">
+              #{id}
+          </foreach>
+    </select>
+
+    <!-- 根据订单ID列表查询采购订单明细 -->
+    <select id="selectPurchaseOrderEntriesByOrderIds" parameterType="java.util.List" resultType="java.util.HashMap">
+        select
+            id               as entryId,
+            parent_id        as parentId,
+            material_id      as materialId,
+            material_code    as materialCode,
+            material_name    as materialName,
+            material_spec    as specification,
+            material_unit    as unit,
+            order_qty        as quantity,
+            unit_price       as unitPrice,
+            total_amount     as amount,
+            remark
+        from purchase_order_entry
+        where del_flag = '0'
+          and parent_id in
+          <foreach collection="orderIds" item="id" open="(" separator="," close=")">
+              #{id}
+          </foreach>
+    </select>
+
+</mapper>
+

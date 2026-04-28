@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.ScmOrderMapper">
+
+    <select id="selectOrderIdByOrderNo" parameterType="String" resultType="Long">
+        select order_id
+        from scm_order
+        where order_no = #{orderNo}
+          and del_flag = '0'
+        limit 1
+    </select>
+
+    <insert id="insertOrder" parameterType="java.util.HashMap" useGeneratedKeys="true" keyProperty="orderId">
+        insert into scm_order(
+            order_no,
+            hospital_id,
+            supplier_id,
+            warehouse_name,
+            order_date,
+            order_amount,
+            order_status,
+            apply_dept,
+            remark,
+            create_by,
+            create_time,
+            del_flag
+        ) values (
+            #{orderNo},
+            #{hospitalId},
+            #{supplierId},
+            #{warehouseName},
+            #{orderDate},
+            #{orderAmount},
+            #{orderStatus},
+            #{applyDept},
+            #{remark},
+            #{createBy},
+            now(),
+            '0'
+        )
+    </insert>
+
+    <update id="updateOrder" parameterType="java.util.HashMap">
+        update scm_order
+        set hospital_id = #{hospitalId},
+            supplier_id = #{supplierId},
+            warehouse_name = #{warehouseName},
+            order_date = #{orderDate},
+            order_amount = #{orderAmount},
+            order_status = #{orderStatus},
+            apply_dept = #{applyDept},
+            remark = #{remark},
+            update_by = #{updateBy},
+            update_time = now()
+        where order_id = #{orderId}
+    </update>
+
+    <delete id="deleteOrderDetailsByOrderId" parameterType="Long">
+        delete from scm_order_detail where order_id = #{orderId}
+    </delete>
+
+    <insert id="insertOrderDetail" parameterType="java.util.HashMap">
+        insert into scm_order_detail(
+            order_id,
+            material_id,
+            material_code,
+            material_name,
+            specification,
+            model,
+            unit,
+            purchase_price,
+            order_quantity,
+            remaining_quantity,
+            amount,
+            manufacturer_name,
+            register_no,
+            remark,
+            create_by,
+            create_time,
+            del_flag
+        ) values (
+            #{orderId},
+            #{materialId},
+            #{materialCode},
+            #{materialName},
+            #{specification},
+            #{model},
+            #{unit},
+            #{purchasePrice},
+            #{orderQuantity},
+            #{remainingQuantity},
+            #{amount},
+            #{manufacturerName},
+            #{registerNo},
+            #{remark},
+            #{createBy},
+            now(),
+            '0'
+        )
+    </insert>
+
+</mapper>
+

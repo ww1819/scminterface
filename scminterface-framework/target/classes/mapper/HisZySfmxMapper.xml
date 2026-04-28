@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.HisZySfmxMapper">
+
+    <!-- 批量插入或更新 -->
+    <insert id="batchInsertOrUpdate" parameterType="java.util.List">
+        insert into his_zy_sfmx(
+            inpatient_charge_id,
+            patient_id,
+            patient_name,
+            inpatient_no,
+            dept_code,
+            dept_name,
+            doctor_id,
+            doctor_name,
+            charge_item_id,
+            item_name,
+            spec_model,
+            batch_no,
+            expire_date,
+            use_date,
+            charge_date,
+            quantity,
+            unit_price,
+            total_amount,
+            charge_operator,
+            remark
+        )values
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.inpatientChargeId},
+                #{item.patientId},
+                #{item.patientName},
+                #{item.inpatientNo},
+                #{item.deptCode},
+                #{item.deptName},
+                #{item.doctorId},
+                #{item.doctorName},
+                #{item.chargeItemId},
+                #{item.itemName},
+                #{item.specModel},
+                #{item.batchNo},
+                #{item.expireDate},
+                #{item.useDate},
+                #{item.chargeDate},
+                #{item.quantity},
+                #{item.unitPrice},
+                #{item.totalAmount},
+                #{item.chargeOperator},
+                #{item.remark}
+            )
+        </foreach>
+        on duplicate key update
+            patient_id = values(patient_id),
+            patient_name = values(patient_name),
+            inpatient_no = values(inpatient_no),
+            dept_code = values(dept_code),
+            dept_name = values(dept_name),
+            doctor_id = values(doctor_id),
+            doctor_name = values(doctor_name),
+            charge_item_id = values(charge_item_id),
+            item_name = values(item_name),
+            spec_model = values(spec_model),
+            batch_no = values(batch_no),
+            expire_date = values(expire_date),
+            use_date = values(use_date),
+            charge_date = values(charge_date),
+            quantity = values(quantity),
+            unit_price = values(unit_price),
+            total_amount = values(total_amount),
+            charge_operator = values(charge_operator),
+            remark = values(remark),
+            update_time = values(update_time)
+    </insert>
+
+    <!-- 查询所有已存在的inpatient_charge_id列表 -->
+    <select id="selectAllInpatientChargeIds" resultType="Long">
+        select inpatient_charge_id
+        from his_zy_sfmx
+    </select>
+
+</mapper>

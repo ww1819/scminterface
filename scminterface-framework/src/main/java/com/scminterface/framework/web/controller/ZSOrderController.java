@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Objects;
 
 /**
  * ZS 订单转发控制器（透明代理）。
@@ -33,7 +34,7 @@ public class ZSOrderController
     private static final Logger log = LoggerFactory.getLogger(ZSOrderController.class);
 
     private static final String ZS_BASE_URL = "http://106.53.83.190:8088";
-
+    // private static final String ZS_BASE_URL = "http://127.0.0.1:8088";
     @Autowired
     private RestTemplate restTemplate;
 
@@ -55,6 +56,11 @@ public class ZSOrderController
         }
         String query = request.getQueryString();
         String targetUrl = ZS_BASE_URL + relativePath + (StringUtils.hasText(query) ? "?" + query : "");
+        if (!StringUtils.hasText(targetUrl))
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("目标地址不能为空".getBytes());
+        }
+        String safeTargetUrl = Objects.requireNonNull(targetUrl);
 
         HttpMethod method = HttpMethod.resolve(request.getMethod());
         if (method == null)
@@ -70,7 +76,7 @@ public class ZSOrderController
         {
             log.info("ZS转发开始，method={}, targetUrl={}", method, targetUrl);
             ResponseEntity<byte[]> response = restTemplate.exchange(
-                targetUrl,
+                safeTargetUrl,
                 method,
                 new org.springframework.http.HttpEntity<>(body, headers),
                 byte[].class

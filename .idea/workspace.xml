@@ -55,6 +55,7 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;Maven.scminterface [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.scminterface [package].executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
     &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
@@ -115,6 +116,10 @@
       <workItem from="1775290600452" duration="2583000" />
       <workItem from="1777251733897" duration="693000" />
       <workItem from="1777257160806" duration="740000" />
+      <workItem from="1777270768293" duration="2187000" />
+      <workItem from="1777273545270" duration="1256000" />
+      <workItem from="1777277053421" duration="2578000" />
+      <workItem from="1777283268034" duration="279000" />
     </task>
     <servers />
   </component>

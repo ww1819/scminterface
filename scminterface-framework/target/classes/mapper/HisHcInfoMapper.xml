@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.HisHcInfoMapper">
+
+    <!-- 批量插入或更新 -->
+    <insert id="batchInsertOrUpdate" parameterType="java.util.List">
+        insert into his_hc_info(
+            charge_item_id,
+            item_code,
+            item_name,
+            item_type,
+            consumable_type,
+            spec_model,
+            unit,
+            price,
+            manufacturer,
+            register_no,
+            is_active,
+            create_time,
+            update_time
+        )values
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.chargeItemId},
+                #{item.itemCode},
+                #{item.itemName},
+                #{item.itemType},
+                #{item.consumableType},
+                #{item.specModel},
+                #{item.unit},
+                #{item.price},
+                #{item.manufacturer},
+                #{item.registerNo},
+                #{item.isActive},
+                #{item.createTime},
+                #{item.updateTime}
+            )
+        </foreach>
+        on duplicate key update
+            item_code = values(item_code),
+            item_name = values(item_name),
+            item_type = values(item_type),
+            consumable_type = values(consumable_type),
+            spec_model = values(spec_model),
+            unit = values(unit),
+            price = values(price),
+            manufacturer = values(manufacturer),
+            register_no = values(register_no),
+            is_active = values(is_active),
+            update_time = values(update_time)
+    </insert>
+
+    <!-- 根据charge_item_id查询数量 -->
+    <select id="countByChargeItemId" parameterType="String" resultType="int">
+        select count(1)
+        from his_hc_info
+        where charge_item_id = #{chargeItemId}
+    </select>
+
+    <!-- 清空表数据 -->
+    <delete id="truncateTable">
+        truncate table his_hc_info
+    </delete>
+
+    <!-- 查询所有已存在的charge_item_id列表 -->
+    <select id="selectAllChargeItemIds" resultType="String">
+        select charge_item_id
+        from his_hc_info
+    </select>
+
+</mapper>

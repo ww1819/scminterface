@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.SpdSystemConfigMapper">
+
+    <!-- 查询所有配置 -->
+    <select id="selectAll" resultType="java.util.HashMap">
+        select 
+            config_id as configId,
+            config_key as configKey,
+            config_value as configValue,
+            config_desc as configDesc,
+            create_time as createTime,
+            update_time as updateTime
+        from spd_system_config
+        order by config_key
+    </select>
+
+    <!-- 根据配置键查询配置值 -->
+    <select id="selectValueByKey" parameterType="String" resultType="String">
+        select config_value
+        from spd_system_config
+        where config_key = #{configKey}
+        limit 1
+    </select>
+
+    <!-- 插入或更新配置 -->
+    <insert id="insertOrUpdate" parameterType="java.util.HashMap">
+        insert into spd_system_config(
+            config_key,
+            config_value,
+            <if test="configDesc != null and configDesc != ''">config_desc,</if>
+            create_time,
+            update_time
+        )values(
+            #{configKey},
+            #{configValue},
+            <if test="configDesc != null and configDesc != ''">#{configDesc},</if>
+            now(),
+            now()
+        )
+        on duplicate key update
+            config_value = #{configValue},
+            <if test="configDesc != null and configDesc != ''">config_desc = #{configDesc},</if>
+            update_time = now()
+    </insert>
+
+    <!-- 删除配置 -->
+    <delete id="deleteByKey" parameterType="String">
+        delete from spd_system_config
+        where config_key = #{configKey}
+    </delete>
+
+</mapper>
