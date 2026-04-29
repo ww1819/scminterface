@@ -1,7 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.scminterface.framework.web.mapper.ScmZsDeliveryXmlMapper">
+<mapper namespace="com.scminterface.framework.web.mapper.SpdDeliveryMapper">
+
+    <select id="selectDeliveriesForSpdQuery" resultType="com.scminterface.framework.domain.zs.ScmDeliveryListItemRow">
+        select distinct
+            d.delivery_id        as deliveryId,
+            d.delivery_no        as deliveryNo,
+            d.zs_order_id        as zsOrderId,
+            d.order_no           as orderNo,
+            d.delivery_amount    as deliveryAmount,
+            d.delivery_status    as deliveryStatus,
+            d.audit_status       as auditStatus,
+            d.create_time        as createTime,
+            h.hospital_name      as hospitalName,
+            s.company_name       as supplierName
+        from scm_delivery d
+            left join scm_hospital h on d.hospital_id = h.hospital_id
+            left join scm_supplier s on d.supplier_id = s.supplier_id
+            left join scm_delivery_detail dd on dd.delivery_id = d.delivery_id
+            left join zs_tp_order_detail zod on zod.id = dd.zs_order_detail_id and zod.del_flag = '0'
+        where (d.del_flag is null or d.del_flag = '0')
+          and (
+            d.delivery_no like concat('%', #{keyword}, '%')
+            or cast(zod.dsb as char) like concat('%', #{keyword}, '%')
+          )
+        order by d.create_time desc
+        limit 500
+    </select>
 
     <select id="selectDeliveryByDeliveryNo" resultType="com.scminterface.framework.domain.zs.ScmDeliveryXmlRow">
         select d.delivery_id           as deliveryId,
@@ -22,7 +48,7 @@
     </select>
 
     <select id="selectDeliveryDetailsByDeliveryId" resultType="com.scminterface.framework.domain.zs.ScmDeliveryDetailXmlRow">
-        select d.detail_id           as detailId,
+        select d.detail_id             as detailId,
                d.zs_order_detail_id    as zsOrderDetailId,
                d.material_code         as materialCode,
                d.delivery_quantity     as deliveryQuantity,
@@ -42,8 +68,8 @@
 
     <select id="selectBarcodesByDeliveryId" resultType="com.scminterface.framework.domain.zs.ScmDeliveryDetailBarcodeRow">
         select delivery_detail_id as deliveryDetailId,
-               seed_num             as seedNum,
-               barcode_no           as barcodeNo
+               seed_num           as seedNum,
+               barcode_no         as barcodeNo
         from scm_delivery_detail_barcode
         where delivery_id = #{deliveryId}
         order by delivery_detail_id, seed_num
@@ -62,32 +88,4 @@
         where order_id = #{orderId}
           and del_flag = '0'
     </select>
-
-    <select id="selectDeliveriesForQuery" resultType="com.scminterface.framework.domain.zs.ScmDeliveryListItemRow">
-        select d.delivery_id        as deliveryId,
-               d.delivery_no        as deliveryNo,
-               d.zs_order_id        as zsOrderId,
-               d.order_no           as orderNo,
-               d.delivery_amount    as deliveryAmount,
-               d.delivery_status    as deliveryStatus,
-               d.audit_status       as auditStatus,
-               d.create_time        as createTime,
-               h.hospital_name      as hospitalName,
-               s.company_name       as supplierName
-        from scm_delivery d
-        left join scm_hospital h on d.hospital_id = h.hospital_id
-        left join scm_supplier s on d.supplier_id = s.supplier_id
-        where (d.del_flag is null or d.del_flag = '0')
-        <choose>
-            <when test="exact">
-                AND d.delivery_no = #{deliveryNo}
-            </when>
-            <otherwise>
-                AND d.delivery_no like concat('%', #{deliveryNo}, '%')
-            </otherwise>
-        </choose>
-        order by d.create_time desc
-        limit 500
-    </select>
-
 </mapper>

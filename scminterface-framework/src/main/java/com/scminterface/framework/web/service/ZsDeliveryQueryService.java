@@ -32,4 +32,5 @@ public class ZsDeliveryQueryService
         }
         return scmZsDeliveryXmlMapper.selectDeliveriesForQuery(deliveryNo.trim(), exact);
     }
+
 }
