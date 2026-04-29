@@ -1,5 +1,7 @@
 package com.scminterface.framework.utils;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,6 +138,66 @@ public class HttpClientUtils
         {
             log.error("调用公网interface接口推送采购订单发生未知异常: {}", e.getMessage(), e);
             return AjaxResult.error("调用公网interface接口失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 转发调用公网接口：查询配送单（支持输入码/配送单号）
+     */
+    public AjaxResult querySpdDelivery(String keyword)
+    {
+        String baseUrl = publicInterfaceProperties.getUrl();
+        if (baseUrl == null || baseUrl.isEmpty() || baseUrl.contains("公网IP"))
+        {
+            log.error("公网interface URL未配置或配置不正确");
+            return AjaxResult.error("公网interface URL未配置");
+        }
+        if (!baseUrl.endsWith("/"))
+        {
+            baseUrl += "/";
+        }
+        try
+        {
+            String url = baseUrl + "api/scm/spd/delivery/query?keyword="
+                + URLEncoder.encode(keyword == null ? "" : keyword, "UTF-8");
+            log.info("调用公网interface接口查询配送单: {}", url);
+            ResponseEntity<AjaxResult> response = restTemplate.exchange(url, HttpMethod.GET, null, AjaxResult.class);
+            AjaxResult result = response.getBody();
+            log.info("公网interface接口响应(配送单查询): {}", result);
+            return result != null ? result : AjaxResult.error("接口返回为空");
+        }
+        catch (Exception e)
+        {
+            log.error("调用公网interface接口查询配送单异常: {}", e.getMessage(), e);
+            return AjaxResult.error("调用公网interface接口失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 转发调用公网接口：下载配送单XML
+     */
+    public ResponseEntity<byte[]> downloadSpdDeliveryXml(String deliveryNo)
+    {
+        String baseUrl = publicInterfaceProperties.getUrl();
+        if (baseUrl == null || baseUrl.isEmpty() || baseUrl.contains("公网IP"))
+        {
+            return ResponseEntity.badRequest().body("公网interface URL未配置".getBytes(StandardCharsets.UTF_8));
+        }
+        if (!baseUrl.endsWith("/"))
+        {
+            baseUrl += "/";
+        }
+        try
+        {
+            String url = baseUrl + "api/scm/spd/delivery/download?deliveryNo="
+                + URLEncoder.encode(deliveryNo == null ? "" : deliveryNo, "UTF-8");
+            log.info("调用公网interface接口下载配送单: {}", url);
+            return restTemplate.exchange(url, HttpMethod.GET, null, byte[].class);
+        }
+        catch (Exception e)
+        {
+            log.error("调用公网interface接口下载配送单异常: {}", e.getMessage(), e);
+            return ResponseEntity.status(502).body(("调用公网interface接口失败: " + e.getMessage()).getBytes(StandardCharsets.UTF_8));
         }
     }
 }

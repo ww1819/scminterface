@@ -52,6 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
         "/api/scm/pushMaterialArchive",   // SCM接收档案接口（系统间调用）
         "/api/spd/order/publish",         // SPD推送采购订单接口（系统间调用）
         "/api/spd/delivery",              // SPD内部配送单查询/下载接口（系统间调用）
+        "/api/scm/spd/delivery",          // SCM接收SPD配送单查询/下载接口（系统间调用）
         "/api/scm/pushPurchaseOrders",    // SCM接收采购订单接口（系统间调用）
         "/api/scm/zs"                     // SCM接收第三方数据(ZS)（系统间调用）
     };
