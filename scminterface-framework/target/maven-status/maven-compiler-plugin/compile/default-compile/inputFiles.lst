@@ -1,5 +1,6 @@
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\config\ScheduledTaskConfig.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\controller\ScmDataController.java
+D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\controller\SpdDeliveryController.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\controller\LoginController.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\service\ZsDeliveryQueryService.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\domain\zs\ScmDeliveryListItemRow.java
@@ -30,12 +31,14 @@ D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterfa
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\controller\SpdDataController.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\service\SpdOrderPublishService.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\task\HengshuiTask.java
+D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\controller\ScmSpdDeliveryController.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\service\SpdSystemConfigService.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\service\ScheduledTaskService.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\SpdScheduledTaskMapper.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\domain\zs\ScmDeliveryDetailXmlRow.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\example\ZsOrderReceiveClientExample.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\ScmMaterialMapper.java
+D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\SpdDeliveryMapper.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\ScmBarcodeSeedInitMapper.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\service\ZsDeliveryExportService.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\ScmPartyLookupMapper.java
@@ -54,6 +57,7 @@ D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterfa
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\ScmSystemConfigMapper.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\SpdMaterialMapper.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\util\ZsUuid7.java
+D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\service\SpdDeliveryService.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\config\WebConfig.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\aspect\DataSourceAspect.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\security\JwtAuthenticationFilter.java
