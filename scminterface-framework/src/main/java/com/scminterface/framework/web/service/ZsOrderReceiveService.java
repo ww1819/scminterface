@@ -18,6 +18,7 @@ import com.scminterface.common.core.domain.AjaxResult;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.framework.util.ZsUuid7;
 import com.scminterface.framework.web.mapper.ScmBarcodeSeedInitMapper;
+import com.scminterface.framework.web.mapper.ScmPartyLookupMapper;
 import com.scminterface.framework.web.mapper.ZsTpOrderMapper;
 
 /**
@@ -25,6 +26,8 @@ import com.scminterface.framework.web.mapper.ZsTpOrderMapper;
  * <p>
  * CUSTOMER：第三方服务标识，用于区分不同上游系统。
  * SCMSUPCODE（可选）：根或 master 内，写入主表 scm_sup_code，标识 SCM 平台侧供应商编码。
+ * NEWCUSTOMER（可选）：根或 master 内，写入主表 scm_hospital_code，并按 hospital_code 解析 scm_hospital_id；
+ * 按 scm_sup_code 匹配 scm_supplier.supplier_code 解析 scm_supplier_id。
  */
 @Service
 public class ZsOrderReceiveService
@@ -38,6 +41,9 @@ public class ZsOrderReceiveService
 
     @Autowired
     private ScmBarcodeSeedInitMapper scmBarcodeSeedInitMapper;
+
+    @Autowired
+    private ScmPartyLookupMapper scmPartyLookupMapper;
 
     @DataSource(DataSourceType.SCM)
     @Transactional(rollbackFor = Exception.class)
@@ -95,9 +101,29 @@ public class ZsOrderReceiveService
         }
 
         String scmSupCode = firstNonBlank(str(body.get("SCMSUPCODE")), str(masterRow.get("SCMSUPCODE")));
+        String scmHospitalCode = firstNonBlank(str(body.get("NEWCUSTOMER")), str(masterRow.get("NEWCUSTOMER")));
+        String scmHospitalId = null;
+        String scmSupplierId = null;
+        if (!isBlank(scmHospitalCode))
+        {
+            scmHospitalId = scmPartyLookupMapper.selectHospitalIdByHospitalCode(scmHospitalCode.trim());
+            if (scmHospitalId == null)
+            {
+                log.warn("ZS receive: 未找到医院 hospital_code={}", scmHospitalCode);
+            }
+        }
+        if (!isBlank(scmSupCode))
+        {
+            scmSupplierId = scmPartyLookupMapper.selectSupplierIdBySupplierCode(scmSupCode.trim());
+            if (scmSupplierId == null)
+            {
+                log.warn("ZS receive: 未找到供应商 supplier_code={}", scmSupCode);
+            }
+        }
 
         String orderId = ZsUuid7.newString();
-        Map<String, Object> orderInsert = buildOrderInsert(orderId, customer, masterRow, receiveChannel, scmSupCode);
+        Map<String, Object> orderInsert = buildOrderInsert(orderId, customer, masterRow, receiveChannel, scmSupCode,
+            scmHospitalCode, scmHospitalId, scmSupplierId);
         zsTpOrderMapper.insertOrder(orderInsert);
 
         String tenantId = str(body.get("TENANT_ID"));
@@ -252,7 +278,7 @@ public class ZsOrderReceiveService
     }
 
     private static Map<String, Object> buildOrderInsert(String id, String customer, Map<String, Object> row, String receiveChannel,
-        String scmSupCode)
+        String scmSupCode, String scmHospitalCode, String scmHospitalId, String scmSupplierId)
     {
         Map<String, Object> m = new HashMap<>(32);
         m.put("id", id);
@@ -260,6 +286,9 @@ public class ZsOrderReceiveService
         m.put("customer", customer);
         m.put("receiveChannel", receiveChannel);
         m.put("scmSupCode", scmSupCode);
+        m.put("scmHospitalCode", scmHospitalCode);
+        m.put("scmHospitalId", scmHospitalId);
+        m.put("scmSupplierId", scmSupplierId);
         m.put("sheetJe", toDecimal(row.get("SHEET_JE")));
         m.put("dh", str(row.get("DH")));
         m.put("supno", str(row.get("SUPNO")));

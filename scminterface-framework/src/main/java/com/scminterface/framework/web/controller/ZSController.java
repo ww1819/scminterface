@@ -51,7 +51,8 @@ public class ZSController
      * 接收第三方推送的订单主表 + 明细 JSON，解析后写入 SCM 库（zs_tp_order / zs_tp_order_detail）。
      * <p>
      * 根节点须含 CUSTOMER（第三方服务标识）与 master；details 可为对象映射或数组。
-     * 可选 SCMSUPCODE：与根或 master 同层传入，落库 zs_tp_order.scm_sup_code，为 SCM 平台供应商编码（与中设 SUPNO 区分）。
+     * 可选 SCMSUPCODE：与根或 master 同层传入，落库 zs_tp_order.scm_sup_code，为 SCM 平台供应商编码（与中设 SUPNO 区分），并据此匹配 scm_supplier.supplier_code 填充 scm_supplier_id。
+     * 可选 NEWCUSTOMER：与根或 master 同层传入，落库 zs_tp_order.scm_hospital_code，并据此匹配 scm_hospital.hospital_code 填充 scm_hospital_id。
      * 推荐结构见接口说明与 {@code ZsOrderReceiveClientExample}。
      * <p>
      * POST http://ip:端口/api/scm/zs/receive

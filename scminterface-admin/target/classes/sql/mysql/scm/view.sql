@@ -18,6 +18,9 @@ SELECT
   oper,
   jsfs,
   scm_sup_code,
+  scm_hospital_code,
+  scm_hospital_id,
+  scm_supplier_id,
   create_time,
   update_time
 FROM zs_tp_order

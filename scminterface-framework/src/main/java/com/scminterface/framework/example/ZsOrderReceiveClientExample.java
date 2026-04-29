@@ -16,7 +16,8 @@ import com.alibaba.fastjson2.JSON;
  * 第三方系统 HTTP 调用示例：向 SCM ZS 接口 POST 订单数据。
  * <p>
  * CUSTOMER 为第三方服务标识（如院区/上游系统编码），用于区分不同调用方。
- * 可选 SCMSUPCODE（根或 master）：SCM 平台供应商编码，落库 zs_tp_order.scm_sup_code。
+ * 可选 SCMSUPCODE（根或 master）：SCM 平台供应商编码，落库 zs_tp_order.scm_sup_code 并解析 scm_supplier_id。
+ * 可选 NEWCUSTOMER（根或 master）：SCM 医院编码，落库 zs_tp_order.scm_hospital_code 并解析 scm_hospital_id。
  * 本类仅作联调参考，勿在生产环境硬编码密码；生产请使用配置中心、HTTPS、鉴权等。
  */
 public final class ZsOrderReceiveClientExample
@@ -92,6 +93,8 @@ public final class ZsOrderReceiveClientExample
         master.put("KSBH", "");
         master.put("KSMC", "");
         master.put("ZJLY", "");
+        master.put("NEWCUSTOMER", "H21312312");
+        master.put("SCMSUPCODE", "H0050");
 
         Map<String, Object> line = new LinkedHashMap<>();
         line.put("DH", "DH-260128-011295");
@@ -118,6 +121,8 @@ public final class ZsOrderReceiveClientExample
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("CUSTOMER", "K20001");
+        body.put("NEWCUSTOMER", "H21312312");
+        body.put("SCMSUPCODE", "H0050");
         body.put("master", master);
         body.put("details", details);
         return body;

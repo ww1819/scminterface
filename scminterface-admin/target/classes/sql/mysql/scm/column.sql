@@ -52,3 +52,9 @@ END;
 /
 CALL add_table_column('zs_tp_order', 'scm_sup_code', 'varchar(64)', '接口 SCMSUPCODE：SCM平台供应商编码（客户端随单传递）', NULL);
 /
+CALL add_table_column('zs_tp_order', 'scm_hospital_code', 'varchar(64)', '入参NEWCUSTOMER：SCM医院编码', NULL);
+/
+CALL add_table_column('zs_tp_order', 'scm_hospital_id', 'varchar(64)', '由hospital_code解析的hospital_id', NULL);
+/
+CALL add_table_column('zs_tp_order', 'scm_supplier_id', 'varchar(64)', '由scm_sup_code解析的supplier_id', NULL);
+/

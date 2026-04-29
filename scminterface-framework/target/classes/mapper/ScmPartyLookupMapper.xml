@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.ScmPartyLookupMapper">
+
+    <select id="selectHospitalIdByHospitalCode" resultType="java.lang.String">
+        select cast(hospital_id as char)
+        from scm_hospital
+        where hospital_code = #{hospitalCode}
+          and (del_flag is null or del_flag = '0')
+        limit 1
+    </select>
+
+    <select id="selectSupplierIdBySupplierCode" resultType="java.lang.String">
+        select cast(supplier_id as char)
+        from scm_supplier
+        where supplier_code = #{supplierCode}
+          and (del_flag is null or del_flag = '0')
+        limit 1
+    </select>
+</mapper>
