@@ -3,7 +3,7 @@ package com.scminterface.framework.domain.zs;
 import java.math.BigDecimal;
 
 /**
- * 中设订单明细 DSB（按 id 与配送明细 zs_order_detail_id 关联）
+ * 第三方订单明细 DSB（按 id 与配送明细 zs_order_detail_id 关联）
  */
 public class ZsTpOrderDetailDsbRow
 {

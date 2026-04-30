@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * JDK 8 外部系统调用示例：按配送单号下载中设配送单 XML。
+ * JDK 8 外部系统调用示例：按配送单号下载第三方配送单 XML。
  * <p>
  * 接口服务地址示例：{@code GET http://主机:端口/api/scm/zs/deliveryData/download?deliveryNo=配送单号}
  * <p>

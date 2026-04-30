@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 配送明细行（中设配送单 XML 导出用）
+ * 配送明细行（第三方配送单 XML 导出用）
  */
 public class ScmDeliveryDetailXmlRow
 {

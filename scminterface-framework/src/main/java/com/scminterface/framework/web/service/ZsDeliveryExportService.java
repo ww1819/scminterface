@@ -19,7 +19,7 @@ import com.scminterface.framework.web.mapper.ScmZsDeliveryXmlMapper;
 import com.scminterface.framework.web.service.support.ZsDeliveryDataXmlBuilder;
 
 /**
- * 按配送单号生成中设配送单 XML（供接口侧下载）。
+ * 按配送单号生成第三方配送单 XML（供接口侧下载）。
  */
 @Service
 public class ZsDeliveryExportService
@@ -42,12 +42,12 @@ public class ZsDeliveryExportService
         }
         if (StringUtils.isEmpty(d.getZsOrderId()))
         {
-            throw new ServiceException("该配送单未关联中设订单，无法按此格式导出：" + no);
+            throw new ServiceException("该配送单未关联第三方订单，无法按此格式导出：" + no);
         }
         ZsTpOrderXmlRow z = scmZsDeliveryXmlMapper.selectZsTpOrderById(d.getZsOrderId());
         if (z == null)
         {
-            throw new ServiceException("中设订单不存在，无法导出：" + d.getZsOrderId());
+            throw new ServiceException("第三方订单不存在，无法导出：" + d.getZsOrderId());
         }
         List<ScmDeliveryDetailXmlRow> details = scmZsDeliveryXmlMapper.selectDeliveryDetailsByDeliveryId(d.getDeliveryId());
         if (details == null)

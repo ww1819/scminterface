@@ -12,7 +12,7 @@ public final class ZsBarcodeSeedConstants
     public static final String JSFS_HIGH_VALUE = "3";
     public static final String JSFS_LOW_VALUE = "0";
 
-    /** 中设种子暂不按仓划分，与 {@code ZsJsfsHighLow#ZS_SEED_WAREHOUSE_ID} 一致 */
+    /** 第三方种子暂不按仓划分，与 {@code ZsJsfsHighLow#ZS_SEED_WAREHOUSE_ID} 一致 */
     public static final String ZS_SEED_WAREHOUSE_ID = "";
 
     private ZsBarcodeSeedConstants()
@@ -20,7 +20,7 @@ public final class ZsBarcodeSeedConstants
     }
 
     /**
-     * 中设主表 JSFS → 种子高低值：3→H，0→L，其它或空→L（与 scm 侧 {@code ZsJsfsHighLow#highLowFlagFromJsfs} 一致）
+     * 第三方主表 JSFS → 种子高低值：3→H，0→L，其它或空→L（与 scm 侧 {@code ZsJsfsHighLow#highLowFlagFromJsfs} 一致）
      */
     public static String highLowFlagFromJsfs(String jsfs)
     {

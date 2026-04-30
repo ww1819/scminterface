@@ -1,7 +1,7 @@
 package com.scminterface.framework.domain.zs;
 
 /**
- * 中设订单主表（XML 导出用）
+ * 第三方订单主表（XML 导出用）
  */
 public class ZsTpOrderXmlRow
 {

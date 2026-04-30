@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 配送单主表字段快照（中设配送单 XML 导出用）
+ * 配送单主表字段快照（第三方配送单 XML 导出用）
  */
 public class ScmDeliveryXmlRow
 {

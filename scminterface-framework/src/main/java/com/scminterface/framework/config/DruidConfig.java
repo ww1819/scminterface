@@ -22,7 +22,7 @@ import com.scminterface.framework.datasource.DynamicDataSource;
 
 /**
  * druid 配置多数据源
- * 
+ *
  * @author scminterface
  */
 @Configuration
@@ -74,7 +74,7 @@ public class DruidConfig
             configuredDataSource.setBreakAfterAcquireFailure(true);
             // 设置连接失败重试次数为0，避免无限重试
             configuredDataSource.setConnectionErrorRetryAttempts(0);
-            // 如果部署在SPD服务器上不需要SCM数据源，可以在application-druid.yml中设置scm.enabled=false来禁用
+            // 如果部署在SPD服务器上不需要SCM数据源，可以在application-druid.yml第三方置scm.enabled=false来禁用
             log.info("SCM数据源配置成功（如果连接失败，请检查配置或设置scm.enabled=false禁用）");
             return configuredDataSource;
         }
@@ -91,7 +91,7 @@ public class DruidConfig
     {
         Map<Object, Object> targetDataSources = new HashMap<>();
         DataSource defaultDataSource = null;
-        
+
         // 尝试获取SPD数据源
         DataSource spdDs = null;
         try
@@ -114,7 +114,7 @@ public class DruidConfig
         {
             log.warn("SPD数据源不可用，已跳过: {}", e.getMessage());
         }
-        
+
         // 尝试获取SCM数据源
         DataSource scmDs = null;
         try
@@ -137,20 +137,20 @@ public class DruidConfig
         {
             log.warn("SCM数据源不可用，已跳过: {}", e.getMessage());
         }
-        
+
         // 如果没有任何数据源可用，进入“无数据库模式”
         if (targetDataSources.isEmpty())
         {
             log.warn("SPD/SCM 数据源均未启用，系统将以无数据库模式启动，仅支持不访问数据库的接口调用");
             defaultDataSource = new DisabledDataSource();
         }
-        
+
         // 如果只有一个数据源，使用它作为默认数据源
         if (defaultDataSource == null && !targetDataSources.isEmpty())
         {
             defaultDataSource = (DataSource) targetDataSources.values().iterator().next();
         }
-        
+
         log.info("动态数据源初始化完成，可用数据源数量: {}", targetDataSources.size());
         return new DynamicDataSource(defaultDataSource, targetDataSources);
     }

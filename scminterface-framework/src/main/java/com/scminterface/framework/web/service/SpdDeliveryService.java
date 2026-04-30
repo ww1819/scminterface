@@ -53,12 +53,12 @@ public class SpdDeliveryService
         }
         if (StringUtils.isEmpty(d.getZsOrderId()))
         {
-            throw new ServiceException("该配送单未关联中设订单，无法按此格式导出：" + no);
+            throw new ServiceException("该配送单未关联第三方订单，无法按此格式导出：" + no);
         }
         ZsTpOrderXmlRow z = spdDeliveryMapper.selectZsTpOrderById(d.getZsOrderId());
         if (z == null)
         {
-            throw new ServiceException("中设订单不存在，无法导出：" + d.getZsOrderId());
+            throw new ServiceException("第三方订单不存在，无法导出：" + d.getZsOrderId());
         }
         List<ScmDeliveryDetailXmlRow> details = spdDeliveryMapper.selectDeliveryDetailsByDeliveryId(d.getDeliveryId());
         if (details == null)

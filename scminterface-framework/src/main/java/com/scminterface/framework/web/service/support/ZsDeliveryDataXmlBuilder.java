@@ -15,7 +15,7 @@ import com.scminterface.framework.domain.zs.ZsTpOrderDetailDsbRow;
 import com.scminterface.framework.domain.zs.ZsTpOrderXmlRow;
 
 /**
- * 中设配送单数据 XML（ROOT/LIST）与业务字段映射。
+ * 第三方配送单数据 XML（ROOT/LIST）与业务字段映射。
  * <p>
  * 每条 LIST 含 {@code CUSTOMER}（scm_delivery.zs_customer_id）。<br>
  * 有条码时：每个条码一条 LIST，ZZS 为单枚种子，SL 为 1，BZ 优先取条码号。<br>
