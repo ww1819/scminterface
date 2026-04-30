@@ -77,3 +77,19 @@ CALL add_table_column('scm_order', 'spd_snapshot_hospital_code', 'varchar(64)', 
 /
 CALL add_table_column('scm_order', 'spd_snapshot_supplier_code', 'varchar(64)', '推送时快照：平台供应商编码', NULL);
 /
+
+CREATE TABLE IF NOT EXISTS `scm_supplier_export_log` (
+  `id` varchar(36) NOT NULL COMMENT '主键UUID7（36位）',
+  `hospital_code` varchar(64) NOT NULL COMMENT '平台医院编码',
+  `supplier_code` varchar(64) NOT NULL COMMENT '平台供应商编码',
+  `export_scope` varchar(16) NOT NULL COMMENT '导出范围 FULL全量 LIMITED脱敏',
+  `spd_tenant_id` varchar(64) DEFAULT NULL COMMENT 'SPD租户ID（前置机透传）',
+  `request_ip` varchar(64) DEFAULT NULL COMMENT '请求来源IP',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '记录时间',
+  `create_by` varchar(64) DEFAULT NULL COMMENT '操作者（系统/接口）',
+  PRIMARY KEY (`id`),
+  KEY `idx_scm_supplier_export_hospital` (`hospital_code`),
+  KEY `idx_scm_supplier_export_supplier` (`supplier_code`),
+  KEY `idx_scm_supplier_export_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='医院侧经前置机拉取平台供应商信息审计日志';
+/

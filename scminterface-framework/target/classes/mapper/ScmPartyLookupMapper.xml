@@ -18,4 +18,53 @@
           and (del_flag is null or del_flag = '0')
         limit 1
     </select>
+
+    <select id="countHospitalSupplierActive" resultType="int">
+        select count(1)
+        from scm_hospital h
+        inner join scm_hospital_supplier hs on hs.hospital_id = h.hospital_id
+        inner join scm_supplier s on s.supplier_id = hs.supplier_id
+        where (h.del_flag is null or h.del_flag = '0')
+          and h.hospital_code = #{hospitalCode}
+          and (s.del_flag is null or s.del_flag = '0')
+          and s.supplier_code = #{supplierCode}
+          and (hs.bind_status = '1')
+          and (hs.audit_status = '1' or hs.audit_status is null)
+          and (hs.disable_status = '0' or hs.disable_status is null)
+          and (hs.status = '0' or hs.status is null)
+    </select>
+
+    <select id="selectScmSupplierRowByCode" resultType="java.util.HashMap">
+        select supplier_id as supplierId, supplier_code as supplierCode, company_name as companyName,
+               company_short_name as companyShortName, pinyin_code as pinyinCode, legal_person as legalPerson,
+               registered_capital as registeredCapital, province, city, district, address, business_scope as businessScope,
+               email, website, contact_person as contactPerson, contact_phone as contactPhone, tax_number as taxNumber,
+               qualification_expiry_date as qualificationExpiryDate, status, audit_status as auditStatus,
+               remark, create_time as createTime, update_time as updateTime
+        from scm_supplier
+        where supplier_code = #{supplierCode}
+          and (del_flag is null or del_flag = '0')
+        limit 1
+    </select>
+
+    <select id="selectSuppliersByHospitalCode" resultType="java.util.HashMap">
+        select distinct s.supplier_id as supplierId, s.supplier_code as supplierCode, s.company_name as companyName,
+               s.company_short_name as companyShortName, s.contact_person as contactPerson, s.contact_phone as contactPhone,
+               s.tax_number as taxNumber, s.status as status
+        from scm_supplier s
+        inner join scm_hospital_supplier hs on hs.supplier_id = s.supplier_id
+        inner join scm_hospital h on h.hospital_id = hs.hospital_id
+        where (h.del_flag is null or h.del_flag = '0')
+          and h.hospital_code = #{hospitalCode}
+          and (s.del_flag is null or s.del_flag = '0')
+          and (hs.bind_status = '1')
+          and (hs.audit_status = '1' or hs.audit_status is null)
+          and (hs.disable_status = '0' or hs.disable_status is null)
+        order by s.supplier_code
+    </select>
+
+    <insert id="insertScmSupplierExportLog">
+        insert into scm_supplier_export_log(id, hospital_code, supplier_code, export_scope, spd_tenant_id, request_ip, create_by, create_time)
+        values (#{id}, #{hospitalCode}, #{supplierCode}, #{exportScope}, #{spdTenantId}, #{requestIp}, #{createBy}, now())
+    </insert>
 </mapper>

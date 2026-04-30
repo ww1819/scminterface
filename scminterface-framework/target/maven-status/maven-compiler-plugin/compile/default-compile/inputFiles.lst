@@ -35,6 +35,7 @@ D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterfa
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\service\SpdSystemConfigService.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\service\ScheduledTaskService.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\SpdScheduledTaskMapper.java
+D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\controller\SpdScmSupplierController.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\domain\zs\ScmDeliveryDetailXmlRow.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\example\ZsOrderReceiveClientExample.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\mapper\ScmMaterialMapper.java
@@ -65,5 +66,6 @@ D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterfa
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\exception\GlobalExceptionHandler.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\controller\SystemConfigController.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\domain\zs\ScmDeliveryDetailBarcodeRow.java
+D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\web\service\ScmSupplierInterfaceService.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\datasource\DynamicDataSource.java
 D:\aspt_project\scminterface\scminterface-framework\src\main\java\com\scminterface\framework\config\properties\PublicInterfaceProperties.java
