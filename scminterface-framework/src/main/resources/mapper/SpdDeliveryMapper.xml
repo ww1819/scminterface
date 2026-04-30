@@ -32,6 +32,8 @@
     <select id="selectDeliveryByDeliveryNo" resultType="com.scminterface.framework.domain.zs.ScmDeliveryXmlRow">
         select d.delivery_id           as deliveryId,
                d.delivery_no           as deliveryNo,
+               d.order_id              as orderId,
+               d.order_no              as orderNo,
                d.zs_order_id           as zsOrderId,
                d.zs_customer_id        as zsCustomerId,
                d.invoice_no            as invoiceNo,
@@ -44,6 +46,22 @@
         from scm_delivery d
         where d.delivery_no = #{deliveryNo}
           and (d.del_flag is null or d.del_flag = '0')
+        limit 1
+    </select>
+
+    <!-- 第一方订单：用于 XML 头字段（DH/SUP/CK 等），不依赖 zs_tp_order -->
+    <select id="selectScmOrderAsOrderXml" resultType="com.scminterface.framework.domain.zs.ZsTpOrderXmlRow">
+        select cast(o.order_id as char)           as id,
+               o.order_no                         as dh,
+               ifnull(nullif(trim(s.supplier_code), ''), cast(o.supplier_id as char)) as supno,
+               o.warehouse_name                   as ck,
+               coalesce(cast(o.warehouse_id as char), '')                         as ckno,
+               coalesce(cast(o.order_dept_id as char), '')                        as ksbh,
+               ''                                 as jsfs,
+               ''                                 as zjly
+        from scm_order o
+        left join scm_supplier s on o.supplier_id = s.supplier_id
+        where o.order_id = #{orderId}
         limit 1
     </select>
 

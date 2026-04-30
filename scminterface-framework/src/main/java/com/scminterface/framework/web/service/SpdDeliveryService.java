@@ -20,7 +20,10 @@ import com.scminterface.framework.web.mapper.SpdDeliveryMapper;
 import com.scminterface.framework.web.service.support.ZsDeliveryDataXmlBuilder;
 
 /**
- * 第一方（SPD）内部配送单服务（与第三方接口实现分离）
+ * 第一方（SPD）内部配送单服务（与第三方接口实现分离）。
+ * <p>
+ * 下载 XML 不强制依赖 {@code zs_tp_order}：优先使用第一方 {@code scm_order}（{@code scm_delivery.order_id}）；<br>
+ * 若仍关联第三方订单，可用 {@code zs_tp_order_detail} 补全明细 DSB；无院内订单、无第三方订单时也可导出（如后续临时单/纯云平台档案开单）。
  */
 @Service
 public class SpdDeliveryService
@@ -51,15 +54,6 @@ public class SpdDeliveryService
         {
             throw new ServiceException("配送单不存在：" + no);
         }
-        if (StringUtils.isEmpty(d.getZsOrderId()))
-        {
-            throw new ServiceException("该配送单未关联第三方订单，无法按此格式导出：" + no);
-        }
-        ZsTpOrderXmlRow z = spdDeliveryMapper.selectZsTpOrderById(d.getZsOrderId());
-        if (z == null)
-        {
-            throw new ServiceException("第三方订单不存在，无法导出：" + d.getZsOrderId());
-        }
         List<ScmDeliveryDetailXmlRow> details = spdDeliveryMapper.selectDeliveryDetailsByDeliveryId(d.getDeliveryId());
         if (details == null)
         {
@@ -67,13 +61,30 @@ public class SpdDeliveryService
         }
         attachBarcodes(details, spdDeliveryMapper.selectBarcodesByDeliveryId(d.getDeliveryId()));
 
-        Map<String, ZsTpOrderDetailDsbRow> zsDetailById = new HashMap<String, ZsTpOrderDetailDsbRow>();
-        List<ZsTpOrderDetailDsbRow> dsbs = spdDeliveryMapper.selectZsTpOrderDetailDsbs(d.getZsOrderId());
-        if (dsbs != null)
+        ZsTpOrderXmlRow z = null;
+        if (d.getOrderId() != null)
         {
-            for (ZsTpOrderDetailDsbRow row : dsbs)
+            z = spdDeliveryMapper.selectScmOrderAsOrderXml(d.getOrderId());
+            if (z == null)
             {
-                zsDetailById.put(row.getId(), row);
+                throw new ServiceException("配送单关联的第一方订单不存在，order_id=" + d.getOrderId());
+            }
+        }
+        else if (StringUtils.isNotEmpty(d.getZsOrderId()))
+        {
+            z = spdDeliveryMapper.selectZsTpOrderById(d.getZsOrderId());
+        }
+
+        Map<String, ZsTpOrderDetailDsbRow> zsDetailById = new HashMap<String, ZsTpOrderDetailDsbRow>();
+        if (StringUtils.isNotEmpty(d.getZsOrderId()))
+        {
+            List<ZsTpOrderDetailDsbRow> dsbs = spdDeliveryMapper.selectZsTpOrderDetailDsbs(d.getZsOrderId());
+            if (dsbs != null)
+            {
+                for (ZsTpOrderDetailDsbRow row : dsbs)
+                {
+                    zsDetailById.put(row.getId(), row);
+                }
             }
         }
         return ZsDeliveryDataXmlBuilder.build(d, details, z, zsDetailById);

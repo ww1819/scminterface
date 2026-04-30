@@ -10,6 +10,10 @@ public class ScmDeliveryXmlRow
 {
     private Long deliveryId;
     private String deliveryNo;
+    /** 第一方订单 scm_order.order_id */
+    private Long orderId;
+    /** 第一方订单号 scm_delivery.order_no */
+    private String orderNo;
     private String zsOrderId;
     /** scm_delivery.zs_customer_id，XML 节点 CUSTOMER */
     private String zsCustomerId;
@@ -39,6 +43,26 @@ public class ScmDeliveryXmlRow
     public void setDeliveryNo(String deliveryNo)
     {
         this.deliveryNo = deliveryNo;
+    }
+
+    public Long getOrderId()
+    {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId)
+    {
+        this.orderId = orderId;
+    }
+
+    public String getOrderNo()
+    {
+        return orderNo;
+    }
+
+    public void setOrderNo(String orderNo)
+    {
+        this.orderNo = orderNo;
     }
 
     public String getZsOrderId()
