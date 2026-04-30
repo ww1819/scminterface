@@ -10,6 +10,7 @@ import com.scminterface.common.annotation.DataSource;
 import com.scminterface.common.core.domain.AjaxResult;
 import com.scminterface.common.core.domain.PurchaseOrderDTO;
 import com.scminterface.common.enums.DataSourceType;
+import com.scminterface.common.utils.StringUtils;
 import com.scminterface.framework.utils.HttpClientUtils;
 import com.scminterface.framework.web.mapper.SpdPurchaseOrderMapper;
 import org.slf4j.Logger;
@@ -95,6 +96,10 @@ public class SpdOrderPublishService
             dto.setTotalAmount(getBigDecimal(order, "totalAmount"));
             dto.setOrderStatus(getString(order, "orderStatus"));
             dto.setRemark(getString(order, "remark"));
+            dto.setSpdTenantId(trimToNull(getString(order, "spdTenantId")) != null
+                ? trimToNull(getString(order, "spdTenantId")) : trimToNull(getString(order, "tenantId")));
+            dto.setScmHospitalCode(trimToNull(getString(order, "scmHospitalCode")));
+            dto.setScmSupplierCode(trimToNull(getString(order, "scmSupplierCode")));
 
             List<Map<String, Object>> orderEntries = entryMap.getOrDefault(orderId, new ArrayList<>());
             List<PurchaseOrderDTO.PurchaseOrderItem> items = new ArrayList<>();
@@ -119,6 +124,39 @@ public class SpdOrderPublishService
 
         log.info("组装完成采购订单DTO列表，数量: {}", dtoList.size());
         return httpClientUtils.pushPurchaseOrders(dtoList);
+    }
+
+    /**
+     * 接收 SPD 已拼好的订单列表，仅转发至平台 {@code pushPurchaseOrders}，不在前置机查询 SPD 库。
+     * <p>用于前置机无法访问 SPD 库时由院内 SPD 组装入参。</p>
+     */
+    public AjaxResult publishOrdersFromPayload(List<PurchaseOrderDTO> orders)
+    {
+        if (orders == null || orders.isEmpty())
+        {
+            return AjaxResult.error("订单体 orders 不能为空");
+        }
+        for (PurchaseOrderDTO o : orders)
+        {
+            if (o == null)
+            {
+                return AjaxResult.error("订单体中存在空元素");
+            }
+            if (o.getOrderId() == null || StringUtils.isEmpty(o.getOrderNo()))
+            {
+                return AjaxResult.error("订单缺少 orderId 或 orderNo");
+            }
+            if (o.getItems() == null || o.getItems().isEmpty())
+            {
+                return AjaxResult.error("订单缺少明细 items：" + o.getOrderNo());
+            }
+            if (StringUtils.isEmpty(o.getScmHospitalCode()) || StringUtils.isEmpty(o.getScmSupplierCode()))
+            {
+                return AjaxResult.error("订单「" + o.getOrderNo() + "」缺少平台医院编码或平台供应商编码（scmHospitalCode / scmSupplierCode）");
+            }
+        }
+        log.info("publishOrdersFromPayload 转发至平台，订单数: {}", orders.size());
+        return httpClientUtils.pushPurchaseOrders(orders);
     }
 
     private String getString(Map<String, Object> map, String key)

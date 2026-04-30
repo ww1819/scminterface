@@ -197,27 +197,53 @@ public class ScmDataService
                 Long orderId = scmOrderMapper.selectOrderIdByOrderNo(order.getOrderNo());
 
                 String supplierName = trimToNull(order.getSupplierName());
-                if (supplierName == null)
-                {
-                    throw new RuntimeException("无对应供应商（SPD 订单未带出供应商名称，无法与 SCM 匹配）");
-                }
                 String hospitalName = trimToNull(order.getHospitalName());
-                if (hospitalName == null)
-                {
-                    throw new RuntimeException("无对应医院（SPD 订单未带出医院/客户名称，无法与 SCM 匹配）");
-                }
+                String scmSupplierCode = trimToNull(order.getScmSupplierCode());
+                String scmHospitalCode = trimToNull(order.getScmHospitalCode());
 
-                Map<String, Object> scmSupplier = scmMaterialMapper.selectSupplierByName(supplierName);
-                if (scmSupplier == null || scmSupplier.isEmpty())
+                Map<String, Object> scmSupplier;
+                if (scmSupplierCode != null)
                 {
-                    throw new RuntimeException("无对应供应商（SCM 中未找到名称：" + supplierName + "）");
+                    scmSupplier = scmMaterialMapper.selectSupplierByCode(scmSupplierCode);
+                    if (scmSupplier == null || scmSupplier.isEmpty())
+                    {
+                        throw new RuntimeException("无对应供应商（SCM 中未找到供应商编码：" + scmSupplierCode + "）");
+                    }
+                }
+                else
+                {
+                    if (supplierName == null)
+                    {
+                        throw new RuntimeException("无对应供应商（请维护平台供应商编码，或保证 SPD 订单带出供应商名称）");
+                    }
+                    scmSupplier = scmMaterialMapper.selectSupplierByName(supplierName);
+                    if (scmSupplier == null || scmSupplier.isEmpty())
+                    {
+                        throw new RuntimeException("无对应供应商（SCM 中未找到名称：" + supplierName + "）");
+                    }
                 }
                 Long scmSupplierId = ((Number) scmSupplier.get("supplierId")).longValue();
 
-                Map<String, Object> scmHospital = scmMaterialMapper.selectHospitalByName(hospitalName);
-                if (scmHospital == null || scmHospital.isEmpty())
+                Map<String, Object> scmHospital;
+                if (scmHospitalCode != null)
                 {
-                    throw new RuntimeException("无对应医院（SCM 中未找到名称：" + hospitalName + "）");
+                    scmHospital = scmMaterialMapper.selectHospitalByCode(scmHospitalCode);
+                    if (scmHospital == null || scmHospital.isEmpty())
+                    {
+                        throw new RuntimeException("无对应医院（SCM 中未找到医院编码：" + scmHospitalCode + "）");
+                    }
+                }
+                else
+                {
+                    if (hospitalName == null)
+                    {
+                        throw new RuntimeException("无对应医院（请维护平台医院编码，或保证 SPD 订单带出医院/客户名称）");
+                    }
+                    scmHospital = scmMaterialMapper.selectHospitalByName(hospitalName);
+                    if (scmHospital == null || scmHospital.isEmpty())
+                    {
+                        throw new RuntimeException("无对应医院（SCM 中未找到名称：" + hospitalName + "）");
+                    }
                 }
                 Long scmHospitalId = ((Number) scmHospital.get("hospitalId")).longValue();
 
@@ -225,6 +251,7 @@ public class ScmDataService
                 orderMap.put("orderNo", order.getOrderNo());
                 orderMap.put("hospitalId", scmHospitalId);
                 orderMap.put("supplierId", scmSupplierId);
+                orderMap.put("tenantId", trimToNull(order.getSpdTenantId()));
                 orderMap.put("warehouseName", trimToNull(order.getWarehouseName()));
                 orderMap.put("orderDate", order.getOrderDate());
                 orderMap.put("orderAmount", order.getTotalAmount());
@@ -234,6 +261,11 @@ public class ScmDataService
                 orderMap.put("remark", order.getRemark());
                 orderMap.put("createBy", "spd-sync");
                 orderMap.put("updateBy", "spd-sync");
+                orderMap.put("spdOrderId", order.getOrderId());
+                orderMap.put("sourceSystem", "SPD");
+                orderMap.put("spdTenantId", trimToNull(order.getSpdTenantId()));
+                orderMap.put("spdSnapshotHospitalCode", scmHospitalCode != null ? scmHospitalCode : "");
+                orderMap.put("spdSnapshotSupplierCode", scmSupplierCode != null ? scmSupplierCode : "");
 
                 if (orderId == null)
                 {

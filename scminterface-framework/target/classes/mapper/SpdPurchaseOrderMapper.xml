@@ -17,6 +17,9 @@
             po.total_amount   as totalAmount,
             po.order_status   as orderStatus,
             po.remark,
+            po.tenant_id      as tenantId,
+            po.scm_hospital_code as scmHospitalCode,
+            po.scm_supplier_code as scmSupplierCode,
             s.name            as supplierName,
             c.customer_name   as hospitalName,
             wh.name           as warehouseName

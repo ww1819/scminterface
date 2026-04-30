@@ -41,6 +41,19 @@ public class PurchaseOrderDTO implements Serializable
     /** 科室ID（SPD端，可能为空） */
     private Long departmentId;
 
+    /** SPD 租户ID（sb_customer.customer_id） */
+    private String spdTenantId;
+
+    /**
+     * 平台医院编码（scm_hospital.hospital_code），推送时由 SPD 绑定/快照写入；与 {@link #hospitalName} 二选一或并存（接收端优先编码匹配）
+     */
+    private String scmHospitalCode;
+
+    /**
+     * 平台供应商编码（scm_supplier.supplier_code），推送时由 SPD 绑定/快照写入
+     */
+    private String scmSupplierCode;
+
     /** 订单日期 */
     private Date orderDate;
 
@@ -144,6 +157,36 @@ public class PurchaseOrderDTO implements Serializable
     public void setDepartmentId(Long departmentId)
     {
         this.departmentId = departmentId;
+    }
+
+    public String getSpdTenantId()
+    {
+        return spdTenantId;
+    }
+
+    public void setSpdTenantId(String spdTenantId)
+    {
+        this.spdTenantId = spdTenantId;
+    }
+
+    public String getScmHospitalCode()
+    {
+        return scmHospitalCode;
+    }
+
+    public void setScmHospitalCode(String scmHospitalCode)
+    {
+        this.scmHospitalCode = scmHospitalCode;
+    }
+
+    public String getScmSupplierCode()
+    {
+        return scmSupplierCode;
+    }
+
+    public void setScmSupplierCode(String scmSupplierCode)
+    {
+        this.scmSupplierCode = scmSupplierCode;
     }
 
     public Date getOrderDate()

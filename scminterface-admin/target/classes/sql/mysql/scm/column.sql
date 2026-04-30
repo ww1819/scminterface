@@ -58,3 +58,22 @@ CALL add_table_column('zs_tp_order', 'scm_hospital_id', 'varchar(64)', '由hospi
 /
 CALL add_table_column('zs_tp_order', 'scm_supplier_id', 'varchar(64)', '由scm_sup_code解析的supplier_id', NULL);
 /
+-- ========== 订单/配送：SPD 第一方对账扩展列（与 scm-admin column.sql 保持一致）==========
+CALL add_table_column('scm_order', 'spd_order_id', 'bigint(20)', 'SPD院内采购订单主键 purchase_order.id（第一方推送对账）', NULL);
+/
+CALL add_table_column('scm_order', 'source_system', 'varchar(32)', '订单来源系统编码：SPD第一方推送等', NULL);
+/
+CALL add_table_column('scm_order_detail', 'spd_entry_id', 'bigint(20)', 'SPD采购订单明细主键 purchase_order_entry.id（行级对账）', NULL);
+/
+CALL add_table_column('scm_delivery', 'spd_tenant_id', 'varchar(64)', 'SPD租户ID（同 sb_customer.customer_id）', NULL);
+/
+CALL add_table_column('scm_delivery', 'spd_ref_no', 'varchar(128)', 'SPD侧引用/业务流水号（审计）', '');
+/
+CALL add_table_column('scm_delivery_detail', 'spd_order_entry_id', 'bigint(20)', 'SPD采购订单明细ID purchase_order_entry.id', NULL);
+/
+CALL add_table_column('scm_order', 'spd_tenant_id', 'varchar(64)', 'SPD租户ID(sb_customer.customer_id，推送快照)', NULL);
+/
+CALL add_table_column('scm_order', 'spd_snapshot_hospital_code', 'varchar(64)', '推送时快照：平台医院编码', NULL);
+/
+CALL add_table_column('scm_order', 'spd_snapshot_supplier_code', 'varchar(64)', '推送时快照：平台供应商编码', NULL);
+/

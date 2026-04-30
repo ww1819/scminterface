@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.scminterface.common.core.domain.AjaxResult;
+import com.scminterface.common.core.domain.PurchaseOrderDTO;
 import com.scminterface.framework.web.service.SpdOrderPublishService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -67,6 +68,16 @@ public class SpdOrderController
         }
 
         return spdOrderPublishService.publishOrders(ids);
+    }
+
+    /**
+     * SPD 携带完整订单 JSON（与平台 {@link PurchaseOrderDTO} 一致），前置机只做校验并转发平台。
+     */
+    @ApiOperation("SPD体推送采购订单到SCM（前置机不查SPD库）")
+    @PostMapping("/publishPayload")
+    public AjaxResult publishOrdersPayload(@RequestBody List<PurchaseOrderDTO> orders)
+    {
+        return spdOrderPublishService.publishOrdersFromPayload(orders);
     }
 }
 
