@@ -1,3 +1,18 @@
+# =============================================================================
+# 前置机部署说明
+# -----------------------------------------------------------------------------
+# 本 profile 假定 scminterface 部署在医院/机构侧前置机，对外提供 HTTP 服务，
+# 并通过可出网或专线访问云端 SCM 库（MySQL RDS）。
+# -----------------------------------------------------------------------------
+# 网络清单（IP 与端口，请按实际前置机与 RDS 白名单核对）
+#   组件                 地址 / 主机                         端口    说明
+#   ------------------   ----------------------------------   -----   ------------------
+#   本服务 HTTP          0.0.0.0（监听）/ 前置机业务网卡 IP     8088    见 server.port
+#   对外回调/公网配置    http://106.53.83.190                 8088    scminterface.public.interface.url
+#   Swagger 开发前缀     同上基址                             8088    pathMapping: /dev-api
+#   SCM MySQL（阿里云）  rm-bp1tov1b3948fc5inbo.mysql.rds...   3306    见 application-druid.yml
+#   Druid 监控页         同上本服务基址                       8088    路径 /druid/*
+# =============================================================================
 # Spring配置
 spring:
   profiles:
@@ -27,7 +42,7 @@ scminterface:
   copyrightYear: 2025
   # 实例演示开关
   demoEnabled: true
-  # 公网interface配置
+  # 前置机对外的 interface 基址（与前置机可被回调/访问的 IP 及 server.port 一致）
   public:
     interface:
       url: http://106.53.83.190:8088
@@ -38,8 +53,10 @@ scminterface:
       # 某段 SQL 失败时是否中止启动（false 仅打日志，便于联调）
       fail-on-error: false
 
-# 开发环境配置
+# 前置机服务端口（与 public.interface.url 端口保持一致）
 server:
+  # 前置机监听所有网卡，便于院内网或其它系统访问本机业务端口
+  address: 0.0.0.0
   # 服务器的HTTP端口
   port: 8088
   servlet:

@@ -1,3 +1,15 @@
+# =============================================================================
+# 前置机部署 — 数据源
+# -----------------------------------------------------------------------------
+# SPD：前置机场景下若仅连 SCM 云端库，保持 enabled=false。
+# SCM：前置机需能解析并访问阿里云 RDS（安全组/白名单放行本前置机出口 IP）。
+# -----------------------------------------------------------------------------
+# 网络清单（与 application.yml 中 HTTP 8088 并列）
+#   数据源              主机 / 说明                                   端口
+#   ------------------   ------------------------------------------   -----
+#   SCM MySQL（启用）    rm-bp1tov1b3948fc5inbo.mysql.rds.aliyuncs.com 3306
+#   SPD MySQL（未启用）  localhost（本地联调时可改 enabled 与 url）     3306
+# =============================================================================
 # 数据源配置
 spring:
     datasource:
@@ -18,9 +30,9 @@ spring:
                 # username: spd
                 # password: Spd@456ww
                 driver-class-name: com.mysql.cj.jdbc.Driver
-            # SCM 数据源
+            # SCM 数据源（前置机出网访问云端 RDS；库名 scm）
             scm:
-                enabled: true
+                enabled: false
                 url: jdbc:mysql://rm-bp1tov1b3948fc5inbo.mysql.rds.aliyuncs.com:3306/scm?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
                 username: spd
                 password: Spd@456ww
@@ -52,7 +64,7 @@ spring:
                 enabled: true
             statViewServlet:
                 enabled: true
-                # 设置白名单，不填则允许所有访问
+                # 前置机建议填运维网段或 127.0.0.1；不填则允许所有访问（仅内网前置机时可接受）
                 allow:
                 url-pattern: /druid/*
                 # 控制台管理用户名和密码
