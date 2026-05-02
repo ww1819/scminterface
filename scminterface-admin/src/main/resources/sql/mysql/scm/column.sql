@@ -77,6 +77,14 @@ CALL add_table_column('scm_order', 'spd_snapshot_hospital_code', 'varchar(64)', 
 /
 CALL add_table_column('scm_order', 'spd_snapshot_supplier_code', 'varchar(64)', '推送时快照：平台供应商编码', NULL);
 /
+CALL add_table_column('scm_order', 'hs_bind_snapshot', 'varchar(32)', '下单/推送时医院-供应商绑定关系快照（中文：已绑定、未绑定、申请审核中等）', NULL);
+/
+CALL add_table_column('zs_tp_order', 'hospital_id', 'bigint(20)', '平台医院主键 scm_hospital.hospital_id', NULL);
+/
+CALL add_table_column('zs_tp_order', 'supplier_id', 'bigint(20)', '平台供应商主键 scm_supplier.supplier_id', NULL);
+/
+CALL add_table_column('zs_tp_order', 'hs_bind_snapshot', 'varchar(32)', '落库时医院-供应商绑定关系快照（中文：已绑定、未绑定、申请审核中等）', NULL);
+/
 
 CREATE TABLE IF NOT EXISTS `scm_supplier_export_log` (
   `id` varchar(36) NOT NULL COMMENT '主键UUID7（36位）',

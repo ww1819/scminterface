@@ -67,4 +67,25 @@
         insert into scm_supplier_export_log(id, hospital_code, supplier_code, export_scope, spd_tenant_id, request_ip, create_by, create_time)
         values (#{id}, #{hospitalCode}, #{supplierCode}, #{exportScope}, #{spdTenantId}, #{requestIp}, #{createBy}, now())
     </insert>
+
+    <select id="selectHospitalSupplierRelationRow" resultType="java.util.HashMap">
+        select hs.bind_status as bindStatus,
+               hs.audit_status as auditStatus,
+               hs.disable_status as disableStatus,
+               hs.supply_end_date as supplyEndDate
+        from scm_hospital_supplier hs
+        where hs.hospital_id = #{hospitalId}
+          and hs.supplier_id = #{supplierId}
+          and (hs.del_flag is null or hs.del_flag = '0')
+        limit 1
+    </select>
+
+    <select id="countPendingHospitalSupplierApply" resultType="int">
+        select count(1)
+        from scm_hospital_supplier_apply a
+        where a.hospital_id = #{hospitalId}
+          and a.supplier_id = #{supplierId}
+          and (a.del_flag is null or a.del_flag = '0')
+          and a.audit_status = '0'
+    </select>
 </mapper>

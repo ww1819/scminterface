@@ -31,6 +31,9 @@ public class ScmDataService
     @Autowired
     private ScmOrderMapper scmOrderMapper;
 
+    @Autowired
+    private HospitalSupplierBindSnapshotService hospitalSupplierBindSnapshotService;
+
     /**
      * 保存示例数据
      * 
@@ -247,6 +250,8 @@ public class ScmDataService
                 }
                 Long scmHospitalId = ((Number) scmHospital.get("hospitalId")).longValue();
 
+                String hsBindSnapshot = hospitalSupplierBindSnapshotService.resolve(scmHospitalId, scmSupplierId);
+
                 Map<String, Object> orderMap = new HashMap<>();
                 orderMap.put("orderNo", order.getOrderNo());
                 orderMap.put("hospitalId", scmHospitalId);
@@ -266,6 +271,7 @@ public class ScmDataService
                 orderMap.put("spdTenantId", trimToNull(order.getSpdTenantId()));
                 orderMap.put("spdSnapshotHospitalCode", scmHospitalCode != null ? scmHospitalCode : "");
                 orderMap.put("spdSnapshotSupplierCode", scmSupplierCode != null ? scmSupplierCode : "");
+                orderMap.put("hsBindSnapshot", hsBindSnapshot);
 
                 if (orderId == null)
                 {

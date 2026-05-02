@@ -45,6 +45,9 @@ public class ZsOrderReceiveService
     @Autowired
     private ScmPartyLookupMapper scmPartyLookupMapper;
 
+    @Autowired
+    private HospitalSupplierBindSnapshotService hospitalSupplierBindSnapshotService;
+
     @DataSource(DataSourceType.SCM)
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult receiveAndSave(Map<String, Object> body)
@@ -121,9 +124,13 @@ public class ZsOrderReceiveService
             }
         }
 
+        Long hospitalIdLong = parseLongOrNull(scmHospitalId);
+        Long supplierIdLong = parseLongOrNull(scmSupplierId);
+        String hsBindSnapshot = hospitalSupplierBindSnapshotService.resolve(hospitalIdLong, supplierIdLong);
+
         String orderId = ZsUuid7.newString();
         Map<String, Object> orderInsert = buildOrderInsert(orderId, customer, masterRow, receiveChannel, scmSupCode,
-            scmHospitalCode, scmHospitalId, scmSupplierId);
+            scmHospitalCode, scmHospitalId, scmSupplierId, hospitalIdLong, supplierIdLong, hsBindSnapshot);
         zsTpOrderMapper.insertOrder(orderInsert);
 
         String tenantId = str(body.get("TENANT_ID"));
@@ -277,8 +284,25 @@ public class ZsOrderReceiveService
         return fallback;
     }
 
+    private static Long parseLongOrNull(String s)
+    {
+        if (s == null || s.trim().isEmpty())
+        {
+            return null;
+        }
+        try
+        {
+            return Long.parseLong(s.trim());
+        }
+        catch (NumberFormatException e)
+        {
+            return null;
+        }
+    }
+
     private static Map<String, Object> buildOrderInsert(String id, String customer, Map<String, Object> row, String receiveChannel,
-        String scmSupCode, String scmHospitalCode, String scmHospitalId, String scmSupplierId)
+        String scmSupCode, String scmHospitalCode, String scmHospitalId, String scmSupplierId,
+        Long hospitalId, Long supplierId, String hsBindSnapshot)
     {
         Map<String, Object> m = new HashMap<>(32);
         m.put("id", id);
@@ -289,6 +313,9 @@ public class ZsOrderReceiveService
         m.put("scmHospitalCode", scmHospitalCode);
         m.put("scmHospitalId", scmHospitalId);
         m.put("scmSupplierId", scmSupplierId);
+        m.put("hospitalId", hospitalId);
+        m.put("supplierId", supplierId);
+        m.put("hsBindSnapshot", hsBindSnapshot);
         m.put("sheetJe", toDecimal(row.get("SHEET_JE")));
         m.put("dh", str(row.get("DH")));
         m.put("supno", str(row.get("SUPNO")));

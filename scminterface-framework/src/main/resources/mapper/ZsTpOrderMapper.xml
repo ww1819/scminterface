@@ -17,12 +17,14 @@
             id, third_party_pk, customer,
             sheet_je, dh, supno, sup, supno2, sup2, ckno, ck, pc, oper, bz, jsfs, receive_channel, scm_sup_code,
             scm_hospital_code, scm_hospital_id, scm_supplier_id,
+            hospital_id, supplier_id, hs_bind_snapshot,
             ksbh, ksmc, zjly,
             create_by, create_time, del_flag
         ) values (
             #{id}, #{thirdPartyPk}, #{customer},
             #{sheetJe}, #{dh}, #{supno}, #{sup}, #{supno2}, #{sup2}, #{ckno}, #{ck}, #{pc}, #{oper}, #{bz}, #{jsfs}, #{receiveChannel}, #{scmSupCode},
             #{scmHospitalCode}, #{scmHospitalId}, #{scmSupplierId},
+            #{hospitalId}, #{supplierId}, #{hsBindSnapshot},
             #{ksbh}, #{ksmc}, #{zjly},
             #{createBy}, now(), '0'
         )

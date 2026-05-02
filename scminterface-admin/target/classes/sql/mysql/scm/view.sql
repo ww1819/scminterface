@@ -21,6 +21,9 @@ SELECT
   scm_hospital_code,
   scm_hospital_id,
   scm_supplier_id,
+  hospital_id,
+  supplier_id,
+  hs_bind_snapshot,
   create_time,
   update_time
 FROM zs_tp_order

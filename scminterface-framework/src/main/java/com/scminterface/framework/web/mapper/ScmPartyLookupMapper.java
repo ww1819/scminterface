@@ -45,4 +45,16 @@ public interface ScmPartyLookupMapper
         @Param("spdTenantId") String spdTenantId,
         @Param("requestIp") String requestIp,
         @Param("createBy") String createBy);
+
+    /**
+     * 医院-供应商关联行（未删除），用于解析绑定快照
+     */
+    Map<String, Object> selectHospitalSupplierRelationRow(@Param("hospitalId") Long hospitalId,
+        @Param("supplierId") Long supplierId);
+
+    /**
+     * 待审核的关联申请数量
+     */
+    int countPendingHospitalSupplierApply(@Param("hospitalId") String hospitalId,
+        @Param("supplierId") String supplierId);
 }
