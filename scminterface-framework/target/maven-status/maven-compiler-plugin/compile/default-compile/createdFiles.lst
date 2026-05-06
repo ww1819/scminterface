@@ -10,6 +10,7 @@ com\scminterface\framework\config\ScheduledTaskConfig$2.class
 com\scminterface\framework\web\mapper\HisHcInfoMapper.class
 com\scminterface\framework\web\service\SpdSystemConfigService.class
 com\scminterface\framework\web\service\ZsOrderReceiveService.class
+com\scminterface\framework\web\service\HospitalSupplierBindSnapshotService.class
 com\scminterface\framework\web\controller\ScheduledTaskController.class
 com\scminterface\framework\config\properties\PublicInterfaceProperties.class
 com\scminterface\framework\web\controller\SpdScmSupplierController.class

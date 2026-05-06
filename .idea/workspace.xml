@@ -15,6 +15,9 @@
       <entry key="_D:/aspt_project/scminterface" value="3BslVj2WHAjY6UEITAcdbXGN7QZ" />
     </persistenceIdMap>
   </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="134" />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -66,6 +69,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;Spring Boot.ScminterfaceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
@@ -129,6 +133,8 @@
       <workItem from="1777531975955" duration="443000" />
       <workItem from="1777532456122" duration="14000" />
       <workItem from="1777535952091" duration="29000" />
+      <workItem from="1778032747048" duration="386000" />
+      <workItem from="1778033157215" duration="103000" />
     </task>
     <servers />
   </component>

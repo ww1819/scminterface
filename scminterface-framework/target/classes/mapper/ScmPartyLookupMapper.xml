@@ -11,10 +11,28 @@
         limit 1
     </select>
 
+    <select id="selectHospitalIdByHospitalName" resultType="java.lang.String">
+        select cast(hospital_id as char)
+        from scm_hospital
+        where (hospital_name = #{hospitalName}
+            or (hospital_short_name is not null and hospital_short_name != '' and hospital_short_name = #{hospitalName}))
+          and (del_flag is null or del_flag = '0')
+        limit 1
+    </select>
+
     <select id="selectSupplierIdBySupplierCode" resultType="java.lang.String">
         select cast(supplier_id as char)
         from scm_supplier
         where supplier_code = #{supplierCode}
+          and (del_flag is null or del_flag = '0')
+        limit 1
+    </select>
+
+    <select id="selectSupplierIdBySupplierName" resultType="java.lang.String">
+        select cast(supplier_id as char)
+        from scm_supplier
+        where (company_name = #{supplierName}
+            or (company_short_name is not null and company_short_name != '' and company_short_name = #{supplierName}))
           and (del_flag is null or del_flag = '0')
         limit 1
     </select>

@@ -124,6 +124,38 @@ public class ZsOrderReceiveService
             }
         }
 
+        // 编码缺失或未命中时，按名称兜底解析，尽量自动回填主表 hospital_id/supplier_id
+        if (isBlank(scmHospitalId))
+        {
+            String hospitalNameCandidate = firstNonBlank(
+                str(masterRow.get("HOSPITAL_NAME")),
+                str(masterRow.get("YYMC")));
+            hospitalNameCandidate = firstNonBlank(hospitalNameCandidate, scmHospitalCode);
+            if (!isBlank(hospitalNameCandidate))
+            {
+                scmHospitalId = scmPartyLookupMapper.selectHospitalIdByHospitalName(hospitalNameCandidate.trim());
+                if (scmHospitalId != null)
+                {
+                    log.info("ZS receive: 医院按名称匹配成功 hospitalName={} hospitalId={}", hospitalNameCandidate, scmHospitalId);
+                }
+            }
+        }
+        if (isBlank(scmSupplierId))
+        {
+            String supplierNameCandidate = firstNonBlank(
+                str(masterRow.get("SUP")),
+                str(masterRow.get("SUP2")));
+            supplierNameCandidate = firstNonBlank(supplierNameCandidate, scmSupCode);
+            if (!isBlank(supplierNameCandidate))
+            {
+                scmSupplierId = scmPartyLookupMapper.selectSupplierIdBySupplierName(supplierNameCandidate.trim());
+                if (scmSupplierId != null)
+                {
+                    log.info("ZS receive: 供应商按名称匹配成功 supplierName={} supplierId={}", supplierNameCandidate, scmSupplierId);
+                }
+            }
+        }
+
         Long hospitalIdLong = parseLongOrNull(scmHospitalId);
         Long supplierIdLong = parseLongOrNull(scmSupplierId);
         String hsBindSnapshot = hospitalSupplierBindSnapshotService.resolve(hospitalIdLong, supplierIdLong);

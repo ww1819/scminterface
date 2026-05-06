@@ -18,9 +18,19 @@ public interface ScmPartyLookupMapper
     String selectHospitalIdByHospitalCode(@Param("hospitalCode") String hospitalCode);
 
     /**
+     * 按医院名称（含简称）查询未删除医院的 hospital_id（字符串）
+     */
+    String selectHospitalIdByHospitalName(@Param("hospitalName") String hospitalName);
+
+    /**
      * 按供应商编码查询未删除供应商的 supplier_id（字符串）
      */
     String selectSupplierIdBySupplierCode(@Param("supplierCode") String supplierCode);
+
+    /**
+     * 按供应商名称（含简称）查询未删除供应商的 supplier_id（字符串）
+     */
+    String selectSupplierIdBySupplierName(@Param("supplierName") String supplierName);
 
     /**
      * 医院与供应商在平台已建立有效关联（绑定+审核通过+启用）
