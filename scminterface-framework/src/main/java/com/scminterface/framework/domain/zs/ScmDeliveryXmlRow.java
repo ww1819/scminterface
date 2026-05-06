@@ -18,7 +18,15 @@ public class ScmDeliveryXmlRow
     /** scm_delivery.zs_customer_id，XML 节点 CUSTOMER */
     private String zsCustomerId;
     private String invoiceNo;
+    /** 配送单快照：订单侧仓库ID（varchar） */
+    private String srcOrderWarehouseId;
     private String srcOrderWarehouseName;
+    /** 配送单快照：订单侧供应商ID、名称 */
+    private String srcOrderSupplierId;
+    private String srcOrderSupplierName;
+    /** 配送单快照：订单侧科室ID、名称 */
+    private String srcOrderDeptId;
+    private String srcOrderDeptName;
     private String warehouse;
     private Date invoiceDate;
     private BigDecimal invoiceAmount;
@@ -103,6 +111,56 @@ public class ScmDeliveryXmlRow
     public void setSrcOrderWarehouseName(String srcOrderWarehouseName)
     {
         this.srcOrderWarehouseName = srcOrderWarehouseName;
+    }
+
+    public String getSrcOrderWarehouseId()
+    {
+        return srcOrderWarehouseId;
+    }
+
+    public void setSrcOrderWarehouseId(String srcOrderWarehouseId)
+    {
+        this.srcOrderWarehouseId = srcOrderWarehouseId;
+    }
+
+    public String getSrcOrderSupplierId()
+    {
+        return srcOrderSupplierId;
+    }
+
+    public void setSrcOrderSupplierId(String srcOrderSupplierId)
+    {
+        this.srcOrderSupplierId = srcOrderSupplierId;
+    }
+
+    public String getSrcOrderSupplierName()
+    {
+        return srcOrderSupplierName;
+    }
+
+    public void setSrcOrderSupplierName(String srcOrderSupplierName)
+    {
+        this.srcOrderSupplierName = srcOrderSupplierName;
+    }
+
+    public String getSrcOrderDeptId()
+    {
+        return srcOrderDeptId;
+    }
+
+    public void setSrcOrderDeptId(String srcOrderDeptId)
+    {
+        this.srcOrderDeptId = srcOrderDeptId;
+    }
+
+    public String getSrcOrderDeptName()
+    {
+        return srcOrderDeptName;
+    }
+
+    public void setSrcOrderDeptName(String srcOrderDeptName)
+    {
+        this.srcOrderDeptName = srcOrderDeptName;
     }
 
     public String getWarehouse()

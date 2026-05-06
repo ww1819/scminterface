@@ -11,6 +11,10 @@ public class ZsTpOrderXmlRow
     private String ck;
     private String ckno;
     private String ksbh;
+    /** 供应商名称（第一方订单导出时来自 scm_order / scm_supplier） */
+    private String supName;
+    /** 科室名称（第一方订单） */
+    private String ksmc;
     private String jsfs;
     private String zjly;
 
@@ -72,6 +76,26 @@ public class ZsTpOrderXmlRow
     public void setKsbh(String ksbh)
     {
         this.ksbh = ksbh;
+    }
+
+    public String getSupName()
+    {
+        return supName;
+    }
+
+    public void setSupName(String supName)
+    {
+        this.supName = supName;
+    }
+
+    public String getKsmc()
+    {
+        return ksmc;
+    }
+
+    public void setKsmc(String ksmc)
+    {
+        this.ksmc = ksmc;
     }
 
     public String getJsfs()

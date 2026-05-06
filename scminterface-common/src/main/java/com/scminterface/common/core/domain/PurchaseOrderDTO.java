@@ -41,6 +41,22 @@ public class PurchaseOrderDTO implements Serializable
     /** 科室ID（SPD端，可能为空） */
     private Long departmentId;
 
+    /**
+     * 申请科室名称（SPD fd_department.name；写入 SCM scm_order.apply_dept / order_dept_name）
+     */
+    private String applyDepartmentName;
+
+    /**
+     * SPD 仓库主键（字符串，varchar 传输；可与 {@link #warehouseId} 并存）
+     */
+    private String warehouseIdStr;
+
+    /** SPD 供应商主键（字符串，varchar 传输） */
+    private String supplierIdStr;
+
+    /** SPD 申请科室主键（字符串，varchar 传输） */
+    private String applyDeptIdStr;
+
     /** SPD 租户ID（sb_customer.customer_id） */
     private String spdTenantId;
 
@@ -157,6 +173,46 @@ public class PurchaseOrderDTO implements Serializable
     public void setDepartmentId(Long departmentId)
     {
         this.departmentId = departmentId;
+    }
+
+    public String getApplyDepartmentName()
+    {
+        return applyDepartmentName;
+    }
+
+    public void setApplyDepartmentName(String applyDepartmentName)
+    {
+        this.applyDepartmentName = applyDepartmentName;
+    }
+
+    public String getWarehouseIdStr()
+    {
+        return warehouseIdStr;
+    }
+
+    public void setWarehouseIdStr(String warehouseIdStr)
+    {
+        this.warehouseIdStr = warehouseIdStr;
+    }
+
+    public String getSupplierIdStr()
+    {
+        return supplierIdStr;
+    }
+
+    public void setSupplierIdStr(String supplierIdStr)
+    {
+        this.supplierIdStr = supplierIdStr;
+    }
+
+    public String getApplyDeptIdStr()
+    {
+        return applyDeptIdStr;
+    }
+
+    public void setApplyDeptIdStr(String applyDeptIdStr)
+    {
+        this.applyDeptIdStr = applyDeptIdStr;
     }
 
     public String getSpdTenantId()

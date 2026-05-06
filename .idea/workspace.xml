@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf073aeb-cc7a-4374-83aa-b49b51d24c02" name="更改" comment="" />
+    <list default="true" id="cf073aeb-cc7a-4374-83aa-b49b51d24c02" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/scminterface-framework/src/main/java/com/scminterface/framework/config/ScheduledTaskConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/scminterface-framework/src/main/java/com/scminterface/framework/config/ScheduledTaskConfig.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -135,6 +137,8 @@
       <workItem from="1777535952091" duration="29000" />
       <workItem from="1778032747048" duration="386000" />
       <workItem from="1778033157215" duration="103000" />
+      <workItem from="1778049109736" duration="1191000" />
+      <workItem from="1778057765603" duration="2265000" />
     </task>
     <servers />
   </component>
