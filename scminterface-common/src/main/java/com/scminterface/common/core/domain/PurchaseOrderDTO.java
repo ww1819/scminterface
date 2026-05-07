@@ -23,7 +23,10 @@ public class PurchaseOrderDTO implements Serializable
     /** 计划单号（如有） */
     private String planNo;
 
-    /** 供应商ID（SPD端） */
+    /**
+     * SPD 采购订单主表供应商主键 {@code purchase_order.supplier_id}（fd_supplier.id）。
+     * 接收端落库至供应链 {@code scm_order.spd_supplier_id}（varchar）；{@code scm_order.supplier_id} 仍为平台供应商主键。
+     */
     private Long supplierId;
 
     /** 供应商名称（SPD fd_supplier.name，用于与 SCM scm_supplier.company_name 匹配） */

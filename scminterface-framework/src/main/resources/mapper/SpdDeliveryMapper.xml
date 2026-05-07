@@ -39,6 +39,7 @@
                d.invoice_no            as invoiceNo,
                d.src_order_warehouse_id   as srcOrderWarehouseId,
                d.src_order_warehouse_name as srcOrderWarehouseName,
+               d.spd_supplier_id          as spdSupplierId,
                d.src_order_supplier_id    as srcOrderSupplierId,
                d.src_order_supplier_name  as srcOrderSupplierName,
                d.src_order_dept_id        as srcOrderDeptId,

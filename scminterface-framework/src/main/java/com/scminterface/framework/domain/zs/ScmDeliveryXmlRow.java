@@ -21,6 +21,8 @@ public class ScmDeliveryXmlRow
     /** 配送单快照：订单侧仓库ID（varchar） */
     private String srcOrderWarehouseId;
     private String srcOrderWarehouseName;
+    /** 配送单表头：SPD 供应商主键（scm_delivery.spd_supplier_id） */
+    private String spdSupplierId;
     /** 配送单快照：订单侧供应商ID、名称 */
     private String srcOrderSupplierId;
     private String srcOrderSupplierName;
@@ -126,6 +128,16 @@ public class ScmDeliveryXmlRow
     public String getSrcOrderSupplierId()
     {
         return srcOrderSupplierId;
+    }
+
+    public String getSpdSupplierId()
+    {
+        return spdSupplierId;
+    }
+
+    public void setSpdSupplierId(String spdSupplierId)
+    {
+        this.spdSupplierId = spdSupplierId;
     }
 
     public void setSrcOrderSupplierId(String srcOrderSupplierId)

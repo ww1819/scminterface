@@ -257,11 +257,17 @@ public class ScmDataService
                 String applyDeptName = trimToNull(order.getApplyDepartmentName());
                 String applyDeptForColumn = truncateVarchar(applyDeptName, 100);
                 String orderDeptNameForColumn = truncateVarchar(applyDeptName, 200);
+                String spdPurchaseSupplierId = trimToNull(order.getSupplierIdStr());
+                if (spdPurchaseSupplierId == null && order.getSupplierId() != null)
+                {
+                    spdPurchaseSupplierId = String.valueOf(order.getSupplierId());
+                }
 
                 Map<String, Object> orderMap = new HashMap<>();
                 orderMap.put("orderNo", order.getOrderNo());
                 orderMap.put("hospitalId", scmHospitalId);
                 orderMap.put("supplierId", scmSupplierId);
+                orderMap.put("spdSupplierId", spdPurchaseSupplierId);
                 orderMap.put("tenantId", trimToNull(order.getSpdTenantId()));
                 orderMap.put("warehouseId", spdWarehouseId);
                 orderMap.put("warehouseName", trimToNull(order.getWarehouseName()));
