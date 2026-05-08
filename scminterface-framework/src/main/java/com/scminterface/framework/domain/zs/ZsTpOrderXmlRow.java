@@ -17,6 +17,8 @@ public class ZsTpOrderXmlRow
     private String ksmc;
     private String jsfs;
     private String zjly;
+    /** 平台医院编码（zs_tp_order.scm_hospital_code） */
+    private String scmHospitalCode;
 
     public String getId()
     {
@@ -116,5 +118,15 @@ public class ZsTpOrderXmlRow
     public void setZjly(String zjly)
     {
         this.zjly = zjly;
+    }
+
+    public String getScmHospitalCode()
+    {
+        return scmHospitalCode;
+    }
+
+    public void setScmHospitalCode(String scmHospitalCode)
+    {
+        this.scmHospitalCode = scmHospitalCode;
     }
 }

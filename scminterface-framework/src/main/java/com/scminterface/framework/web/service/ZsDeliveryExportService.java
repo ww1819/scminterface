@@ -28,17 +28,48 @@ public class ZsDeliveryExportService
     private ScmZsDeliveryXmlMapper scmZsDeliveryXmlMapper;
 
     @DataSource(DataSourceType.SCM)
-    public String buildZsDeliveryDataXml(String deliveryNo)
+    public String buildZsDeliveryDataXml(String deliveryNo, String hospitalCode)
     {
         if (StringUtils.isEmpty(deliveryNo))
         {
             throw new ServiceException("配送单号不能为空");
         }
+        if (StringUtils.isEmpty(hospitalCode))
+        {
+            throw new ServiceException("平台医院编码不能为空");
+        }
         String no = deliveryNo.trim();
-        ScmDeliveryXmlRow d = scmZsDeliveryXmlMapper.selectDeliveryByDeliveryNo(no);
+        String hc = hospitalCode.trim();
+        return buildZsDeliveryDataXmlByResolvedDeliveryNo(no, hc);
+    }
+
+    @DataSource(DataSourceType.SCM)
+    public String buildZsDeliveryDataXmlByKeyword(String keyword, String hospitalCode)
+    {
+        if (StringUtils.isEmpty(keyword))
+        {
+            throw new ServiceException("查询关键字不能为空");
+        }
+        if (StringUtils.isEmpty(hospitalCode))
+        {
+            throw new ServiceException("平台医院编码不能为空");
+        }
+        String key = keyword.trim();
+        String hc = hospitalCode.trim();
+        String resolvedDeliveryNo = scmZsDeliveryXmlMapper.selectLatestDeliveryNoByKeyword(key, hc);
+        if (StringUtils.isEmpty(resolvedDeliveryNo))
+        {
+            throw new ServiceException("未匹配到配送单（关键字: " + key + "，医院编码: " + hc + "）");
+        }
+        return buildZsDeliveryDataXmlByResolvedDeliveryNo(resolvedDeliveryNo, hc);
+    }
+
+    private String buildZsDeliveryDataXmlByResolvedDeliveryNo(String no, String hospitalCode)
+    {
+        ScmDeliveryXmlRow d = scmZsDeliveryXmlMapper.selectDeliveryByDeliveryNo(no, hospitalCode);
         if (d == null)
         {
-            throw new ServiceException("配送单不存在：" + no);
+            throw new ServiceException("配送单不存在或无权限访问：" + no);
         }
         if (StringUtils.isEmpty(d.getZsOrderId()))
         {
