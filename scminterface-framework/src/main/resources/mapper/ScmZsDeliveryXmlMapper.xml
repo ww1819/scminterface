@@ -75,7 +75,7 @@
           and z.scm_hospital_code = #{hospitalCode}
           and (
             d.delivery_no = #{keyword}
-            or cast(zod.dsb as char) = #{keyword}
+            or d.delivery_no like concat('%', #{keyword})
           )
         order by d.create_time desc
         limit 1
