@@ -10,6 +10,24 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="CopilotChats">
+    <option name="panelChat">
+      <chat>
+        <option name="activeSessionId" value="e748c59c-2af4-4615-86a6-592b517a4a48" />
+        <option name="sessions">
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="e748c59c-2af4-4615-86a6-592b517a4a48" />
+            <option name="modeId" value="Agent" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+        </option>
+        <option name="type" value="PANEL" />
+      </chat>
+    </option>
+  </component>
   <component name="CopilotPersistence">
     <persistenceIdMap>
       <entry key="_D:/aspt_project/scminterface" value="3BslVj2WHAjY6UEITAcdbXGN7QZ" />
@@ -141,6 +159,7 @@
       <workItem from="1778136456780" duration="850000" />
       <workItem from="1778139816806" duration="1567000" />
       <workItem from="1778148366043" duration="343000" />
+      <workItem from="1778239105054" duration="1117000" />
     </task>
     <servers />
   </component>
