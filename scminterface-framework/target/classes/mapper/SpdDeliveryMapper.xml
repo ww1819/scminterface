@@ -21,7 +21,7 @@
             left join scm_delivery_detail dd on dd.delivery_id = d.delivery_id
                 and (dd.del_flag is null or dd.del_flag = '' or dd.del_flag = '0')
             left join zs_tp_order_detail zod on zod.id = dd.zs_order_detail_id and zod.del_flag = '0'
-        where (d.del_flag is null or d.del_flag = '0')
+        where (d.del_flag is null or d.del_flag = '' or d.del_flag = '0')
           and (
             d.delivery_no like concat('%', #{keyword}, '%')
             or cast(zod.dsb as char) like concat('%', #{keyword}, '%')
@@ -52,7 +52,7 @@
                d.audit_time            as auditTime
         from scm_delivery d
         where d.delivery_no = #{deliveryNo}
-          and (d.del_flag is null or d.del_flag = '0')
+          and (d.del_flag is null or d.del_flag = '' or d.del_flag = '0')
         limit 1
     </select>
 
@@ -89,6 +89,8 @@
                d.register_no           as registerNo,
                d.unit                  as unit
         from scm_delivery_detail d
+        inner join scm_delivery delm on delm.delivery_id = d.delivery_id
+            and (delm.del_flag is null or delm.del_flag = '' or delm.del_flag = '0')
         where d.delivery_id = #{deliveryId}
           and (d.del_flag is null or d.del_flag = '' or d.del_flag = '0')
         order by d.detail_id
