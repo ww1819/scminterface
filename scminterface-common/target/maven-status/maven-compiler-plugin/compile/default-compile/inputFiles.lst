@@ -1,0 +1,11 @@
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\annotation\DataSource.java
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\enums\DataSourceType.java
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\core\domain\MaterialArchiveDTO.java
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\exception\ServiceException.java
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\utils\StringUtils.java
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\utils\spring\SpringUtils.java
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\core\domain\PurchaseOrderDTO.java
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\utils\ServletUtils.java
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\core\domain\AjaxResult.java
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\constant\Constants.java
+D:\aspt_project\scminterface\scminterface-common\src\main\java\com\scminterface\common\constant\HttpStatus.java

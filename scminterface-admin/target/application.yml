@@ -1,0 +1,119 @@
+# ??????
+scm:
+  name: Scm
+  version: 4.8.0
+  copyrightYear: 2025
+  demoEnabled: false
+  profile: D:/scm/uploadPath
+  addressEnabled: false
+  legacy:
+    scope-repair:
+      # 是否在启动时执行补齐任务（关闭则完全不跑）
+      enabled: true
+      # true：仅当应用版本 scm.version 与库中已执行记录不一致时执行（推荐，防重复）
+      # false：每次启动都执行（仅建议开发/排障）
+      upgrade-only: true
+      # 手工「补齐」按钮冷却时间（毫秒），防连点；传 force=true 可跳过
+      manual-cooldown-ms: 120000
+  sql:
+    init:
+      enabled: true
+      location: classpath:sql/mysql/
+      fail-on-error: false
+
+# ??????
+server:
+  # ????HTTP??
+  port: 8888
+  servlet:
+    # ??????
+    context-path: /
+  tomcat:
+    uri-encoding: UTF-8
+    accept-count: 1000
+    threads:
+      max: 800
+      min-spare: 100
+
+# ????
+logging:
+  level:
+    com.scm: debug
+    org.springframework: warn
+
+# ????
+user:
+  password:
+    maxRetryCount: 5
+
+# Spring??
+spring:
+  thymeleaf:
+    mode: HTML
+    encoding: utf-8
+    cache: false
+  messages:
+    basename: static/i18n/messages
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+  profiles:
+    active: druid
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+  devtools:
+    restart:
+      enabled: true
+
+# MyBatis
+mybatis:
+  typeAliasesPackage: com.scm.**.domain
+  mapperLocations: classpath*:mapper/**/*Mapper.xml
+  configLocation: classpath:mybatis/mybatis-config.xml
+
+# PageHelper????
+pagehelper:
+  helperDialect: mysql
+  supportMethodsArguments: true
+  params: count=countSql
+
+# Shiro
+shiro:
+  user:
+    loginUrl: /login
+    unauthorizedUrl: /unauth
+    indexUrl: /index
+    captchaEnabled: false
+    captchaType: math
+  cookie:
+    domain:
+    path: /
+    httpOnly: true
+    maxAge: 30
+    cipherKey:
+  session:
+    # ??????-1 ??????
+    expireTime: 30
+    dbSyncPeriod: 1
+    validationInterval: 10
+    maxSession: -1
+    kickoutAfter: false
+  rememberMe:
+    enabled: true
+
+# XSS??
+xss:
+  enabled: true
+  excludes: /system/notice/*
+  urlPatterns: /system/*,/monitor/*,/tool/*
+
+# CSRF??
+csrf:
+  enabled: false
+  whites: /druid
+
+# Swagger??
+swagger:
+  enabled: true
