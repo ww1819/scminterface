@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.ScmOrderMapper">
+
+    <select id="selectOrderIdByOrderNo" parameterType="String" resultType="Long">
+        select order_id
+        from scm_order
+        where order_no = #{orderNo}
+          and del_flag = '0'
+        limit 1
+    </select>
+
+    <insert id="insertOrder" parameterType="java.util.HashMap" useGeneratedKeys="true" keyProperty="orderId">
+        insert into scm_order(
+            order_no,
+            hospital_id,
+            supplier_id,
+            tenant_id,
+            warehouse_id,
+            warehouse_name,
+            order_supplier_name,
+            order_dept_id,
+            order_dept_name,
+            order_date,
+            order_amount,
+            order_status,
+            apply_dept,
+            remark,
+            create_by,
+            create_time,
+            del_flag,
+            spd_order_id,
+            source_system,
+            spd_tenant_id,
+            spd_snapshot_hospital_code,
+            spd_snapshot_supplier_code,
+            hs_bind_snapshot,
+            spd_supplier_id
+        ) values (
+            #{orderNo},
+            #{hospitalId},
+            #{supplierId},
+            #{tenantId},
+            #{warehouseId},
+            #{warehouseName},
+            #{orderSupplierName},
+            #{orderDeptId},
+            #{orderDeptName},
+            #{orderDate},
+            #{orderAmount},
+            #{orderStatus},
+            #{applyDept},
+            #{remark},
+            #{createBy},
+            now(),
+            '0',
+            #{spdOrderId},
+            #{sourceSystem},
+            #{spdTenantId},
+            #{spdSnapshotHospitalCode},
+            #{spdSnapshotSupplierCode},
+            #{hsBindSnapshot},
+            #{spdSupplierId}
+        )
+    </insert>
+
+    <update id="updateOrder" parameterType="java.util.HashMap">
+        update scm_order
+        set hospital_id = #{hospitalId},
+            supplier_id = #{supplierId},
+            tenant_id = #{tenantId},
+            warehouse_id = #{warehouseId},
+            warehouse_name = #{warehouseName},
+            order_supplier_name = #{orderSupplierName},
+            order_dept_id = #{orderDeptId},
+            order_dept_name = #{orderDeptName},
+            order_date = #{orderDate},
+            order_amount = #{orderAmount},
+            order_status = #{orderStatus},
+            apply_dept = #{applyDept},
+            remark = #{remark},
+            spd_order_id = #{spdOrderId},
+            source_system = #{sourceSystem},
+            spd_tenant_id = #{spdTenantId},
+            spd_snapshot_hospital_code = #{spdSnapshotHospitalCode},
+            spd_snapshot_supplier_code = #{spdSnapshotSupplierCode},
+            hs_bind_snapshot = #{hsBindSnapshot},
+            spd_supplier_id = #{spdSupplierId},
+            update_by = #{updateBy},
+            update_time = now()
+        where order_id = #{orderId}
+    </update>
+
+    <delete id="deleteOrderDetailsByOrderId" parameterType="Long">
+        delete from scm_order_detail where order_id = #{orderId}
+    </delete>
+
+    <insert id="insertOrderDetail" parameterType="java.util.HashMap">
+        insert into scm_order_detail(
+            order_id,
+            material_id,
+            material_code,
+            material_name,
+            specification,
+            model,
+            unit,
+            purchase_price,
+            order_quantity,
+            remaining_quantity,
+            amount,
+            manufacturer_name,
+            register_no,
+            remark,
+            create_by,
+            create_time,
+            del_flag
+        ) values (
+            #{orderId},
+            #{materialId},
+            #{materialCode},
+            #{materialName},
+            #{specification},
+            #{model},
+            #{unit},
+            #{purchasePrice},
+            #{orderQuantity},
+            #{remainingQuantity},
+            #{amount},
+            #{manufacturerName},
+            #{registerNo},
+            #{remark},
+            #{createBy},
+            now(),
+            '0'
+        )
+    </insert>
+
+</mapper>
+

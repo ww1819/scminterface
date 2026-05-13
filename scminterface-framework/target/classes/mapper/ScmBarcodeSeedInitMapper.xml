@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.ScmBarcodeSeedInitMapper">
+
+    <insert id="ensureTenantSeed">
+        insert into scm_barcode_seed (id, counter_type, tenant_id, zs_customer_id, warehouse_id, high_low_flag, seed_value, create_time)
+        select #{id}, 'T', #{tenantId}, '', #{warehouseId}, #{highLowFlag}, 0, now()
+        from dual
+        where not exists (
+            select 1 from scm_barcode_seed s
+            where s.counter_type = 'T' and s.tenant_id = #{tenantId} and s.zs_customer_id = ''
+              and s.warehouse_id = #{warehouseId} and s.high_low_flag = #{highLowFlag}
+        )
+    </insert>
+
+    <insert id="ensureZsCustomerSeed">
+        insert into scm_barcode_seed (id, counter_type, tenant_id, zs_customer_id, warehouse_id, high_low_flag, seed_value, create_time)
+        select #{id}, 'Z', #{tenantId}, #{zsCustomerId}, #{warehouseId}, #{highLowFlag}, 0, now()
+        from dual
+        where not exists (
+            select 1 from scm_barcode_seed s
+            where s.counter_type = 'Z' and s.tenant_id = #{tenantId} and s.zs_customer_id = #{zsCustomerId}
+              and s.warehouse_id = #{warehouseId} and s.high_low_flag = #{highLowFlag}
+        )
+    </insert>
+</mapper>
