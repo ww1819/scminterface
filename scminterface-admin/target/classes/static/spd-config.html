@@ -276,6 +276,35 @@
     </div>
 
     <div class="container">
+        <div class="section">
+            <h2 class="section-title">HIS 计费自动处理（租户 hengsui-third-001）</h2>
+            <p style="color:#666;font-size:14px;margin-bottom:16px;">
+                定时任务同步 HIS 计费至 SPD 镜像后，若开关开启则调用 SPD 执行低值自动消耗与退费返还。
+                请在耗材 SPD「参数设置」配置 <code>spd.internal.base_url</code>、<code>his.internal.api_key</code>（sys_config）；计费开关保存在 sb_tenant_setting。
+            </p>
+            <div class="form-group">
+                <label>自动处理收费（低值消耗）</label>
+                <div class="status-switch">
+                    <label class="switch">
+                        <input type="checkbox" id="lvAutoConsumeEnabled" onchange="syncBillingSwitchLabels()">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="lvAutoConsumeText">关闭</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>自动处理退费（库存返还）</label>
+                <div class="status-switch">
+                    <label class="switch">
+                        <input type="checkbox" id="billingAutoRefundEnabled" onchange="syncBillingSwitchLabels()">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="billingAutoRefundText">关闭</span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-success" onclick="saveBillingSettings()">保存计费开关</button>
+        </div>
+
         <!-- 系统参数配置 -->
         <div class="section">
             <h2 class="section-title">系统参数配置</h2>
@@ -706,7 +735,37 @@
             document.getElementById('statusText').textContent = enabled ? '启用' : '停用';
         }
 
+        async function loadBillingSettings() {
+            const result = await get('/api/hengsui/billingSetting');
+            if (result && result.code === 200 && result.data) {
+                document.getElementById('lvAutoConsumeEnabled').checked = result.data.lvAutoConsumeEnabled === '1';
+                document.getElementById('billingAutoRefundEnabled').checked = result.data.billingAutoRefundEnabled === '1';
+                syncBillingSwitchLabels();
+            }
+        }
+
+        function syncBillingSwitchLabels() {
+            document.getElementById('lvAutoConsumeText').textContent =
+                document.getElementById('lvAutoConsumeEnabled').checked ? '开启' : '关闭';
+            document.getElementById('billingAutoRefundText').textContent =
+                document.getElementById('billingAutoRefundEnabled').checked ? '开启' : '关闭';
+        }
+
+        async function saveBillingSettings() {
+            const body = {
+                lvAutoConsumeEnabled: document.getElementById('lvAutoConsumeEnabled').checked ? '1' : '0',
+                billingAutoRefundEnabled: document.getElementById('billingAutoRefundEnabled').checked ? '1' : '0'
+            };
+            const result = await request('/api/hengsui/billingSetting', { method: 'PUT', body: body });
+            if (result && result.code === 200) {
+                alert('计费开关已保存（与 SPD 共用 sb_tenant_setting）');
+            } else {
+                alert(result.msg || '保存失败');
+            }
+        }
+
         // 页面加载时初始化
+        loadBillingSettings();
         loadConfigs();
         loadTaskClasses();
         loadTaskList();

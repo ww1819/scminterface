@@ -27,6 +27,8 @@ import com.scminterface.customer.hengsuiThird.his.model.HisIdFingerprintRow;
 import com.scminterface.customer.hengsuiThird.his.model.HisInpatientChargeMirrorRow;
 import com.scminterface.customer.hengsuiThird.his.model.HisOutpatientChargeMirrorRow;
 import com.scminterface.customer.hengsuiThird.his.model.HisPatientChargeMirrorUnifiedRow;
+import com.scminterface.customer.hengsuiThird.his.HisChargeMirrorFetchSql;
+import com.scminterface.customer.hengsuiThird.his.service.SpdPatientChargeInternalClient;
 import com.scminterface.customer.hengsuiThird.his.support.HisChargeMirrorSyncSupport;
 import com.scminterface.framework.web.mapper.HisHcInfoMapper;
 import com.scminterface.framework.web.mapper.SpdSystemConfigMapper;
@@ -65,6 +67,9 @@ public class HengshuiTaskService
 
     @Autowired
     private HisPatientChargeMirrorUnifiedSyncMapper hisPatientChargeMirrorUnifiedSyncMapper;
+
+    @Autowired
+    private SpdPatientChargeInternalClient spdPatientChargeInternalClient;
 
     /**
      * 处理日期字段值，如果为空字符串则返回null
@@ -402,11 +407,7 @@ public class HengshuiTaskService
             Class.forName(driver);
             hisConnection = DriverManager.getConnection(url, username, password);
 
-            String sql = "SELECT inpatient_charge_id, CAST(NULL AS VARCHAR(32)) AS inpatient_charge_id_tf, patient_id, patient_name, inpatient_no, dept_code, dept_name, " +
-                        "doctor_id, doctor_name, charge_item_id, item_name, spec_model, batch_no, expire_date, " +
-                        "use_date, charge_date, quantity, unit_price, total_amount, charge_operator, remark " +
-                        "FROM v_inpatient_consumable_charge " +
-                        "WHERE charge_date >= DATEADD(day, -3, GETDATE())";
+            String sql = HisChargeMirrorFetchSql.SQLSERVER_INPATIENT_RECENT_3D;
 
             PreparedStatement pstmt = hisConnection.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
@@ -522,6 +523,8 @@ public class HengshuiTaskService
 
             log.info("HIS住院收费明细镜像同步完成，总计: {}, 新增: {}, 跳过: {}, drift: {}, batch: {}",
                 dataList.size(), inserted, skipped, drift, fetchBatchId);
+
+            triggerSpdAutoProcessAfterSync(tenantId, fetchBatchId, "INPATIENT", inserted);
         }
         catch (Exception e)
         {
@@ -584,11 +587,7 @@ public class HengshuiTaskService
             Class.forName(driver);
             hisConnection = DriverManager.getConnection(url, username, password);
 
-            String sql = "SELECT outpatient_charge_id, CAST(NULL AS VARCHAR(32)) AS outpatient_charge_id_tf, patient_id, patient_name, outpatient_no, clinic_code, clinic_name, " +
-                        "doctor_id, doctor_name, charge_item_id, item_name, spec_model, batch_no, expire_date, " +
-                        "charge_date, quantity, unit_price, total_amount, charge_operator, payment_type, receipt_no, remark " +
-                        "FROM v_outpatient_consumable_charge " +
-                        "WHERE charge_date >= DATEADD(day, -3, GETDATE())";
+            String sql = HisChargeMirrorFetchSql.SQLSERVER_OUTPATIENT_RECENT_3D;
 
             PreparedStatement pstmt = hisConnection.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
@@ -707,6 +706,8 @@ public class HengshuiTaskService
 
             log.info("HIS门诊收费明细镜像同步完成，总计: {}, 新增: {}, 跳过: {}, drift: {}, batch: {}",
                 dataList.size(), inserted, skipped, drift, fetchBatchId);
+
+            triggerSpdAutoProcessAfterSync(tenantId, fetchBatchId, "OUTPATIENT", inserted);
         }
         catch (Exception e)
         {
@@ -1015,6 +1016,25 @@ public class HengshuiTaskService
             {
                 hisPatientChargeMirrorUnifiedSyncMapper.insertBatch(unified);
             }
+        }
+    }
+
+    /**
+     * 本批次有新增镜像行时，委托 SPD 执行自动低值消耗/退费（开关读 sb_tenant_setting，与 SPD 一致）。
+     */
+    private void triggerSpdAutoProcessAfterSync(String tenantId, String fetchBatchId, String visitKind, int inserted)
+    {
+        if (inserted <= 0 || fetchBatchId == null)
+        {
+            return;
+        }
+        try
+        {
+            spdPatientChargeInternalClient.processFetchBatchAfterSync(tenantId, fetchBatchId, visitKind);
+        }
+        catch (Exception e)
+        {
+            log.warn("触发 SPD 计费自动处理失败 batch={} visitKind={} err={}", fetchBatchId, visitKind, e.toString());
         }
     }
 }
