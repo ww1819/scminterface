@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.HisMzSfmxMapper">
+
+    <!-- 批量插入或更新 -->
+    <insert id="batchInsertOrUpdate" parameterType="java.util.List">
+        insert into his_mz_sfmx(
+            outpatient_charge_id,
+            patient_id,
+            patient_name,
+            outpatient_no,
+            clinic_code,
+            clinic_name,
+            doctor_id,
+            doctor_name,
+            charge_item_id,
+            item_name,
+            spec_model,
+            batch_no,
+            expire_date,
+            charge_date,
+            quantity,
+            unit_price,
+            total_amount,
+            charge_operator,
+            payment_type,
+            receipt_no,
+            remark
+        )values
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.outpatientChargeId},
+                #{item.patientId},
+                #{item.patientName},
+                #{item.outpatientNo},
+                #{item.clinicCode},
+                #{item.clinicName},
+                #{item.doctorId},
+                #{item.doctorName},
+                #{item.chargeItemId},
+                #{item.itemName},
+                #{item.specModel},
+                #{item.batchNo},
+                #{item.expireDate},
+                #{item.chargeDate},
+                #{item.quantity},
+                #{item.unitPrice},
+                #{item.totalAmount},
+                #{item.chargeOperator},
+                #{item.paymentType},
+                #{item.receiptNo},
+                #{item.remark}
+            )
+        </foreach>
+        on duplicate key update
+            patient_id = values(patient_id),
+            patient_name = values(patient_name),
+            outpatient_no = values(outpatient_no),
+            clinic_code = values(clinic_code),
+            clinic_name = values(clinic_name),
+            doctor_id = values(doctor_id),
+            doctor_name = values(doctor_name),
+            charge_item_id = values(charge_item_id),
+            item_name = values(item_name),
+            spec_model = values(spec_model),
+            batch_no = values(batch_no),
+            expire_date = values(expire_date),
+            charge_date = values(charge_date),
+            quantity = values(quantity),
+            unit_price = values(unit_price),
+            total_amount = values(total_amount),
+            charge_operator = values(charge_operator),
+            payment_type = values(payment_type),
+            receipt_no = values(receipt_no),
+            remark = values(remark),
+            update_time = values(update_time)
+    </insert>
+
+    <!-- 查询所有已存在的outpatient_charge_id列表 -->
+    <select id="selectAllOutpatientChargeIds" resultType="Long">
+        select outpatient_charge_id
+        from his_mz_sfmx
+    </select>
+
+</mapper>
