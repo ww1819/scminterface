@@ -1,0 +1,117 @@
+2026-05-13 11:00:36.522 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 74056 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-05-13 11:00:36.523 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-05-13 11:00:36.523 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-05-13 11:00:37.656 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-0.0.0.0-8088"]
+2026-05-13 11:00:37.657 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-05-13 11:00:37.657 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-05-13 11:00:37.693 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-05-13 11:00:37.760 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-05-13 11:00:37.804 [restartedMain] WARN  com.scminterface.framework.config.DruidConfig - SPD/SCM 数据源均未启用，系统将以无数据库模式启动，仅支持不访问数据库的接口调用
+2026-05-13 11:00:37.806 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - 动态数据源初始化完成，可用数据源数量: 0
+2026-05-13 11:00:38.800 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-0.0.0.0-8088"]
+2026-05-13 11:00:39.036 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 2.824 seconds (JVM running for 3.159)
+2026-05-13 11:00:41.047 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-05-13 11:00:41.128 [Thread-5] WARN  c.s.framework.config.ScheduledTaskConfig - 获取SPD任务配置失败: nested exception is org.apache.ibatis.exceptions.PersistenceException: 
+### Error querying database.  Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+### The error may exist in file [E:\workspace\scminterface\scminterface-framework\target\classes\mapper\SpdScheduledTaskMapper.xml]
+### The error may involve com.scminterface.framework.web.mapper.SpdScheduledTaskMapper.selectAll
+### The error occurred while executing a query
+### Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+2026-05-13 11:00:41.129 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-05-13 11:00:41.131 [Thread-5] DEBUG c.s.framework.config.ScheduledTaskConfig - 注册旧版本SPD任务失败: nested exception is org.apache.ibatis.exceptions.PersistenceException: 
+### Error querying database.  Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+### The error may exist in file [E:\workspace\scminterface\scminterface-framework\target\classes\mapper\SpdScheduledTaskMapper.xml]
+### The error may involve com.scminterface.framework.web.mapper.SpdScheduledTaskMapper.selectByTaskName
+### The error occurred while executing a query
+### Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+2026-05-13 11:00:41.131 [Thread-5] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SCM数据源
+2026-05-13 11:00:41.131 [Thread-5] DEBUG c.s.framework.config.ScheduledTaskConfig - 注册旧版本SCM任务失败: nested exception is org.apache.ibatis.exceptions.PersistenceException: 
+### Error querying database.  Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+### The error may exist in file [E:\workspace\scminterface\scminterface-framework\target\classes\mapper\ScmScheduledTaskMapper.xml]
+### The error may involve com.scminterface.framework.web.mapper.ScmScheduledTaskMapper.selectByTaskName
+### The error occurred while executing a query
+### Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is java.sql.SQLException: 当前运行于无数据库模式（SPD/SCM 均 disabled），不支持数据库操作
+2026-05-13 11:01:00.809 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 74056 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-05-13 11:01:00.810 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-05-13 11:01:00.810 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-05-13 11:01:01.087 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-0.0.0.0-8088"]
+2026-05-13 11:01:01.087 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-05-13 11:01:01.087 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-05-13 11:01:01.091 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-05-13 11:01:01.110 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-05-13 11:01:01.131 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPD数据源配置成功
+2026-05-13 11:01:01.194 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPD数据源已添加到动态数据源
+2026-05-13 11:01:01.194 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - 动态数据源初始化完成，可用数据源数量: 1
+2026-05-13 11:01:01.625 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-0.0.0.0-8088"]
+2026-05-13 11:01:01.719 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.937 seconds (JVM running for 25.842)
+2026-05-13 11:01:04.267 [Thread-12] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-05-13 11:01:04.290 [Thread-12] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2026-05-13 11:01:04.512 [Thread-12] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-05-13 11:01:04.523 [Thread-12] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-05-13 11:01:04.545 [Thread-12] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-05-13 11:01:04.553 [Thread-12] INFO  c.s.framework.config.ScheduledTaskConfig - 定时任务注册成功: com.scminterface.framework.web.task.HengshuiTask.syncChargeItem, Cron表达式: 0 0 1 * * ?
+2026-05-13 11:01:04.553 [Thread-12] INFO  c.s.framework.config.ScheduledTaskConfig - 定时任务注册成功: com.scminterface.framework.web.task.SpdScheduledTask.execute, Cron表达式: 0 0 1 * * ?
+2026-05-13 11:01:04.553 [Thread-12] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-05-13 11:01:04.554 [Thread-12] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-05-13 11:01:04.555 [Thread-12] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD定时任务(String)
+2026-05-13 11:01:04.557 [Thread-12] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-05-13 11:01:04.557 [Thread-12] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SCM数据源
+2026-05-13 11:01:04.557 [Thread-12] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-05-13 11:01:04.558 [Thread-12] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM定时任务(String)
+2026-05-13 11:01:04.568 [Thread-12] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-05-13 11:01:04.569 [Thread-12] INFO  c.s.framework.config.ScheduledTaskConfig - 定时任务注册成功: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron表达式: 0 0/5 * * * ?
+2026-05-13 11:01:13.351 [http-nio-0.0.0.0-8088-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-13 11:01:48.855 [ForkJoinPool.commonPool-worker-11] DEBUG c.s.framework.web.service.DataSourceCheckService - 数据源 SCM 不存在
+2026-05-13 11:01:48.855 [ForkJoinPool.commonPool-worker-2] DEBUG c.s.framework.web.service.DataSourceCheckService - 数据源 SPD 连接正常
+2026-05-13 11:01:51.421 [http-nio-0.0.0.0-8088-exec-9] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-05-13 11:01:51.421 [http-nio-0.0.0.0-8088-exec-7] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-05-13 11:01:51.422 [http-nio-0.0.0.0-8088-exec-9] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-05-13 11:01:51.423 [http-nio-0.0.0.0-8088-exec-9] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-05-13 11:01:51.426 [http-nio-0.0.0.0-8088-exec-9] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-05-13 11:01:51.426 [http-nio-0.0.0.0-8088-exec-7] DEBUG c.s.f.web.mapper.SpdSystemConfigMapper.selectAll - ==>  Preparing: select config_id as configId, config_key as configKey, config_value as configValue, config_desc as configDesc, create_time as createTime, update_time as updateTime from spd_system_config order by config_key
+2026-05-13 11:01:51.427 [http-nio-0.0.0.0-8088-exec-7] DEBUG c.s.f.web.mapper.SpdSystemConfigMapper.selectAll - ==> Parameters: 
+2026-05-13 11:01:51.439 [http-nio-0.0.0.0-8088-exec-7] DEBUG c.s.f.web.mapper.SpdSystemConfigMapper.selectAll - <==      Total: 5
+2026-05-13 11:05:00.013 [pool-2-thread-1] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SCM数据源
+2026-05-13 11:05:00.014 [pool-2-thread-1] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SCM数据源
+2026-05-13 11:05:00.020 [pool-2-thread-1] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-05-13 11:05:00.021 [pool-2-thread-1] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM定时任务(String)
+2026-05-13 11:05:00.022 [pool-2-thread-1] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-05-13 11:05:00.022 [pool-2-thread-1] INFO  c.scminterface.framework.web.task.ScmScheduledTask - ========== SCM定时任务执行 ==========
+2026-05-13 11:05:00.022 [pool-2-thread-1] INFO  c.scminterface.framework.web.task.ScmScheduledTask - 当前时间: 2026-05-13 11:05:00
+2026-05-13 11:05:00.022 [pool-2-thread-1] INFO  c.scminterface.framework.web.task.ScmScheduledTask - 执行次数: 326
+2026-05-13 11:05:00.022 [pool-2-thread-1] INFO  c.scminterface.framework.web.task.ScmScheduledTask - ===================================
+2026-05-13 11:05:00.022 [pool-2-thread-1] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SCM数据源
+2026-05-13 11:05:00.024 [pool-2-thread-1] DEBUG c.s.f.w.m.S.incrementExecCount - ==>  Preparing: update scm_scheduled_task set current_exec_count = current_exec_count + 1, update_time = now() where task_name = ?
+2026-05-13 11:05:00.024 [pool-2-thread-1] DEBUG c.s.f.w.m.S.incrementExecCount - ==> Parameters: SCM定时任务(String)
+2026-05-13 11:05:00.026 [pool-2-thread-1] DEBUG c.s.f.w.m.S.incrementExecCount - <==    Updates: 1
+2026-05-13 11:05:59.982 [Thread-9] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closing ...
+2026-05-13 11:05:59.985 [Thread-9] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closed
+2026-05-13 11:06:00.147 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Starting ScminterfaceApplication using Java 1.8.0_202 on LYXT20250923 with PID 74056 (E:\workspace\scminterface\scminterface-admin\target\classes started by Administrator in E:\workspace\scminterface)
+2026-05-13 11:06:00.147 [restartedMain] DEBUG com.scminterface.ScminterfaceApplication - Running with Spring Boot v2.5.15, Spring v5.3.27
+2026-05-13 11:06:00.147 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - The following 1 profile is active: "druid"
+2026-05-13 11:06:00.436 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-0.0.0.0-8088"]
+2026-05-13 11:06:00.436 [restartedMain] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-05-13 11:06:00.436 [restartedMain] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.75]
+2026-05-13 11:06:00.439 [restartedMain] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-05-13 11:06:00.457 [restartedMain] DEBUG c.s.framework.security.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2026-05-13 11:06:00.472 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPD数据源配置成功
+2026-05-13 11:06:00.509 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - SPD数据源已添加到动态数据源
+2026-05-13 11:06:00.510 [restartedMain] INFO  com.scminterface.framework.config.DruidConfig - 动态数据源初始化完成，可用数据源数量: 1
+2026-05-13 11:06:00.804 [restartedMain] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-0.0.0.0-8088"]
+2026-05-13 11:06:00.869 [restartedMain] INFO  com.scminterface.ScminterfaceApplication - Started ScminterfaceApplication in 0.742 seconds (JVM running for 324.992)
+2026-05-13 11:06:03.574 [Thread-17] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-05-13 11:06:03.579 [Thread-17] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-2} inited
+2026-05-13 11:06:03.589 [Thread-17] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task order by task_class, task_method
+2026-05-13 11:06:03.589 [Thread-17] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - ==> Parameters: 
+2026-05-13 11:06:03.591 [Thread-17] DEBUG c.s.f.web.mapper.SpdScheduledTaskMapper.selectAll - <==      Total: 2
+2026-05-13 11:06:03.594 [Thread-17] INFO  c.s.framework.config.ScheduledTaskConfig - 定时任务注册成功: com.scminterface.framework.web.task.HengshuiTask.syncChargeItem, Cron表达式: 0 0 1 * * ?
+2026-05-13 11:06:03.594 [Thread-17] INFO  c.s.framework.config.ScheduledTaskConfig - 定时任务注册成功: com.scminterface.framework.web.task.SpdScheduledTask.execute, Cron表达式: 0 0 1 * * ?
+2026-05-13 11:06:03.594 [Thread-17] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SPD数据源
+2026-05-13 11:06:03.594 [Thread-17] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, task_class as taskClass, task_method as taskMethod, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from spd_scheduled_task where task_name = ? limit 1
+2026-05-13 11:06:03.595 [Thread-17] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - ==> Parameters: SPD定时任务(String)
+2026-05-13 11:06:03.596 [Thread-17] DEBUG c.s.f.w.m.SpdScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-05-13 11:06:03.596 [Thread-17] INFO  c.s.f.datasource.DynamicDataSourceContextHolder - 切换到SCM数据源
+2026-05-13 11:06:03.596 [Thread-17] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==>  Preparing: select task_id as taskId, task_name as taskName, cron_expression as cronExpression, max_exec_count as maxExecCount, current_exec_count as currentExecCount, status, create_time as createTime, update_time as updateTime from scm_scheduled_task where task_name = ? limit 1
+2026-05-13 11:06:03.597 [Thread-17] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - ==> Parameters: SCM定时任务(String)
+2026-05-13 11:06:03.598 [Thread-17] DEBUG c.s.f.w.m.ScmScheduledTaskMapper.selectByTaskName - <==      Total: 1
+2026-05-13 11:06:03.598 [Thread-17] INFO  c.s.framework.config.ScheduledTaskConfig - 定时任务注册成功: com.scminterface.framework.web.task.ScmScheduledTask.execute, Cron表达式: 0 0/5 * * * ?

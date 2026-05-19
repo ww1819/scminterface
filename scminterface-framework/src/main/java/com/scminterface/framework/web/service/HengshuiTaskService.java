@@ -34,6 +34,9 @@ public class HengshuiTaskService
 {
     private static final Logger log = LoggerFactory.getLogger(HengshuiTaskService.class);
 
+    /** 住院/门诊收费明细从 HIS 拉取：单次查询超时（秒） */
+    private static final int HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS = 300;
+
     @Autowired
     private SpdSystemConfigMapper spdSystemConfigMapper;
 
@@ -354,6 +357,7 @@ public class HengshuiTaskService
                         "WHERE charge_date >= DATEADD(day, -3, GETDATE())";
             
             PreparedStatement pstmt = hisConnection.prepareStatement(sql);
+            pstmt.setQueryTimeout(HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS);
             ResultSet rs = pstmt.executeQuery();
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -623,6 +627,7 @@ public class HengshuiTaskService
                         "WHERE charge_date >= DATEADD(day, -3, GETDATE())";
             
             PreparedStatement pstmt = hisConnection.prepareStatement(sql);
+            pstmt.setQueryTimeout(HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS);
             ResultSet rs = pstmt.executeQuery();
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
