@@ -1,6 +1,7 @@
 package com.scminterface.framework.web.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,8 @@ import com.scminterface.framework.domain.zs.ScmDeliveryListItemRow;
 import com.scminterface.framework.domain.zs.ScmDeliveryXmlRow;
 import com.scminterface.framework.domain.zs.ZsTpOrderDetailDsbRow;
 import com.scminterface.framework.domain.zs.ZsTpOrderXmlRow;
+import com.scminterface.framework.util.ZsUuid7;
+import com.scminterface.framework.web.mapper.ScmDeliveryDownloadLogMapper;
 import com.scminterface.framework.web.mapper.SpdDeliveryMapper;
 import com.scminterface.framework.web.service.support.ZsDeliveryDataXmlBuilder;
 
@@ -28,8 +31,13 @@ import com.scminterface.framework.web.service.support.ZsDeliveryDataXmlBuilder;
 @Service
 public class SpdDeliveryService
 {
+    private static final String DOWNLOAD_CHANNEL_SPD_XML = "SPD_XML";
+
     @Autowired
     private SpdDeliveryMapper spdDeliveryMapper;
+
+    @Autowired
+    private ScmDeliveryDownloadLogMapper scmDeliveryDownloadLogMapper;
 
     @DataSource(DataSourceType.SCM)
     public List<ScmDeliveryListItemRow> listByKeyword(String keyword)
@@ -87,7 +95,13 @@ public class SpdDeliveryService
                 }
             }
         }
-        return ZsDeliveryDataXmlBuilder.build(d, details, z, zsDetailById);
+        String xml = ZsDeliveryDataXmlBuilder.build(d, details, z, zsDetailById);
+        if (d.getDeliveryId() != null)
+        {
+            scmDeliveryDownloadLogMapper.insertLog(ZsUuid7.newString(), String.valueOf(d.getDeliveryId()),
+                new Date(), DOWNLOAD_CHANNEL_SPD_XML);
+        }
+        return xml;
     }
 
     private static void attachBarcodes(List<ScmDeliveryDetailXmlRow> details, List<ScmDeliveryDetailBarcodeRow> all)

@@ -81,23 +81,54 @@ public class ZSController
     }
 
     /**
-     * 按配送单号下载第三方配送单数据（XML，ROOT/LIST）。
+     * 下载第三方配送单数据（XML，ROOT/LIST）。
      * <p>
-     * GET http://ip:端口/api/scm/zs/deliveryData/download?deliveryNo=配送单号
+     * 平台医院编码 hospitalCode 必传，用于限制访问医院范围。
+     * 支持两种业务入参（二选一）：
+     * 1) deliveryNo：配送单号（精确）；
+     * 2) keyword：输入码（DSB）或配送单号（精确）。
+     * <p>
+     * GET http://ip:端口/api/scm/zs/deliveryData/download?hospitalCode=医院编码&deliveryNo=配送单号
+     * GET http://ip:端口/api/scm/zs/deliveryData/download?hospitalCode=医院编码&keyword=输入码
      */
-    @ApiOperation("按配送单号下载第三方配送单XML")
+    @ApiOperation("按医院编码+配送单号/输入码下载第三方配送单XML")
     @GetMapping("/deliveryData/download")
-    public ResponseEntity<byte[]> downloadZsDeliveryData(@RequestParam("deliveryNo") String deliveryNo)
+    public ResponseEntity<byte[]> downloadZsDeliveryData(
+        @RequestParam("hospitalCode") String hospitalCode,
+        @RequestParam(value = "deliveryNo", required = false) String deliveryNo,
+        @RequestParam(value = "keyword", required = false) String keyword)
     {
-        String xml = zsDeliveryExportService.buildZsDeliveryDataXml(deliveryNo);
+        if (StringUtils.isEmpty(hospitalCode))
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("hospitalCode 不能为空".getBytes(StandardCharsets.UTF_8));
+        }
+        String hc = hospitalCode.trim();
+        String xml;
+        String fileKey;
+        if (StringUtils.isNotEmpty(deliveryNo))
+        {
+            fileKey = deliveryNo.trim();
+            xml = zsDeliveryExportService.buildZsDeliveryDataXml(fileKey, hc);
+        }
+        else if (StringUtils.isNotEmpty(keyword))
+        {
+            fileKey = keyword.trim();
+            xml = zsDeliveryExportService.buildZsDeliveryDataXmlByKeyword(fileKey, hc);
+        }
+        else
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("deliveryNo 或 keyword 至少传一个".getBytes(StandardCharsets.UTF_8));
+        }
         byte[] body = xml.getBytes(StandardCharsets.UTF_8);
-        String safe = StringUtils.isEmpty(deliveryNo) ? "export" : deliveryNo.trim().replaceAll("[\\\\/:*?\"<>|]", "_");
+        String safe = StringUtils.isEmpty(fileKey) ? "export" : fileKey.replaceAll("[\\\\/:*?\"<>|]", "_");
         ContentDisposition cd = ContentDisposition.attachment()
-            .filename("zs-delivery-" + safe + ".xml", StandardCharsets.UTF_8)
+            .filename("zs-delivery-" + safe + ".xml")
             .build();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDisposition(cd);
-        headers.setContentType(new MediaType("application", "xml", StandardCharsets.UTF_8));
+        headers.setContentType(MediaType.parseMediaType("application/xml;charset=UTF-8"));
         return new ResponseEntity<byte[]>(body, headers, HttpStatus.OK);
     }
 }

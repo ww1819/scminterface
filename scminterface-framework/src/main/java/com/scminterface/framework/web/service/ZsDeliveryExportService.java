@@ -1,6 +1,7 @@
 package com.scminterface.framework.web.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ import com.scminterface.framework.domain.zs.ScmDeliveryDetailXmlRow;
 import com.scminterface.framework.domain.zs.ScmDeliveryXmlRow;
 import com.scminterface.framework.domain.zs.ZsTpOrderDetailDsbRow;
 import com.scminterface.framework.domain.zs.ZsTpOrderXmlRow;
+import com.scminterface.framework.util.ZsUuid7;
+import com.scminterface.framework.web.mapper.ScmDeliveryDownloadLogMapper;
 import com.scminterface.framework.web.mapper.ScmZsDeliveryXmlMapper;
 import com.scminterface.framework.web.service.support.ZsDeliveryDataXmlBuilder;
 
@@ -24,21 +27,57 @@ import com.scminterface.framework.web.service.support.ZsDeliveryDataXmlBuilder;
 @Service
 public class ZsDeliveryExportService
 {
+    private static final String DOWNLOAD_CHANNEL_ZS_XML = "ZS_XML";
+
     @Autowired
     private ScmZsDeliveryXmlMapper scmZsDeliveryXmlMapper;
 
+    @Autowired
+    private ScmDeliveryDownloadLogMapper scmDeliveryDownloadLogMapper;
+
     @DataSource(DataSourceType.SCM)
-    public String buildZsDeliveryDataXml(String deliveryNo)
+    public String buildZsDeliveryDataXml(String deliveryNo, String hospitalCode)
     {
         if (StringUtils.isEmpty(deliveryNo))
         {
             throw new ServiceException("配送单号不能为空");
         }
+        if (StringUtils.isEmpty(hospitalCode))
+        {
+            throw new ServiceException("平台医院编码不能为空");
+        }
         String no = deliveryNo.trim();
-        ScmDeliveryXmlRow d = scmZsDeliveryXmlMapper.selectDeliveryByDeliveryNo(no);
+        String hc = hospitalCode.trim();
+        return buildZsDeliveryDataXmlByResolvedDeliveryNo(no, hc);
+    }
+
+    @DataSource(DataSourceType.SCM)
+    public String buildZsDeliveryDataXmlByKeyword(String keyword, String hospitalCode)
+    {
+        if (StringUtils.isEmpty(keyword))
+        {
+            throw new ServiceException("查询关键字不能为空");
+        }
+        if (StringUtils.isEmpty(hospitalCode))
+        {
+            throw new ServiceException("平台医院编码不能为空");
+        }
+        String key = keyword.trim();
+        String hc = hospitalCode.trim();
+        String resolvedDeliveryNo = scmZsDeliveryXmlMapper.selectLatestDeliveryNoByKeyword(key, hc);
+        if (StringUtils.isEmpty(resolvedDeliveryNo))
+        {
+            throw new ServiceException("未匹配到配送单（关键字: " + key + "，医院编码: " + hc + "）");
+        }
+        return buildZsDeliveryDataXmlByResolvedDeliveryNo(resolvedDeliveryNo, hc);
+    }
+
+    private String buildZsDeliveryDataXmlByResolvedDeliveryNo(String no, String hospitalCode)
+    {
+        ScmDeliveryXmlRow d = scmZsDeliveryXmlMapper.selectDeliveryByDeliveryNo(no, hospitalCode);
         if (d == null)
         {
-            throw new ServiceException("配送单不存在：" + no);
+            throw new ServiceException("配送单不存在或无权限访问：" + no);
         }
         if (StringUtils.isEmpty(d.getZsOrderId()))
         {
@@ -65,7 +104,13 @@ public class ZsDeliveryExportService
                 zsDetailById.put(row.getId(), row);
             }
         }
-        return ZsDeliveryDataXmlBuilder.build(d, details, z, zsDetailById);
+        String xml = ZsDeliveryDataXmlBuilder.build(d, details, z, zsDetailById);
+        if (d.getDeliveryId() != null)
+        {
+            scmDeliveryDownloadLogMapper.insertLog(ZsUuid7.newString(), String.valueOf(d.getDeliveryId()),
+                new Date(), DOWNLOAD_CHANNEL_ZS_XML);
+        }
+        return xml;
     }
 
     private static void attachBarcodes(List<ScmDeliveryDetailXmlRow> details, List<ScmDeliveryDetailBarcodeRow> all)

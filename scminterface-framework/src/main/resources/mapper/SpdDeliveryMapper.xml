@@ -19,8 +19,9 @@
             left join scm_hospital h on d.hospital_id = h.hospital_id
             left join scm_supplier s on d.supplier_id = s.supplier_id
             left join scm_delivery_detail dd on dd.delivery_id = d.delivery_id
+                and (dd.del_flag is null or dd.del_flag = '' or dd.del_flag = '0')
             left join zs_tp_order_detail zod on zod.id = dd.zs_order_detail_id and zod.del_flag = '0'
-        where (d.del_flag is null or d.del_flag = '0')
+        where (d.del_flag is null or d.del_flag = '' or d.del_flag = '0')
           and (
             d.delivery_no like concat('%', #{keyword}, '%')
             or cast(zod.dsb as char) like concat('%', #{keyword}, '%')
@@ -37,7 +38,13 @@
                d.zs_order_id           as zsOrderId,
                d.zs_customer_id        as zsCustomerId,
                d.invoice_no            as invoiceNo,
+               d.src_order_warehouse_id   as srcOrderWarehouseId,
                d.src_order_warehouse_name as srcOrderWarehouseName,
+               d.spd_supplier_id          as spdSupplierId,
+               d.src_order_supplier_id    as srcOrderSupplierId,
+               d.src_order_supplier_name  as srcOrderSupplierName,
+               d.src_order_dept_id        as srcOrderDeptId,
+               d.src_order_dept_name      as srcOrderDeptName,
                d.warehouse_name        as warehouse,
                d.invoice_date          as invoiceDate,
                d.invoice_amount        as invoiceAmount,
@@ -45,7 +52,7 @@
                d.audit_time            as auditTime
         from scm_delivery d
         where d.delivery_no = #{deliveryNo}
-          and (d.del_flag is null or d.del_flag = '0')
+          and (d.del_flag is null or d.del_flag = '' or d.del_flag = '0')
         limit 1
     </select>
 
@@ -57,6 +64,8 @@
                o.warehouse_name                   as ck,
                coalesce(cast(o.warehouse_id as char), '')                         as ckno,
                coalesce(cast(o.order_dept_id as char), '')                        as ksbh,
+               ifnull(nullif(trim(o.order_supplier_name), ''), ifnull(s.company_name, '')) as supName,
+               coalesce(nullif(trim(o.apply_dept), ''), nullif(trim(o.order_dept_name), ''), '') as ksmc,
                ''                                 as jsfs,
                ''                                 as zjly
         from scm_order o
@@ -80,7 +89,10 @@
                d.register_no           as registerNo,
                d.unit                  as unit
         from scm_delivery_detail d
+        inner join scm_delivery delm on delm.delivery_id = d.delivery_id
+            and (delm.del_flag is null or delm.del_flag = '' or delm.del_flag = '0')
         where d.delivery_id = #{deliveryId}
+          and (d.del_flag is null or d.del_flag = '' or d.del_flag = '0')
         order by d.detail_id
     </select>
 

@@ -252,17 +252,33 @@ public class ScmDataService
 
                 String hsBindSnapshot = hospitalSupplierBindSnapshotService.resolve(scmHospitalId, scmSupplierId);
 
+                Long spdWarehouseId = order.getWarehouseId() != null ? order.getWarehouseId() : parseLongSafe(trimToNull(order.getWarehouseIdStr()));
+                Long spdDeptId = order.getDepartmentId() != null ? order.getDepartmentId() : parseLongSafe(trimToNull(order.getApplyDeptIdStr()));
+                String applyDeptName = trimToNull(order.getApplyDepartmentName());
+                String applyDeptForColumn = truncateVarchar(applyDeptName, 100);
+                String orderDeptNameForColumn = truncateVarchar(applyDeptName, 200);
+                String spdPurchaseSupplierId = trimToNull(order.getSupplierIdStr());
+                if (spdPurchaseSupplierId == null && order.getSupplierId() != null)
+                {
+                    spdPurchaseSupplierId = String.valueOf(order.getSupplierId());
+                }
+
                 Map<String, Object> orderMap = new HashMap<>();
                 orderMap.put("orderNo", order.getOrderNo());
                 orderMap.put("hospitalId", scmHospitalId);
                 orderMap.put("supplierId", scmSupplierId);
+                orderMap.put("spdSupplierId", spdPurchaseSupplierId);
                 orderMap.put("tenantId", trimToNull(order.getSpdTenantId()));
+                orderMap.put("warehouseId", spdWarehouseId);
                 orderMap.put("warehouseName", trimToNull(order.getWarehouseName()));
+                orderMap.put("orderSupplierName", trimToNull(order.getSupplierName()));
+                orderMap.put("orderDeptId", spdDeptId);
+                orderMap.put("orderDeptName", orderDeptNameForColumn);
                 orderMap.put("orderDate", order.getOrderDate());
                 orderMap.put("orderAmount", order.getTotalAmount());
                 // SPD“已审核”到 SCM 默认转为“待接收”
                 orderMap.put("orderStatus", "0");
-                orderMap.put("applyDept", order.getDepartmentId() != null ? String.valueOf(order.getDepartmentId()) : null);
+                orderMap.put("applyDept", applyDeptForColumn);
                 orderMap.put("remark", order.getRemark());
                 orderMap.put("createBy", "spd-sync");
                 orderMap.put("updateBy", "spd-sync");
@@ -360,6 +376,35 @@ public class ScmDataService
         }
         String t = s.trim();
         return t.isEmpty() ? null : t;
+    }
+
+    private static Long parseLongSafe(String s)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        try
+        {
+            return Long.parseLong(s.trim());
+        }
+        catch (Exception ignored)
+        {
+            return null;
+        }
+    }
+
+    private static String truncateVarchar(String s, int maxLen)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        if (maxLen <= 0 || s.length() <= maxLen)
+        {
+            return s;
+        }
+        return s.substring(0, maxLen);
     }
 }
 

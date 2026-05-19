@@ -16,7 +16,13 @@ import com.scminterface.framework.domain.zs.ZsTpOrderXmlRow;
 @Mapper
 public interface ScmZsDeliveryXmlMapper
 {
-    ScmDeliveryXmlRow selectDeliveryByDeliveryNo(@Param("deliveryNo") String deliveryNo);
+    ScmDeliveryXmlRow selectDeliveryByDeliveryNo(@Param("deliveryNo") String deliveryNo,
+        @Param("hospitalCode") String hospitalCode);
+
+    /**
+     * 按输入关键字（配送单号或输入码 DSB）定位单据，返回最新一条。
+     */
+    String selectLatestDeliveryNoByKeyword(@Param("keyword") String keyword, @Param("hospitalCode") String hospitalCode);
 
     List<ScmDeliveryDetailXmlRow> selectDeliveryDetailsByDeliveryId(@Param("deliveryId") Long deliveryId);
 

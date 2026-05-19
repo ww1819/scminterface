@@ -11,8 +11,14 @@ public class ZsTpOrderXmlRow
     private String ck;
     private String ckno;
     private String ksbh;
+    /** 供应商名称（第一方订单导出时来自 scm_order / scm_supplier） */
+    private String supName;
+    /** 科室名称（第一方订单） */
+    private String ksmc;
     private String jsfs;
     private String zjly;
+    /** 平台医院编码（zs_tp_order.scm_hospital_code） */
+    private String scmHospitalCode;
 
     public String getId()
     {
@@ -74,6 +80,26 @@ public class ZsTpOrderXmlRow
         this.ksbh = ksbh;
     }
 
+    public String getSupName()
+    {
+        return supName;
+    }
+
+    public void setSupName(String supName)
+    {
+        this.supName = supName;
+    }
+
+    public String getKsmc()
+    {
+        return ksmc;
+    }
+
+    public void setKsmc(String ksmc)
+    {
+        this.ksmc = ksmc;
+    }
+
     public String getJsfs()
     {
         return jsfs;
@@ -92,5 +118,15 @@ public class ZsTpOrderXmlRow
     public void setZjly(String zjly)
     {
         this.zjly = zjly;
+    }
+
+    public String getScmHospitalCode()
+    {
+        return scmHospitalCode;
+    }
+
+    public void setScmHospitalCode(String scmHospitalCode)
+    {
+        this.scmHospitalCode = scmHospitalCode;
     }
 }

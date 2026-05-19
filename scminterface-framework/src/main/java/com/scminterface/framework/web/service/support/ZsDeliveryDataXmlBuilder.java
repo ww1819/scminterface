@@ -37,6 +37,7 @@ public final class ZsDeliveryDataXmlBuilder
         StringBuilder sb = new StringBuilder(Math.max(4096, details.size() * 512));
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n");
         sb.append("<ROOT>\r\n");
+        appendDeliveryRefHeader(sb, delivery, z);
         int num = 0;
         for (ScmDeliveryDetailXmlRow dd : details)
         {
@@ -64,6 +65,21 @@ public final class ZsDeliveryDataXmlBuilder
         return sb.toString();
     }
 
+    private static void appendDeliveryRefHeader(StringBuilder sb, ScmDeliveryXmlRow delivery, ZsTpOrderXmlRow z)
+    {
+        sb.append("  <HEADER>\r\n");
+        appendEl(sb, "SRC_WH_ID", firstNonBlank(delivery.getSrcOrderWarehouseId(), z != null ? z.getCkno() : null));
+        appendEl(sb, "SRC_WH_NAME", firstNonBlank(delivery.getSrcOrderWarehouseName(), z != null ? z.getCk() : null,
+            delivery.getWarehouse()));
+        appendEl(sb, "SRC_SUP_ID", firstNonBlank(delivery.getSpdSupplierId(),
+            delivery.getSrcOrderSupplierId(), z != null ? z.getSupno() : null));
+        appendEl(sb, "SRC_SUP_NAME", firstNonBlank(delivery.getSrcOrderSupplierName(), z != null ? z.getSupName() : null));
+        appendEl(sb, "NEWCUSTOMER", z != null ? z.getScmHospitalCode() : "");
+        appendEl(sb, "SRC_DEPT_ID", firstNonBlank(delivery.getSrcOrderDeptId(), z != null ? z.getKsbh() : null));
+        appendEl(sb, "SRC_DEPT_NAME", firstNonBlank(delivery.getSrcOrderDeptName(), z != null ? z.getKsmc() : null));
+        sb.append("  </HEADER>\r\n");
+    }
+
     private static int appendListRow(StringBuilder sb, int num, ScmDeliveryXmlRow delivery, ScmDeliveryDetailXmlRow dd,
         ZsTpOrderXmlRow z, ZsTpOrderDetailDsbRow zd, String sl, String zzs, String bz)
     {
@@ -71,7 +87,16 @@ public final class ZsDeliveryDataXmlBuilder
         appendEl(sb, "NUM", String.valueOf(num++));
         appendEl(sb, "CUSTOMER", delivery.getZsCustomerId() != null ? delivery.getZsCustomerId() : "");
         appendEl(sb, "DH", z != null ? z.getDh() : "");
-        appendEl(sb, "SUP", z != null ? z.getSupno() : "");
+        appendEl(sb, "SUP", firstNonBlank(delivery.getSpdSupplierId(), z != null ? z.getSupno() : null));
+        appendEl(sb, "SRC_WH_ID", firstNonBlank(delivery.getSrcOrderWarehouseId(), z != null ? z.getCkno() : null));
+        appendEl(sb, "SRC_WH_NAME", firstNonBlank(delivery.getSrcOrderWarehouseName(), z != null ? z.getCk() : null,
+            delivery.getWarehouse()));
+        appendEl(sb, "SRC_SUP_ID", firstNonBlank(delivery.getSpdSupplierId(),
+            delivery.getSrcOrderSupplierId(), z != null ? z.getSupno() : null));
+        appendEl(sb, "SRC_SUP_NAME", firstNonBlank(delivery.getSrcOrderSupplierName(), z != null ? z.getSupName() : null));
+        appendEl(sb, "NEWCUSTOMER", z != null ? z.getScmHospitalCode() : "");
+        appendEl(sb, "SRC_DEPT_ID", firstNonBlank(delivery.getSrcOrderDeptId(), z != null ? z.getKsbh() : null));
+        appendEl(sb, "SRC_DEPT_NAME", firstNonBlank(delivery.getSrcOrderDeptName(), z != null ? z.getKsmc() : null));
         appendEl(sb, "CODE", dd.getMaterialCode());
         appendEl(sb, "SL", sl);
         appendEl(sb, "PH", dd.getBatchNo());
@@ -85,7 +110,9 @@ public final class ZsDeliveryDataXmlBuilder
         appendEl(sb, "SRM", "");
         appendEl(sb, "TX", "0");
         appendEl(sb, "ZFP", "");
-        appendEl(sb, "KSBH", z != null ? z.getKsbh() : "");
+        appendEl(sb, "KSBH", firstNonBlank(delivery.getSrcOrderDeptId(), z != null ? z.getKsbh() : null));
+        appendEl(sb, "KSMC", firstNonBlank(delivery.getSrcOrderDeptName(), z != null ? z.getKsmc() : null));
+        appendEl(sb, "SUPMC", firstNonBlank(delivery.getSrcOrderSupplierName(), z != null ? z.getSupName() : null));
         appendEl(sb, "GZFLAG", firstNonBlank(delivery.getZsJsfs(), z != null ? z.getJsfs() : null));
         appendEl(sb, "DJ", decPlain(dd.getPrice()));
         appendEl(sb, "PRINT_PS", "1");

@@ -10,10 +10,31 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="CopilotChats">
+    <option name="panelChat">
+      <chat>
+        <option name="activeSessionId" value="e748c59c-2af4-4615-86a6-592b517a4a48" />
+        <option name="sessions">
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="e748c59c-2af4-4615-86a6-592b517a4a48" />
+            <option name="modeId" value="Agent" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+        </option>
+        <option name="type" value="PANEL" />
+      </chat>
+    </option>
+  </component>
   <component name="CopilotPersistence">
     <persistenceIdMap>
       <entry key="_D:/aspt_project/scminterface" value="3BslVj2WHAjY6UEITAcdbXGN7QZ" />
     </persistenceIdMap>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="134" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -66,6 +87,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;Spring Boot.ScminterfaceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
@@ -129,6 +151,15 @@
       <workItem from="1777531975955" duration="443000" />
       <workItem from="1777532456122" duration="14000" />
       <workItem from="1777535952091" duration="29000" />
+      <workItem from="1778032747048" duration="386000" />
+      <workItem from="1778033157215" duration="103000" />
+      <workItem from="1778049109736" duration="1191000" />
+      <workItem from="1778057765603" duration="2265000" />
+      <workItem from="1778128137083" duration="1397000" />
+      <workItem from="1778136456780" duration="850000" />
+      <workItem from="1778139816806" duration="1567000" />
+      <workItem from="1778148366043" duration="343000" />
+      <workItem from="1778239105054" duration="1841000" />
     </task>
     <servers />
   </component>
