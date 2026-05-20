@@ -43,6 +43,9 @@ public class HengshuiTaskService
 {
     private static final Logger log = LoggerFactory.getLogger(HengshuiTaskService.class);
 
+    /** 住院/门诊收费明细从 HIS 拉取：单次查询超时（秒） */
+    private static final int HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS = 300;
+
     private static final int HIS_ID_QUERY_BATCH = 400;
     private static final int INSERT_BATCH_SIZE = 80;
 
@@ -410,6 +413,7 @@ public class HengshuiTaskService
             String sql = HisChargeMirrorFetchSql.SQLSERVER_INPATIENT_RECENT_3D;
 
             PreparedStatement pstmt = hisConnection.prepareStatement(sql);
+            pstmt.setQueryTimeout(HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS);
             ResultSet rs = pstmt.executeQuery();
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -590,6 +594,7 @@ public class HengshuiTaskService
             String sql = HisChargeMirrorFetchSql.SQLSERVER_OUTPATIENT_RECENT_3D;
 
             PreparedStatement pstmt = hisConnection.prepareStatement(sql);
+            pstmt.setQueryTimeout(HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS);
             ResultSet rs = pstmt.executeQuery();
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();

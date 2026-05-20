@@ -17,16 +17,25 @@ function getHeaders() {
     return headers;
 }
 
-// 通用请求函数
+// 通用请求函数（options.timeoutMs：fetch 超时，默认不限制）
 async function request(url, options = {}) {
+    const { timeoutMs, ...fetchOptions } = options;
     const defaultOptions = {
         headers: getHeaders()
     };
     
-    const finalOptions = { ...defaultOptions, ...options };
+    const finalOptions = { ...defaultOptions, ...fetchOptions };
     
     if (finalOptions.body && typeof finalOptions.body === 'object') {
         finalOptions.body = JSON.stringify(finalOptions.body);
+    }
+
+    let abortController;
+    let timeoutId;
+    if (timeoutMs != null && timeoutMs > 0) {
+        abortController = new AbortController();
+        finalOptions.signal = abortController.signal;
+        timeoutId = setTimeout(() => abortController.abort(), timeoutMs);
     }
 
     try {
@@ -44,7 +53,14 @@ async function request(url, options = {}) {
         return result;
     } catch (error) {
         console.error('Request error:', error);
+        if (error && error.name === 'AbortError') {
+            return { code: 500, msg: '请求超时，请稍后重试' };
+        }
         return { code: 500, msg: '网络错误，请稍后重试' };
+    } finally {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
     }
 }
 
@@ -53,13 +69,17 @@ async function get(url) {
     return request(url, { method: 'GET' });
 }
 
-// POST请求
-async function post(url, data) {
+// POST请求（options 可传 timeoutMs）
+async function post(url, data, options = {}) {
     return request(url, {
         method: 'POST',
-        body: data
+        body: data,
+        ...options
     });
 }
+
+/** 住院/门诊收费同步任务手动触发：5 分钟超时 */
+const HIS_CHARGE_SYNC_TRIGGER_TIMEOUT_MS = 300000;
 
 // DELETE请求
 async function del(url) {

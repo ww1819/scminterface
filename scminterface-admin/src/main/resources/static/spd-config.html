@@ -696,10 +696,11 @@
                 return;
             }
 
+            const isChargeSync = taskMethod === 'syncInpatientCharge' || taskMethod === 'syncOutpatientCharge';
             const result = await post('/api/task/spd/trigger', {
                 taskClass,
                 taskMethod
-            });
+            }, isChargeSync ? { timeoutMs: HIS_CHARGE_SYNC_TRIGGER_TIMEOUT_MS } : {});
             if (result && result.code === 200) {
                 alert('任务已触发，请查看日志');
                 loadTaskList();

@@ -65,6 +65,8 @@ server:
   tomcat:
     # tomcat的URI编码
     uri-encoding: UTF-8
+    # 住院/门诊收费同步等长耗时任务（手动触发或 HTTP 调用）
+    connection-timeout: 300000
     # 连接数满后的排队数，默认为100
     accept-count: 1000
     threads:
