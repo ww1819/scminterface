@@ -1,14 +1,17 @@
 # =============================================================================
-# 前置机部署 — 数据源
+# 前置机部署 — 数据源（spd / scm 独立启停，以 enabled 为准，勿与下方注释场景搞反）
 # -----------------------------------------------------------------------------
-# SPD：前置机场景下若仅连 SCM 云端库，保持 enabled=false。
-# SCM：前置机需能解析并访问阿里云 RDS（安全组/白名单放行本前置机出口 IP）。
+# 场景 A — 仅连云端 SCM（不连院内 SPD）：
+#   spd.enabled=false，scm.enabled=true；url 指向 RDS，白名单放行前置机出口 IP。
+# 场景 B — 仅连院内 SPD（不连云端 SCM，常见衡水前置机）：
+#   spd.enabled=true，scm.enabled=false；url 指向院内 aspt（如 192.168.3.75）。
+# 场景 C — 两库都关：spd/scm 均为 false → 无数据库模式，仅 HTTP 接口。
 # -----------------------------------------------------------------------------
-# 网络清单（与 application.yml 中 HTTP 8088 并列）
+# 网络清单（与 application.yml 中 HTTP 8088 并列；哪条启用以 enabled 为准）
 #   数据源              主机 / 说明                                   端口
 #   ------------------   ------------------------------------------   -----
-#   SCM MySQL（启用）    rm-bp1tov1b3948fc5inbo.mysql.rds.aliyuncs.com 3306
-#   SPD MySQL（未启用）  localhost（本地联调时可改 enabled 与 url）     3306
+#   SCM MySQL            rm-bp1tov1b3948fc5inbo.mysql.rds.aliyuncs.com 3306
+#   SPD MySQL            院内库或 localhost（本地联调）                 3306
 # =============================================================================
 # 数据源配置
 spring:
@@ -29,8 +32,13 @@ spring:
                 # url: jdbc:mysql://rm-bp1tov1b3948fc5inbo.mysql.rds.aliyuncs.com:3306/aspt?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
                 # username: spd
                 # password: Spd@456ww
+                # enabled: true
+                # url: jdbc:mysql://192.168.3.75:3306/aspt?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+                # username: root
+                # password: hssy_2018
                 driver-class-name: com.mysql.cj.jdbc.Driver
             # SCM 数据源（前置机出网访问云端 RDS；库名 scm）
+            # enabled=false 时不会注册 scmDataSource，也不会执行 scminterface.scm.schema.bootstrap 脚本
             scm:
                 enabled: false
                 url: jdbc:mysql://rm-bp1tov1b3948fc5inbo.mysql.rds.aliyuncs.com:3306/scm?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8

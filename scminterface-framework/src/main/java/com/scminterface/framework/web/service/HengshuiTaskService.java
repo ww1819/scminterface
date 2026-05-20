@@ -377,7 +377,7 @@ public class HengshuiTaskService
 
     /**
      * 同步住院收费明细数据
-     * 从HIS数据库的v_inpatient_consumable_charge视图读取最近3天的数据，写入 SPD 库
+     * 从HIS数据库的v_inpatient_consumable_charge视图读取昨天与今天的数据，写入 SPD 库
      * {@code his_inpatient_charge_mirror} 与 {@code his_patient_charge_mirror_unified}（去重逻辑对齐 SPD）
      * 
      * @return 同步结果
@@ -408,9 +408,10 @@ public class HengshuiTaskService
             log.info("开始同步HIS住院收费明细数据至镜像表，数据库URL: {}，tenantId: {}", url, tenantId);
 
             Class.forName(driver);
-            hisConnection = DriverManager.getConnection(url, username, password);
+            hisConnection = DriverManager.getConnection(
+                appendSqlServerSocketTimeout(url, HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS), username, password);
 
-            String sql = HisChargeMirrorFetchSql.SQLSERVER_INPATIENT_RECENT_3D;
+            String sql = HisChargeMirrorFetchSql.SQLSERVER_INPATIENT_YESTERDAY_TODAY;
 
             PreparedStatement pstmt = hisConnection.prepareStatement(sql);
             pstmt.setQueryTimeout(HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS);
@@ -502,7 +503,7 @@ public class HengshuiTaskService
             rs.close();
             pstmt.close();
 
-            log.info("从HIS数据库读取到 {} 条数据（最近3天）", dataList.size());
+            log.info("从HIS数据库读取到 {} 条数据（昨天与今天）", dataList.size());
 
             String fetchBatchId = UUID.randomUUID().toString();
             Date createTime = new Date();
@@ -558,7 +559,7 @@ public class HengshuiTaskService
 
     /**
      * 同步门诊收费明细数据
-     * 从HIS数据库的v_outpatient_consumable_charge视图读取最近3天的数据，写入 SPD 库
+     * 从HIS数据库的v_outpatient_consumable_charge视图读取昨天与今天的数据，写入 SPD 库
      * {@code his_outpatient_charge_mirror} 与 {@code his_patient_charge_mirror_unified}（去重逻辑对齐 SPD）
      * 
      * @return 同步结果
@@ -589,9 +590,10 @@ public class HengshuiTaskService
             log.info("开始同步HIS门诊收费明细数据至镜像表，数据库URL: {}，tenantId: {}", url, tenantId);
 
             Class.forName(driver);
-            hisConnection = DriverManager.getConnection(url, username, password);
+            hisConnection = DriverManager.getConnection(
+                appendSqlServerSocketTimeout(url, HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS), username, password);
 
-            String sql = HisChargeMirrorFetchSql.SQLSERVER_OUTPATIENT_RECENT_3D;
+            String sql = HisChargeMirrorFetchSql.SQLSERVER_OUTPATIENT_YESTERDAY_TODAY;
 
             PreparedStatement pstmt = hisConnection.prepareStatement(sql);
             pstmt.setQueryTimeout(HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS);
@@ -686,7 +688,7 @@ public class HengshuiTaskService
             rs.close();
             pstmt.close();
 
-            log.info("从HIS数据库读取到 {} 条数据（最近3天）", dataList.size());
+            log.info("从HIS数据库读取到 {} 条数据（昨天与今天）", dataList.size());
 
             String fetchBatchId = UUID.randomUUID().toString();
             Date createTime = new Date();
@@ -1041,5 +1043,24 @@ public class HengshuiTaskService
         {
             log.warn("触发 SPD 计费自动处理失败 batch={} visitKind={} err={}", fetchBatchId, visitKind, e.toString());
         }
+    }
+
+    /** SQL Server JDBC：避免仅 setQueryTimeout 仍出现 Read timed out（socket 默认较短） */
+    private static String appendSqlServerSocketTimeout(String url, int timeoutSeconds)
+    {
+        if (url == null || url.isEmpty() || timeoutSeconds <= 0)
+        {
+            return url;
+        }
+        String u = url.trim();
+        if (u.toLowerCase().contains("sockettimeout="))
+        {
+            return u;
+        }
+        while (u.endsWith(";"))
+        {
+            u = u.substring(0, u.length() - 1);
+        }
+        return u + ";socketTimeout=" + (timeoutSeconds * 1000L);
     }
 }

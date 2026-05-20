@@ -16,6 +16,9 @@ import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
+import com.scminterface.common.enums.DataSourceType;
+import com.scminterface.framework.datasource.DataSourceAvailability;
+import com.scminterface.framework.datasource.TaskDataSourceSupport;
 import com.scminterface.framework.web.service.ScheduledTaskService;
 
 /**
@@ -30,6 +33,9 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
 
     @Autowired
     private ScheduledTaskService scheduledTaskService;
+
+    @Autowired
+    private DataSourceAvailability dataSourceAvailability;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -83,6 +89,12 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
             // 从数据库读取所有SPD任务配置并注册
             try
             {
+                if (!dataSourceAvailability.isAvailable(DataSourceType.SPD))
+                {
+                    log.info("SPD 数据源未启用，跳过 SPD 定时任务注册");
+                }
+                else
+                {
                 List<Map<String, Object>> tasks = scheduledTaskService.getAllSpdTasks();
                 if (tasks != null && !tasks.isEmpty())
                 {
@@ -98,6 +110,7 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
                                 taskConfig.get("taskClass"), taskConfig.get("taskMethod"), e);
                         }
                     }
+                }
                 }
             }
             catch (Exception e)
@@ -164,8 +177,17 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
             }
 
             // 通过实际类获取bean（Spring会根据类型查找）
-            Object taskBean = applicationContext.getBean(actualClass);
             Method method = actualClass.getMethod(taskMethod);
+            if (!TaskDataSourceSupport.isDeclaredDataSourceAvailable(actualClass, method, dataSourceAvailability))
+            {
+                com.scminterface.common.enums.DataSourceType required =
+                    TaskDataSourceSupport.requiredType(actualClass, method);
+                log.info("任务 {}.{} 依赖未启用的数据源 {}，跳过注册",
+                    taskClass, taskMethod, required != null ? required.name() : "?");
+                return;
+            }
+
+            Object taskBean = applicationContext.getBean(actualClass);
 
             // 创建触发器
             final String finalCronExpression = cronExpression;
@@ -225,6 +247,8 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
         // 注册SPD定时任务（如果存在）
         try
         {
+            if (dataSourceAvailability.isAvailable(DataSourceType.SPD))
+            {
             Map<String, Object> taskConfig = scheduledTaskService.getSpdTaskConfig();
             if (taskConfig != null && taskConfig.get("taskClass") == null)
             {
@@ -232,6 +256,7 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
                 taskConfig.put("taskClass", "com.scminterface.framework.web.task.SpdScheduledTask");
                 taskConfig.put("taskMethod", "execute");
                 registerTask(taskConfig);
+            }
             }
         }
         catch (Exception e)
@@ -242,6 +267,12 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
         // 注册SCM定时任务（如果存在）
         try
         {
+            if (!dataSourceAvailability.isEnabled(DataSourceType.SCM))
+            {
+                log.debug("SCM 数据源未启用(spring.datasource.druid.scm.enabled=false)，跳过 SCM 旧版定时任务");
+            }
+            else if (dataSourceAvailability.isAvailable(DataSourceType.SCM))
+            {
             Map<String, Object> taskConfig = scheduledTaskService.getScmTaskConfig();
             if (taskConfig != null && taskConfig.get("taskClass") == null)
             {
@@ -249,6 +280,7 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
                 taskConfig.put("taskClass", "com.scminterface.framework.web.task.ScmScheduledTask");
                 taskConfig.put("taskMethod", "execute");
                 registerTask(taskConfig);
+            }
             }
         }
         catch (Exception e)

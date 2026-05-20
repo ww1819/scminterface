@@ -279,7 +279,7 @@
         <div class="section">
             <h2 class="section-title">HIS 计费自动处理（租户 hengsui-third-001）</h2>
             <p style="color:#666;font-size:14px;margin-bottom:16px;">
-                定时任务同步 HIS 计费至 SPD 镜像后，若开关开启则调用 SPD 执行低值自动消耗与退费返还。
+                住院/门诊镜像默认定时：每 2 小时（0:00、2:00…）；每次抓取 HIS 昨天+今天计费。同步完成后若开关开启则调用 SPD 低值自动消耗与退费返还。
                 请在耗材 SPD「参数设置」配置 <code>spd.internal.base_url</code>、<code>his.internal.api_key</code>（sys_config）；计费开关保存在 sb_tenant_setting。
             </p>
             <div class="form-group">

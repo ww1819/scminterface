@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.scminterface.common.annotation.DataSource;
 import com.scminterface.common.enums.DataSourceType;
+import com.scminterface.framework.datasource.DataSourceAvailability;
 import com.scminterface.framework.web.service.ScheduledTaskService;
 
 /**
@@ -24,12 +25,20 @@ public class ScmScheduledTask
     @Autowired
     private ScheduledTaskService scheduledTaskService;
 
+    @Autowired
+    private DataSourceAvailability dataSourceAvailability;
+
     /**
      * 执行SCM定时任务
      */
     @DataSource(DataSourceType.SCM)
     public void execute()
     {
+        if (!dataSourceAvailability.isAvailable(DataSourceType.SCM))
+        {
+            log.debug("SCM 数据源未启用，跳过 SCM 定时任务");
+            return;
+        }
         try
         {
             // 获取任务配置

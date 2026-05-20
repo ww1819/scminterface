@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.common.utils.spring.SpringUtils;
+import com.scminterface.framework.datasource.DataSourceAvailability;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 数据源连接检测服务
@@ -24,6 +26,9 @@ import com.scminterface.common.utils.spring.SpringUtils;
 public class DataSourceCheckService
 {
     private static final Logger log = LoggerFactory.getLogger(DataSourceCheckService.class);
+
+    @Autowired
+    private DataSourceAvailability dataSourceAvailability;
     
     // 数据源连接检测超时时间（秒），设置较短避免登录卡顿
     private static final int CHECK_TIMEOUT_SECONDS = 2;
@@ -37,15 +42,21 @@ public class DataSourceCheckService
     {
         List<Map<String, Object>> availableDataSources = new ArrayList<>();
 
-        // 并行检测两个数据源，提高效率
-        CompletableFuture<Boolean> spdFuture = CompletableFuture.supplyAsync(() -> 
-            checkDataSource("spdDataSource", DataSourceType.SPD.name()));
-        CompletableFuture<Boolean> scmFuture = CompletableFuture.supplyAsync(() -> 
-            checkDataSource("scmDataSource", DataSourceType.SCM.name()));
+        CompletableFuture<Boolean> spdFuture = null;
+        CompletableFuture<Boolean> scmFuture = null;
+        if (dataSourceAvailability.isEnabled(DataSourceType.SPD))
+        {
+            spdFuture = CompletableFuture.supplyAsync(() ->
+                checkDataSource("spdDataSource", DataSourceType.SPD.name()));
+        }
+        if (dataSourceAvailability.isEnabled(DataSourceType.SCM))
+        {
+            scmFuture = CompletableFuture.supplyAsync(() ->
+                checkDataSource("scmDataSource", DataSourceType.SCM.name()));
+        }
 
-        // 分别等待每个数据源的检测结果，如果超时则视为不可用
-        Boolean spdAvailable = getResultWithTimeout(spdFuture, "SPD");
-        Boolean scmAvailable = getResultWithTimeout(scmFuture, "SCM");
+        Boolean spdAvailable = spdFuture != null ? getResultWithTimeout(spdFuture, "SPD") : Boolean.FALSE;
+        Boolean scmAvailable = scmFuture != null ? getResultWithTimeout(scmFuture, "SCM") : Boolean.FALSE;
 
         if (Boolean.TRUE.equals(spdAvailable))
         {
@@ -106,6 +117,12 @@ public class DataSourceCheckService
     {
         try
         {
+            DataSourceType type = DataSourceType.valueOf(dataSourceType);
+            if (!dataSourceAvailability.isEnabled(type))
+            {
+                log.debug("数据源 {} 已在配置中停用，跳过连接检测", dataSourceType);
+                return false;
+            }
             if (!SpringUtils.containsBean(beanName))
             {
                 log.debug("数据源 {} 不存在", dataSourceType);

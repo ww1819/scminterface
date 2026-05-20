@@ -11,7 +11,10 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import com.scminterface.common.annotation.DataSource;
+import com.scminterface.common.exception.ServiceException;
+import com.scminterface.framework.datasource.DataSourceAvailability;
 import com.scminterface.framework.datasource.DynamicDataSourceContextHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 多数据源处理
@@ -24,6 +27,9 @@ import com.scminterface.framework.datasource.DynamicDataSourceContextHolder;
 public class DataSourceAspect
 {
     protected Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private DataSourceAvailability dataSourceAvailability;
 
     @Pointcut("@annotation(com.scminterface.common.annotation.DataSource)"
             + "|| @within(com.scminterface.common.annotation.DataSource)")
@@ -39,6 +45,12 @@ public class DataSourceAspect
 
         if (dataSource != null)
         {
+            if (!dataSourceAvailability.isAvailable(dataSource.value()))
+            {
+                logger.debug("拒绝切换至已停用的数据源: {}", dataSource.value().name());
+                throw new ServiceException(
+                    "数据源 " + dataSource.value().name() + " 已停用，无法执行该操作");
+            }
             DynamicDataSourceContextHolder.setDataSourceType(dataSource.value().name());
         }
 

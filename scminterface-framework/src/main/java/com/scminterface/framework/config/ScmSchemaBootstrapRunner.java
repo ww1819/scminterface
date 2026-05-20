@@ -12,26 +12,27 @@ import java.util.regex.Pattern;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import com.scminterface.common.enums.DataSourceType;
+import com.scminterface.framework.datasource.DataSourceAvailability;
 
 /**
  * 启动时按顺序执行 classpath:sql/mysql/scm/ 下脚本，为 SCM 库补全表、字段、视图、触发器、菜单等结构。
  * <p>
- * 脚本分段符与 scm-admin 约定一致：单独一行的 {@code /}。需启用 SCM 数据源且 {@code scminterface.scm.schema.bootstrap=true}。
+ * 需同时满足：{@code spring.datasource.druid.scm.enabled=true} 且 {@code scminterface.scm.schema.bootstrap=true}。
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 20)
-@ConditionalOnProperty(prefix = "scminterface.scm.schema", name = "bootstrap", havingValue = "true", matchIfMissing = true)
-@ConditionalOnBean(name = "scmDataSource")
+@Conditional(ScmSchemaBootstrapEnabledCondition.class)
 public class ScmSchemaBootstrapRunner implements ApplicationRunner
 {
     private static final Logger log = LoggerFactory.getLogger(ScmSchemaBootstrapRunner.class);
@@ -49,20 +50,36 @@ public class ScmSchemaBootstrapRunner implements ApplicationRunner
         "sql/mysql/scm/data_integrity.sql"
     };
 
-    private final DataSource scmDataSource;
+    private final ObjectProvider<DataSource> scmDataSourceProvider;
+    private final DataSourceAvailability dataSourceAvailability;
 
     @Value("${scminterface.scm.schema.fail-on-error:false}")
     private boolean failOnError;
 
-    public ScmSchemaBootstrapRunner(@Qualifier("scmDataSource") DataSource scmDataSource)
+    public ScmSchemaBootstrapRunner(
+        @Qualifier("scmDataSource") ObjectProvider<DataSource> scmDataSourceProvider,
+        DataSourceAvailability dataSourceAvailability)
     {
-        this.scmDataSource = scmDataSource;
+        this.scmDataSourceProvider = scmDataSourceProvider;
+        this.dataSourceAvailability = dataSourceAvailability;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception
     {
-        log.info("开始执行 SCM 库结构补全脚本（scminterface.scm.schema.bootstrap=true）");
+        if (!dataSourceAvailability.isAvailable(DataSourceType.SCM))
+        {
+            log.info("SCM 数据源未启用，跳过 SCM 库结构补全脚本");
+            return;
+        }
+        DataSource scmDataSource = scmDataSourceProvider.getIfAvailable();
+        if (scmDataSource == null)
+        {
+            log.warn("未找到 scmDataSource Bean，跳过 SCM 库结构补全脚本");
+            return;
+        }
+
+        log.info("开始执行 SCM 库结构补全脚本（scm.enabled=true 且 scminterface.scm.schema.bootstrap=true）");
         for (String relativePath : SCRIPT_FILES)
         {
             ClassPathResource res = new ClassPathResource(relativePath);

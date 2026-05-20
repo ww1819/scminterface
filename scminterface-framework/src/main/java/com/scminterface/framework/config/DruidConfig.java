@@ -12,6 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.AbstractDataSource;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
@@ -42,10 +43,8 @@ public class DruidConfig
             // 设置延迟初始化，避免启动时连接失败导致启动失败
             configuredDataSource.setInitialSize(0);
             configuredDataSource.setTestOnBorrow(false);
-            configuredDataSource.setTestWhileIdle(true);
-            // 设置连接失败后停止重试，避免重复报错
+            configuredDataSource.setTestWhileIdle(false);
             configuredDataSource.setBreakAfterAcquireFailure(true);
-            // 设置连接失败重试次数为0，避免无限重试
             configuredDataSource.setConnectionErrorRetryAttempts(0);
             log.info("SPD数据源配置成功");
             return configuredDataSource;
@@ -69,12 +68,10 @@ public class DruidConfig
             // 设置延迟初始化，避免启动时连接失败导致启动失败
             configuredDataSource.setInitialSize(0);
             configuredDataSource.setTestOnBorrow(false);
-            configuredDataSource.setTestWhileIdle(true);
-            // 设置连接失败后停止重试，避免重复报错
+            configuredDataSource.setTestWhileIdle(false);
             configuredDataSource.setBreakAfterAcquireFailure(true);
-            // 设置连接失败重试次数为0，避免无限重试
             configuredDataSource.setConnectionErrorRetryAttempts(0);
-            // 如果部署在SPD服务器上不需要SCM数据源，可以在application-druid.yml第三方置scm.enabled=false来禁用
+            // 如果部署在SPD服务器上不需要SCM数据源，可在 application-druid.yml 设置 scm.enabled=false
             log.info("SCM数据源配置成功（如果连接失败，请检查配置或设置scm.enabled=false禁用）");
             return configuredDataSource;
         }
@@ -87,16 +84,19 @@ public class DruidConfig
 
     @Bean(name = "dynamicDataSource")
     @Primary
-    public DataSource dataSource()
+    public DataSource dataSource(Environment environment)
     {
+        boolean spdEnabled = isDataSourceEnabled(environment, "spd");
+        boolean scmEnabled = isDataSourceEnabled(environment, "scm");
+        logDataSourceSwitchConfig(environment, spdEnabled, scmEnabled);
         Map<Object, Object> targetDataSources = new HashMap<>();
         DataSource defaultDataSource = null;
 
-        // 尝试获取SPD数据源
+        // 尝试获取SPD数据源（须配置 enabled=true 且 Bean 已注册）
         DataSource spdDs = null;
         try
         {
-            if (SpringUtils.containsBean("spdDataSource"))
+            if (spdEnabled && SpringUtils.containsBean("spdDataSource"))
             {
                 spdDs = SpringUtils.getBean("spdDataSource");
                 if (spdDs != null)
@@ -109,17 +109,21 @@ public class DruidConfig
                     log.info("SPD数据源已添加到动态数据源");
                 }
             }
+            else if (!spdEnabled)
+            {
+                log.info("SPD 未启用(spring.datasource.druid.spd.enabled=false)，不注册 SPD 数据源");
+            }
         }
         catch (Exception e)
         {
             log.warn("SPD数据源不可用，已跳过: {}", e.getMessage());
         }
 
-        // 尝试获取SCM数据源
+        // 尝试获取SCM数据源（须配置 enabled=true 且 Bean 已注册）
         DataSource scmDs = null;
         try
         {
-            if (SpringUtils.containsBean("scmDataSource"))
+            if (scmEnabled && SpringUtils.containsBean("scmDataSource"))
             {
                 scmDs = SpringUtils.getBean("scmDataSource");
                 if (scmDs != null)
@@ -131,6 +135,10 @@ public class DruidConfig
                     }
                     log.info("SCM数据源已添加到动态数据源");
                 }
+            }
+            else if (!scmEnabled)
+            {
+                log.info("SCM 未启用(spring.datasource.druid.scm.enabled=false)，不注册 SCM 数据源");
             }
         }
         catch (Exception e)
@@ -153,6 +161,25 @@ public class DruidConfig
 
         log.info("动态数据源初始化完成，可用数据源数量: {}", targetDataSources.size());
         return new DynamicDataSource(defaultDataSource, targetDataSources);
+    }
+
+    private static boolean isDataSourceEnabled(Environment environment, String key)
+    {
+        return Boolean.TRUE.equals(
+            environment.getProperty("spring.datasource.druid." + key + ".enabled", Boolean.class, false));
+    }
+
+    private static void logDataSourceSwitchConfig(Environment environment, boolean spd, boolean scm)
+    {
+        String spdUrl = environment.getProperty("spring.datasource.druid.spd.url");
+        String scmUrl = environment.getProperty("spring.datasource.druid.scm.url");
+        log.info("数据源开关(以 Environment 最终合并结果为准): SPD enabled={}, SCM enabled={}", spd, scm);
+        log.info("数据源 JDBC: SPD url={}; SCM url={}", spdUrl, scmUrl);
+        if (scm && scmUrl != null && scmUrl.contains("localhost"))
+        {
+            log.warn("SCM 已启用且指向 localhost，多为 jar 内置默认或 jar 同目录 config/application-druid.yml 覆盖了 scm.enabled=false，"
+                + "请解压 jar 查看 BOOT-INF/classes/application-druid.yml 并核对进程工作目录下的外部配置");
+        }
     }
 
     /**

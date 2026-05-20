@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.scminterface.common.core.domain.AjaxResult;
+import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.framework.config.ScheduledTaskConfig;
+import com.scminterface.framework.datasource.DataSourceAvailability;
 import com.scminterface.framework.web.service.ScheduledTaskService;
 import com.scminterface.framework.web.task.ScmScheduledTask;
 import com.scminterface.framework.web.task.SpdScheduledTask;
@@ -46,6 +48,9 @@ public class ScheduledTaskController
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private DataSourceAvailability dataSourceAvailability;
 
     /**
      * 获取SPD所有定时任务列表
@@ -419,6 +424,10 @@ public class ScheduledTaskController
     {
         try
         {
+            if (!dataSourceAvailability.isAvailable(DataSourceType.SCM))
+            {
+                return AjaxResult.error("SCM 数据源未启用，无法触发 SCM 定时任务");
+            }
             scmScheduledTask.execute();
             return AjaxResult.success("任务已触发");
         }

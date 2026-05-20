@@ -100,7 +100,7 @@ public class HengshuiTask
 
     /**
      * 同步住院收费明细数据
-     * 从HIS数据库的v_inpatient_consumable_charge视图读取最近3天的数据，保存到SPD数据库的his_zy_sfmx表
+     * 从HIS数据库的v_inpatient_consumable_charge视图读取昨天与今天的数据，保存到SPD镜像表
      */
     @DataSource(DataSourceType.SPD)
     public void syncInpatientCharge()
@@ -172,7 +172,7 @@ public class HengshuiTask
 
     /**
      * 同步门诊收费明细数据
-     * 从HIS数据库的v_outpatient_consumable_charge视图读取最近3天的数据，保存到SPD数据库的his_mz_sfmx表
+     * 从HIS数据库的v_outpatient_consumable_charge视图读取昨天与今天的数据，保存到SPD镜像表
      */
     @DataSource(DataSourceType.SPD)
     public void syncOutpatientCharge()
