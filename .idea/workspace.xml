@@ -34,7 +34,7 @@
     </persistenceIdMap>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="134" />
+    <option name="cachedIndexableFilesCount" value="161" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -118,8 +118,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.32098.37" />
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.32098.37" />
+        <option value="bundled-jdk-30f59d01ecdd-37e91769500f-intellij.indexing.shared.core-IU-261.24374.151" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-IU-261.24374.151" />
       </set>
     </attachedChunks>
   </component>
@@ -160,6 +160,7 @@
       <workItem from="1778139816806" duration="1567000" />
       <workItem from="1778148366043" duration="343000" />
       <workItem from="1778239105054" duration="1841000" />
+      <workItem from="1780561671743" duration="614000" />
     </task>
     <servers />
   </component>
