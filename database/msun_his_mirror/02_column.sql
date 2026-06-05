@@ -1,11 +1,11 @@
 -- =============================================================================
--- 众阳 HIS 接口镜像库 — 增量字段脚本
--- 库名：msun_his_mirror
--- 在 01_table.sql 之后执行；按「/」分段执行
+-- 众阳 HIS 接口镜像表 — 增量字段脚本（SPD 业务库，如 aspt）
+-- 【非标准对象】仅用于已手工创建的 m_* 镜像表，非 SPD 标准库脚本。
+-- 在 01_table.sql 之后执行；按「/」分段执行。
 -- 新增 HIS 回参字段时：在本文件末尾追加 CALL add_mirror_column(...)
 -- =============================================================================
 
-USE `msun_his_mirror`;
+-- USE `aspt`;
 /
 
 DROP PROCEDURE IF EXISTS `add_mirror_column`;
@@ -68,7 +68,55 @@ BEGIN
 END;
 /
 
+-- ========== tenant_id（已建表环境增量追加）==========
+CALL add_mirror_column('m_sync_batch', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_dept', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_dept_category_rel', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_user_identity', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_user_identity_account', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_drug_dict', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_dict_category', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_supplier', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_producer', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_yk_instock', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_yk_instock_detail', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+CALL add_mirror_column('m_drug_batch_stock', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
+UPDATE m_sync_batch SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_dept SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_dept_category_rel SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_user_identity SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_user_identity_account SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_drug_dict SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_dict_category SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_supplier SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_producer SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_yk_instock SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_yk_instock_detail SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_drug_batch_stock SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
 -- ========== 预留：后续 HIS 回参新增字段在此追加 ==========
--- 示例（当前样本已覆盖，保持注释）：
 -- CALL add_mirror_column('m_drug_dict', 'new_field_from_his', 'varchar(128)', 'HIS新增字段说明', 'org_id');
 /

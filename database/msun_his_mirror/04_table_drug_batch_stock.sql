@@ -1,10 +1,12 @@
--- 2.5.43 药房批次库存镜像表（增量脚本，在 01_table.sql 之后执行）
-USE `msun_his_mirror`;
+-- 众阳云健康HIS镜像表：2.5.43 药房批次库存（增量脚本，SPD 业务库手工执行）
+-- 【非标准对象】众阳云健康（msun）专用，与其他 HIS 厂家镜像表区分；新客户标准初始化可跳过或删除。
+-- USE `aspt`;
 /
 
 CREATE TABLE IF NOT EXISTS `m_drug_batch_stock` (
-  `mirror_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '镜像自增主键',
+  `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `api_code` VARCHAR(32) NOT NULL DEFAULT '2.5.43' COMMENT '接口编号',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
@@ -32,8 +34,9 @@ CREATE TABLE IF NOT EXISTS `m_drug_batch_stock` (
   `hospital_id` VARCHAR(64) DEFAULT NULL COMMENT '医院ID',
   `org_id` VARCHAR(64) DEFAULT NULL COMMENT '机构ID',
   PRIMARY KEY (`mirror_id`),
-  UNIQUE KEY `uk_batch_stock` (`dept_id`, `drug_id`, `drug_spec_packing_id`, `batch_number`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_batch_stock` (`dept_id`, `drug_id`, `drug_spec_packing_id`, `batch_number`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_drug_id` (`drug_id`),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-2.5.43药房批次库存';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.43药房批次库存';
 /

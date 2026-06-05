@@ -26,6 +26,12 @@ public class ZaoqiangTcmMsunProperties implements MsunHospitalRuntime
     }
 
     @Override
+    public String getTenantId()
+    {
+        return ZaoqiangTcmHospitalConstants.TENANT_ID;
+    }
+
+    @Override
     public String getHospitalName()
     {
         return ZaoqiangTcmHospitalConstants.HOSPITAL_NAME;

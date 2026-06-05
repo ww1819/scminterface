@@ -7,6 +7,9 @@ public interface MsunHospitalRuntime
 {
     String getHospitalKey();
 
+    /** SPD 租户 ID（枣强县中医院为 zaoqiang-tcm-001） */
+    String getTenantId();
+
     String getHospitalName();
 
     boolean isEnabled();

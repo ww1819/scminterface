@@ -45,9 +45,9 @@ public class MsunHisMirrorSyncService
         {
             return;
         }
-        if (!dataSourceAvailability.isAvailable(DataSourceType.MSUN_HIS_MIRROR))
+        if (!dataSourceAvailability.isAvailable(DataSourceType.SPD))
         {
-            log.debug("众阳镜像库未启用，跳过落库 api={}", apiCode);
+            log.debug("SPD 数据源未启用，跳过众阳镜像表落库 api={}", apiCode);
             return;
         }
         if (runtime == null || wrappedResponse == null || StringUtils.isEmpty(apiCode))

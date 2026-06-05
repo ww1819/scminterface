@@ -1,19 +1,22 @@
 -- =============================================================================
--- 众阳 HIS 接口镜像库 — 建表脚本
--- 库名：msun_his_mirror
+-- 众阳云健康 HIS 接口镜像表 — 手工建表脚本（SPD 业务库，如 aspt）
+-- =============================================================================
+-- 【非标准对象】众阳云健康（msun）专用镜像表，与其他 HIS 厂家镜像表区分；勿纳入标准库初始化。
+-- 新客户部署：标准库初始化完成后，可按对接需要选择性执行本脚本；不需要时可删除全部 m_* 表。
 -- 表前缀：m_（mirror）
 -- 接口覆盖：2.1.9 / 2.1.12 / 2.5.44 / 2.5.58 / 2.5.62 / 2.5.63 / 2.5.102
--- 按「/」分段，每段一条语句执行
+-- 执行前请先 USE 目标 SPD 业务库，按「/」分段执行；可按需只建部分表。
 -- =============================================================================
 
-USE `msun_his_mirror`;
+-- USE `aspt`;
 /
 
 -- 同步批次日志（手工/定时导入均可登记）
 CREATE TABLE IF NOT EXISTS `m_sync_batch` (
-  `batch_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '批次自增ID',
+  `batch_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `sync_batch_no` VARCHAR(64) NOT NULL COMMENT '批次号',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境 prod/test',
   `api_code` VARCHAR(32) DEFAULT NULL COMMENT '接口编号，空表示多接口批次',
   `mirror_source` VARCHAR(32) NOT NULL DEFAULT 'manual_probe' COMMENT '来源 manual_probe/scheduled',
@@ -23,14 +26,16 @@ CREATE TABLE IF NOT EXISTS `m_sync_batch` (
   PRIMARY KEY (`batch_id`),
   UNIQUE KEY `uk_batch_no` (`sync_batch_no`),
   KEY `idx_hospital_env` (`hospital_key`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_mirror_time` (`mirror_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='HIS镜像同步批次';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-同步批次';
 /
 
 -- 2.1.9 科室基本信息
 CREATE TABLE IF NOT EXISTS `m_dept` (
-  `mirror_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '镜像自增主键',
+  `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `api_code` VARCHAR(32) NOT NULL DEFAULT '2.1.9' COMMENT '接口编号',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
@@ -74,31 +79,35 @@ CREATE TABLE IF NOT EXISTS `m_dept` (
   `his_update_time` VARCHAR(32) DEFAULT NULL COMMENT 'HIS更新时间',
   `org_id` VARCHAR(64) DEFAULT NULL COMMENT '机构ID',
   PRIMARY KEY (`mirror_id`),
-  UNIQUE KEY `uk_dept` (`dept_id`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_dept` (`dept_id`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_dept_code` (`dept_code`),
   KEY `idx_dept_name` (`dept_name`),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-2.1.9科室基本信息';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.1.9科室基本信息';
 /
 
 CREATE TABLE IF NOT EXISTS `m_dept_category_rel` (
-  `rel_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `rel_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
   `dept_id` VARCHAR(64) NOT NULL COMMENT '科室ID',
   `category_id` VARCHAR(64) NOT NULL COMMENT '分类ID(categoryIdList)',
   `mirror_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '镜像入库时间',
   PRIMARY KEY (`rel_id`),
-  UNIQUE KEY `uk_dept_cat` (`dept_id`, `category_id`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_dept_cat` (`dept_id`, `category_id`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-科室分类关联(categoryIdList)';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-科室分类关联(categoryIdList)';
 /
 
 -- 2.1.12 用户身份信息
 CREATE TABLE IF NOT EXISTS `m_user_identity` (
-  `mirror_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '镜像自增主键',
+  `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `api_code` VARCHAR(32) NOT NULL DEFAULT '2.1.12' COMMENT '接口编号',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
@@ -121,31 +130,35 @@ CREATE TABLE IF NOT EXISTS `m_user_identity` (
   `hospital_id` VARCHAR(64) DEFAULT NULL COMMENT '医院ID',
   `org_id` VARCHAR(64) DEFAULT NULL COMMENT '机构ID',
   PRIMARY KEY (`mirror_id`),
-  UNIQUE KEY `uk_identity` (`identity_id`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_identity` (`identity_id`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_dept_id` (`dept_id`),
   KEY `idx_user_id` (`user_id`),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-2.1.12用户身份信息';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.1.12用户身份信息';
 /
 
 CREATE TABLE IF NOT EXISTS `m_user_identity_account` (
-  `rel_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `rel_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
   `identity_id` VARCHAR(64) NOT NULL COMMENT '身份ID',
   `account_no` VARCHAR(128) NOT NULL COMMENT '账号(accountList)',
   `mirror_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '镜像入库时间',
   PRIMARY KEY (`rel_id`),
-  UNIQUE KEY `uk_identity_account` (`identity_id`, `account_no`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_identity_account` (`identity_id`, `account_no`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-用户身份账号(accountList)';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-用户身份账号(accountList)';
 /
 
 -- 2.5.44 药品、材料字典
 CREATE TABLE IF NOT EXISTS `m_drug_dict` (
-  `mirror_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '镜像自增主键',
+  `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `api_code` VARCHAR(32) NOT NULL DEFAULT '2.5.44' COMMENT '接口编号',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
@@ -225,17 +238,19 @@ CREATE TABLE IF NOT EXISTS `m_drug_dict` (
   `hospital_id` VARCHAR(64) DEFAULT NULL COMMENT '医院ID',
   `org_id` VARCHAR(64) DEFAULT NULL COMMENT '机构ID',
   PRIMARY KEY (`mirror_id`),
-  UNIQUE KEY `uk_drug_spec` (`drug_id`, `drug_spec_packing_id`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_drug_spec` (`drug_id`, `drug_spec_packing_id`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_drug_code` (`drug_code`),
   KEY `idx_drug_name` (`drug_name`(191)),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-2.5.44药品材料字典';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.44药品材料字典';
 /
 
 -- 2.5.58 SPD 药品材料分类
 CREATE TABLE IF NOT EXISTS `m_dict_category` (
-  `mirror_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '镜像自增主键',
+  `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `api_code` VARCHAR(32) NOT NULL DEFAULT '2.5.58' COMMENT '接口编号',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
@@ -249,16 +264,18 @@ CREATE TABLE IF NOT EXISTS `m_dict_category` (
   `org_id` VARCHAR(64) DEFAULT NULL COMMENT '机构ID',
   `hospital_id` VARCHAR(64) DEFAULT NULL COMMENT '医院ID',
   PRIMARY KEY (`mirror_id`),
-  UNIQUE KEY `uk_dict_cat` (`his_dict_id`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_dict_cat` (`his_dict_id`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_dict_name` (`his_dict_name`(191)),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-2.5.58SPD药品材料分类';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.58SPD药品材料分类';
 /
 
 -- 2.5.62 SPD 供应商
 CREATE TABLE IF NOT EXISTS `m_supplier` (
-  `mirror_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '镜像自增主键',
+  `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `api_code` VARCHAR(32) NOT NULL DEFAULT '2.5.62' COMMENT '接口编号',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
@@ -291,16 +308,18 @@ CREATE TABLE IF NOT EXISTS `m_supplier` (
   `social_credit_code` VARCHAR(64) DEFAULT NULL COMMENT '统一社会信用代码',
   `org_id` VARCHAR(64) DEFAULT NULL COMMENT '机构ID',
   PRIMARY KEY (`mirror_id`),
-  UNIQUE KEY `uk_supplier` (`supplier_id`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_supplier` (`supplier_id`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_supplier_name` (`supplier_name`(191)),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-2.5.62SPD供应商';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.62SPD供应商';
 /
 
 -- 2.5.63 SPD 生产厂商
 CREATE TABLE IF NOT EXISTS `m_producer` (
-  `mirror_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '镜像自增主键',
+  `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `api_code` VARCHAR(32) NOT NULL DEFAULT '2.5.63' COMMENT '接口编号',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
@@ -334,16 +353,18 @@ CREATE TABLE IF NOT EXISTS `m_producer` (
   `vs_status` VARCHAR(32) DEFAULT NULL COMMENT '对照状态',
   `org_id` VARCHAR(64) DEFAULT NULL COMMENT '机构ID',
   PRIMARY KEY (`mirror_id`),
-  UNIQUE KEY `uk_producer` (`producer_id`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_producer` (`producer_id`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_producer_name` (`producer_cnname`(191)),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-2.5.63SPD生产厂商';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.63SPD生产厂商';
 /
 
 -- 2.5.102 一级库入退库记录（主表 + 明细）
 CREATE TABLE IF NOT EXISTS `m_yk_instock` (
-  `mirror_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '镜像自增主键',
+  `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `api_code` VARCHAR(32) NOT NULL DEFAULT '2.5.102' COMMENT '接口编号',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
@@ -363,15 +384,17 @@ CREATE TABLE IF NOT EXISTS `m_yk_instock` (
   `dept_id` VARCHAR(64) DEFAULT NULL COMMENT '科室ID',
   `dept_name` VARCHAR(200) DEFAULT NULL COMMENT '科室名称',
   PRIMARY KEY (`mirror_id`),
-  UNIQUE KEY `uk_yk_instock` (`storage_instock_id`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_yk_instock` (`storage_instock_id`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_instock_code` (`instock_code`),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-2.5.102一级库入退库主表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.102一级库入退库主表';
 /
 
 CREATE TABLE IF NOT EXISTS `m_yk_instock_detail` (
-  `detail_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '明细自增主键',
+  `detail_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
   `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
   `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
   `storage_instock_id` VARCHAR(64) NOT NULL COMMENT '入库单ID',
@@ -396,8 +419,9 @@ CREATE TABLE IF NOT EXISTS `m_yk_instock_detail` (
   `material_or_drug` VARCHAR(16) DEFAULT NULL COMMENT '0药品1材料',
   `supplier_id` VARCHAR(64) DEFAULT NULL COMMENT '供应商ID',
   PRIMARY KEY (`detail_id`),
-  UNIQUE KEY `uk_instock_line` (`storage_instock_id`, `drug_spec_packing_id`, `batch_number`, `hospital_key`, `active_env`),
+  UNIQUE KEY `uk_instock_line` (`storage_instock_id`, `drug_spec_packing_id`, `batch_number`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_drug_id` (`drug_id`),
   KEY `idx_sync_batch` (`sync_batch_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='镜像-2.5.102一级库入退库明细(stockDetailList)';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.102一级库入退库明细(stockDetailList)';
 /

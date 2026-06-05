@@ -55,7 +55,7 @@ scminterface:
   # 众阳 HIS 厂家 — 各医院客户独立配置（凭证见各医院 *MsunEnvProfile.java）
   vendor:
     msun:
-      # 查询接口回参落镜像库（探针页与正式 API 共用）；须同时启用 spring.datasource.druid.msun-his-mirror
+      # 查询接口回参落 SPD 库 m_* 镜像表（探针与正式 API 共用）；须 spd.enabled=true 且实施人员已手工建表
       mirror:
         enabled: true
       hospitals:

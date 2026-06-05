@@ -28,7 +28,7 @@ public class MsunHisMirrorSyncExecutor
         this.mirrorMapper = mirrorMapper;
     }
 
-    @DataSource(DataSourceType.MSUN_HIS_MIRROR)
+    @DataSource(DataSourceType.SPD)
     public int execute(MsunHospitalRuntime runtime, String apiCode, String batchNo, JSONObject wrappedResponse)
     {
         Object hisBodyObj = wrappedResponse.get("hisBody");
@@ -100,7 +100,7 @@ public class MsunHisMirrorSyncExecutor
             JSONObject item = data.getJSONObject(i);
             Map<String, Object> row = MsunHisMirrorRowSupport.buildMirrorRow(
                     runtime, apiCode, batchNo, traceId, requestJson, item, MIRROR_SOURCE_API);
-            mirrorMapper.upsertMirrorRow("m_dept", row);
+            upsertRow("m_dept", row);
             count++;
 
             JSONArray cats = item.getJSONArray("categoryIdList");
@@ -113,7 +113,7 @@ public class MsunHisMirrorSyncExecutor
                     relFields.put("dept_id", deptId);
                     relFields.put("category_id", String.valueOf(cats.get(j)));
                     Map<String, Object> rel = MsunHisMirrorRowSupport.buildChildRelRow(runtime, batchNo, relFields);
-                    mirrorMapper.upsertMirrorRow("m_dept_category_rel", rel);
+                    upsertRow("m_dept_category_rel", rel);
                 }
             }
         }
@@ -134,7 +134,7 @@ public class MsunHisMirrorSyncExecutor
             JSONObject item = data.getJSONObject(i);
             Map<String, Object> row = MsunHisMirrorRowSupport.buildMirrorRow(
                     runtime, apiCode, batchNo, traceId, requestJson, item, MIRROR_SOURCE_API);
-            mirrorMapper.upsertMirrorRow("m_user_identity", row);
+            upsertRow("m_user_identity", row);
             count++;
 
             JSONArray accounts = item.getJSONArray("accountList");
@@ -147,7 +147,7 @@ public class MsunHisMirrorSyncExecutor
                     relFields.put("identity_id", identityId);
                     relFields.put("account_no", String.valueOf(accounts.get(j)));
                     Map<String, Object> rel = MsunHisMirrorRowSupport.buildChildRelRow(runtime, batchNo, relFields);
-                    mirrorMapper.upsertMirrorRow("m_user_identity_account", rel);
+                    upsertRow("m_user_identity_account", rel);
                 }
             }
         }
@@ -169,7 +169,7 @@ public class MsunHisMirrorSyncExecutor
             JSONObject item = data.getJSONObject(i);
             Map<String, Object> row = MsunHisMirrorRowSupport.buildMirrorRow(
                     runtime, apiCode, batchNo, traceId, requestJson, item, MIRROR_SOURCE_API);
-            mirrorMapper.upsertMirrorRow(table, row);
+            upsertRow(table, row);
             count++;
         }
         return count;
@@ -189,7 +189,7 @@ public class MsunHisMirrorSyncExecutor
             JSONObject item = data.getJSONObject(i);
             Map<String, Object> header = MsunHisMirrorRowSupport.buildMirrorRow(
                     runtime, apiCode, batchNo, traceId, requestJson, item, MIRROR_SOURCE_API);
-            mirrorMapper.upsertMirrorRow("m_yk_instock", header);
+            upsertRow("m_yk_instock", header);
             count++;
 
             String storageInstockId = item.getString("storageInstockId");
@@ -215,7 +215,7 @@ public class MsunHisMirrorSyncExecutor
                     detailRow.remove("request_params_json");
                     detailRow.remove("raw_item_json");
                     detailRow.remove("mirror_source");
-                    mirrorMapper.upsertMirrorRow("m_yk_instock_detail", detailRow);
+                    upsertRow("m_yk_instock_detail", detailRow);
                 }
             }
         }
@@ -227,12 +227,19 @@ public class MsunHisMirrorSyncExecutor
         Map<String, Object> batch = new HashMap<>(8);
         batch.put("sync_batch_no", batchNo);
         batch.put("hospital_key", runtime.getHospitalKey());
+        batch.put("tenant_id", runtime.getTenantId());
         batch.put("active_env", runtime.getActiveEnv());
         batch.put("api_code", apiCode);
         batch.put("mirror_source", MIRROR_SOURCE_API);
         batch.put("record_count", recordCount);
         batch.put("remark", "API查询自动落库");
         batch.put("mirror_time", new java.util.Date());
-        mirrorMapper.upsertMirrorRow("m_sync_batch", batch);
+        upsertRow("m_sync_batch", batch);
+    }
+
+    private void upsertRow(String table, Map<String, Object> row)
+    {
+        MsunHisMirrorRowSupport.ensurePrimaryKey(table, row);
+        mirrorMapper.upsertMirrorRow(table, row);
     }
 }
