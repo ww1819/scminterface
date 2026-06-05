@@ -56,9 +56,9 @@ scminterface:
   customer:
     zaoqiang-tcm-001:
       msun:
-        enabled: false
-        # test=灰度测试(GrayTest)；prod=正式 https://zqxzyyy.msuncloud.cn
-        active-env: test
+        enabled: true
+        # prod=枣强正式 https://zqxzyyy.msuncloud.cn；联调灰度可改 test
+        active-env: prod
         depts-path: /msun-middle-base-common/v1/depts
         identities-path: /msun-middle-base-common/v1/identities
 

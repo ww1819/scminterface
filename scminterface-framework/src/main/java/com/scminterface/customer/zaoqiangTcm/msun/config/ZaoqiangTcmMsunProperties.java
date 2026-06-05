@@ -15,7 +15,7 @@ public class ZaoqiangTcmMsunProperties
     /**
      * 当前使用环境：{@code test}（灰度，默认）或 {@code prod}（枣强正式）。
      */
-    private String activeEnv = ZaoqiangTcmMsunEnvProfile.TEST.getCode();
+    private String activeEnv = ZaoqiangTcmMsunEnvProfile.PROD.getCode();
 
     private String deptsPath = "/msun-middle-base-common/v1/depts";
 

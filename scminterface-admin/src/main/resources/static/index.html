@@ -203,11 +203,19 @@
                     desc: 'SCM数据源配置管理，包括系统参数配置和定时任务管理',
                     url: '/scm-config.html',
                     type: 'SCM'
+                },
+                {
+                    name: 'ZQ_MSUN',
+                    title: '枣强众阳联调',
+                    desc: '枣强中医院众阳 OpenAPI 查询探针，可编辑参数并查看 HIS 回参（正式库）',
+                    url: '/zaoqiang-msun-probe.html',
+                    type: 'ZQ_MSUN',
+                    alwaysAvailable: true
                 }
             ];
 
             modulesContainer.innerHTML = modules.map(module => {
-                const isAvailable = dataSources.some(ds => ds.type === module.type);
+                const isAvailable = module.alwaysAvailable || dataSources.some(ds => ds.type === module.type);
                 
                 return `
                     <a href="${module.url}" class="module-card ${isAvailable ? '' : 'disabled'}">
