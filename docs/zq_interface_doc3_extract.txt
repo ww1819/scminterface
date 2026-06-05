@@ -1,0 +1,1499 @@
+
+药品
+2.5.82. SPD查询合并库存信息
+上次更新于 2025-10-27 08:30:41
+接口描述
+SPD 查询合并库存信息接口。根据传入的库存科室 ID和药材分类等信息，检索医院的有效合并库存信息，用于查询并汇总科室药品 / 材料合并后的库存信息。
+在线测试new
+接口信息
+请求方法
+GET
+请求路径
+/msun-middle-base-resource/v1/merge-stock-infos
+前置接口
+2.5.3. 获取药品基本信息
+业务功能分类
+药房-药房库存状态监控与决策支持分析
+业务应用范围
+三方药品中心；摆药机颗粒机；SPD对接；共享中药房；
+请求参数
+参数名称
+是否必选
+类型
+长度
+描述
+参数来源
+来源说明
+deptId
+ 是
+整型
+-
+库存科室Id
+上游接口获取
+2.1.9. 科室基本信息接口 出参：科室ID
+categoryIdList
+ 否
+数组类型
+-
+药材分类Id集合
+上游接口获取
+2.5.3. 获取药品基本信息 出参：药品分类id
+drugCode
+ 否
+字符串
+-
+药材编码
+上游接口获取
+2.5.3. 获取药品基本信息 出参：药品编码
+drugId
+ 否
+整型
+-
+药材ID
+上游接口获取
+2.5.3. 获取药品基本信息 出参：药品字典id
+drugName
+ 否
+字符串
+-
+药材名称
+外部输入
+药材名称
+drugSpecPackingId
+ 否
+整型
+-
+药材规格ID
+上游接口获取
+2.5.3. 获取药品基本信息 出参：药品规格id唯一值
+zeroFlag
+ 否
+字符串
+-
+是否包含0库存:0否1是2只查零库存
+固定值
+是否包含0库存:0否1是2只查零库存
+maxId
+ 否
+整型
+-
+最大ID
+外部输入
+最大ID
+参数示例
+copy
+"https://thirdpart-graytest.msunhis.com:9443/msun-middle-base-resource/v1/merge-stock-infos?deptId=79&drugId=3877"
+输出参数
+字段名称
+类型
+描述
+root
+对象类型
+根节点
+businessException
+布尔型
+是否是业务异常
+Code
+字符串
+错误码
+Decorate
+布尔型
+是否将返回值包装为ResponseResult
+exceptionName
+字符串
+异常名称
+Message
+字符串
+错误信息
+qualityMonitor
+字符串
+质控结果
+Success
+布尔型
+标记是否成功
+traceId
+字符串
+跟踪ID
+Data
+对象类型
+业务数据
+buyPrice
+数值类型
+进价
+categoryId
+整型
+药品分类Id
+categoryName
+字符串
+药品分类名称
+deptCode
+整型
+部门编号
+deptId
+整型
+库存科室Id
+deptName
+字符串
+库存科室名称
+drugCode
+字符串
+药品编码
+drugId
+整型
+药品Id
+drugName
+字符串
+药品名称
+drugSpecPackingId
+整型
+规格Id
+minPackingId
+整型
+最小包装单位id
+minPackingName
+字符串
+最小包装单位名称
+packingId
+整型
+当前包装单位id
+packingName
+字符串
+当前包装单位名称
+producerId
+整型
+生产厂商ID
+producerName
+字符串
+生产厂商名称
+retailPrice
+数值类型
+零售价
+spec
+字符串
+规格描述
+specPackingId
+整型
+规格包装单位id
+specPackingName
+字符串
+规格包装单位名称
+stockAmount
+数值类型
+库存数量
+ycStockQueryId
+整型
+合并库存Id
+invalidFlag
+字符串
+停用标识 0:否 1:是
+occupyQuantity
+数值类型
+占用数量
+输出示例
+copy
+{
+businessException:false
+code:"0000"
+data:[...]
+decorate:true
+exceptionName:null
+ignoreQualityMonitor:false
+level:"info"
+message:"成功"
+qualityMonitor:null
+service:"msun-middle-base-resource"
+success:true
+traceId:"6565740965925225606"
+}
+﻿
+药品
+2.5.43. 查询药房批次库存接口
+上次更新于 2023-10-18 17:10:52
+接口描述
+该接口提供根据药房科室和药品信息查询药材的库存批次信息，包括药品的库存数量、价格、包装、供应商、批号、有效期、生产日期等信息，供三方接口调用，查询药材的库存批次信息，实现对药品批次的进一步管理
+在线测试new
+接口信息
+请求方法
+GET
+请求路径
+/msun-middle-base-resource/v1/drug-batch-stocks
+前置接口
+2.5.3. 获取药品基本信息
+业务功能分类
+药房-药房库存状态监控与决策支持分析
+业务应用范围
+三方药品中心；摆药机颗粒机；SPD对接；共享中药房；
+请求参数
+参数名称
+是否必选
+类型
+长度
+描述
+参数来源
+来源说明
+deptId
+ 是
+整型
+-
+药房科室Id
+上游接口获取
+2.1.9. 科室基本信息接口 出参：科室ID
+drugId
+ 是
+整型
+-
+药品Id
+上游接口获取
+材料字典ID,c参考2.5.3. 获取药品基本信息接口返回的drugBasicMainId字段
+drugSpecPackingId
+ 是
+整型
+-
+规格Id
+上游接口获取
+2.5.3. 获取药品基本信息 出参：药品规格id唯一值
+参数示例
+copy
+"https://thirdpart-graytest.msunhis.com:9443/msun-middle-base-resource/v1/drug-batch-stocks?drugId=5773375049433221252&deptId=847&drugSpecPackingId=5773375059029788801"
+输出参数
+字段名称
+类型
+描述
+root
+对象类型
+根节点
+businessException
+布尔型
+是否是业务异常
+code
+字符串
+错误码
+decorate
+布尔型
+是否将返回值包装为ResponseResult
+exceptionName
+字符串
+异常名称
+message
+字符串
+错误信息
+qualityMonitor
+字符串
+质控结果
+success
+布尔型
+标记是否成功
+traceId
+字符串
+跟踪ID
+Data
+对象类型
+业务数据
+buyPrice
+数值类型
+进价价格
+catagoryName
+字符串
+药品类型
+drugCatagoryId
+整型
+药品分类代码
+drugCode
+字符串
+药品编码
+drugId
+整型
+药材Id
+drugName
+字符串
+药品名称
+drugSpecPackingId
+整型
+药材规格Id
+hospitalId
+整型
+医院id
+minPackingName
+字符串
+最小包装单位
+orgId
+整型
+机构id
+packingName
+字符串
+包装单位
+pharmacyStockId
+整型
+药房库存Id
+producerCnname
+字符串
+产地/厂商
+producerId
+整型
+产地厂商id
+retailPrice
+数值类型
+零售价格
+spec
+字符串
+包装规格
+stockAmount
+数值类型
+实际库存
+ycDeptId
+整型
+药房科室id
+ycDeptName
+字符串
+药房名称
+ycStockQueryId
+整型
+库存合并表id
+supplierId
+整型
+供应商id
+ycBatchNo
+字符串
+批号
+produceDate
+字符串
+生产日期
+effectiveDate
+字符串
+有效期
+输出示例
+copy
+{
+businessException:false
+code:"0000"
+data:[...]
+decorate:true
+exceptionName:null
+ignoreQualityMonitor:false
+level:"info"
+message:"成功"
+qualityMonitor:null
+service:"msun-middle-base-resource"
+success:true
+traceId:"5785683682614314116"
+}
+药品
+2.5.41. 对接药品、材料入库接口
+上次更新于 2026-05-08 18:02:14
+接口描述
+该接口提供药材药库入库，及请领到药房，并且是否记账或者确认的功能。供三方接口调用，并且可以根据业务形态，自己选择是否记账和确认的功能。
+在线测试new
+接口信息
+请求方法
+POST
+Content-Type
+application/json
+请求路径
+/msun-middle-base-resource/v1/drug-stocks-new
+前置接口
+2.5.7. SPD对接保存供应商信息、2.5.3. 获取药品基本信息
+业务功能分类
+药库-药品入库
+业务应用范围
+三方药品中心；摆药机颗粒机；SPD对接；共享中药房；
+请求参数
+参数名称
+是否必选
+类型
+长度
+描述
+参数来源
+来源说明
+loginUser
+ 是
+对象类型
+-
+请求头设置【严禁写到请求体中】，详细参见1.3. 接口调用流程参考→2. 配置请求头
+-
+-
+userSysId
+ 是
+整型
+-
+用户身份ID
+外部输入
+请求头基本信息,参考1.3
+userSysName
+ 是
+字符串
+-
+身份名称
+外部输入
+请求头基本信息,参考1.3
+userId
+ 是
+整型
+-
+用户id
+外部输入
+请求头基本信息,参考1.3
+userName
+ 是
+字符串
+-
+用户名称
+外部输入
+请求头基本信息,参考1.3
+hospitalId
+ 是
+整型
+-
+医院Id
+外部输入
+请求头基本信息,参考1.3
+hospitalName
+ 是
+字符串
+-
+医院名称
+外部输入
+请求头基本信息,参考1.3
+orgId
+ 是
+整型
+-
+机构id
+外部输入
+请求头基本信息,参考1.3
+deptCode
+ 是
+字符串
+-
+科室名称
+外部输入
+请求头基本信息,参考1.3
+deptId
+ 是
+整型
+-
+科室Id
+外部输入
+请求头基本信息,参考1.3
+deptName
+ 是
+字符串
+-
+科室名称
+外部输入
+请求头基本信息,参考1.3
+Body参数json
+参数名称
+是否必选
+类型
+长度
+描述
+参数来源
+来源说明
+root
+ 是
+对象类型
+-
+根节点
+-
+-
+supplierId
+ 是
+整型
+-
+供应商Id
+上游接口
+2.5.7. SPD对接保存供应商信息
+storageDeptId
+ 是
+整型
+-
+药库科室Id
+上游接口
+2.1.9. 科室基本信息接口 出参：科室ID
+pharmacyDeptId
+ 否
+整型
+-
+药房科室Id，InStockStatus状态是入到药房时才校验必传
+上游接口
+2.1.9. 科室基本信息接口 出参：科室ID
+buyUserSysId
+ 否
+整型
+-
+采购人员Id
+上游接口
+2.1.12. 用户身份信息接口 用户身份ID
+consigneeUserSysId
+ 否
+整型
+-
+收货人员Id
+上游接口
+2.1.12. 用户身份信息接口 用户身份ID
+receiveUserSysId
+ 否
+整型
+-
+药房领用人员Id
+上游接口
+2.1.12. 用户身份信息接口 用户身份ID
+invoiceCode
+ 是
+字符串
+-
+单据发票号【如存在很久开一次票的话看医院要求，同意的话可以传任意字符串】
+外部输入
+单据发票号【如存在很久开一次票的话看医院要求，同意的话可以传任意字符串】
+inStockDetailDTOList
+ 是
+对象类型
+-
+入库明细集合
+-
+-
+drugId
+ 是
+整型
+-
+药品、材料Id
+上游接口
+材料字典ID,参考2.5.3. 获取药品基本信息接口返回的drugBasicMainId字段
+drugSpecPackingId
+ 是
+整型
+-
+药品材料规格Id
+上游接口
+2.5.3. 获取药品基本信息 出参：药品规格id唯一值
+quantity
+ 是
+数值类型
+-
+数量（规格包装）
+外部输入
+库存数量（规格包装）
+retailPrice
+ 是
+数值类型
+-
+零售价
+外部输入
+零售价
+buyPrice
+ 是
+数值类型
+-
+进价
+外部输入
+进价
+invoiceCode
+ 是
+字符串
+-
+明细发票号
+外部输入
+明细发票号
+effectiveDate
+ 否
+字符串
+-
+有效期、过期时间 (yyyy-MM-dd HH:mm:ss）
+外部输入
+药品有效期、过期时间 (yyyy-MM-dd HH:mm:ss）
+produceDate
+ 是
+字符串
+-
+生产日期 (yyyy-MM-dd HH:mm:ss）
+外部输入
+药品生产日期 (yyyy-MM-dd HH:mm:ss）
+ycBatchNo
+ 是
+字符串
+-
+批号
+外部输入
+批号
+spdDetailId
+ 否
+字符串
+-
+三方入库明细Id,不可重复
+外部输入
+三方入库明细Id,不可重复
+memo
+ 否
+字符串
+-
+可作为唯一值对照使用，入库成功批次库存返回该值，不可重复
+外部输入
+可作为唯一值对照使用，入库成功批次库存返回该值，不可重复
+spdTracCodeList
+ 否
+数组类型
+-
+溯源码入参集合
+外部输入
+溯源码入参集合
+drugTracCodg
+ 否
+字符串
+-
+溯源码
+外部输入
+溯源码
+packingId
+ 否
+数值类型
+-
+包装Id(不传时按字典规格包装入库)
+上游接口
+2.5.3. 获取药品基本信息 出参：包装id唯一值
+mahId
+ 否
+整型
+-
+上市持有人Id通过2.5.93接口获取
+上游接口
+通过2.5.93接口获取上市持有人Id
+inStockStatus
+ 否
+字符串
+-
+入库目标状态码 1:入到药库只生成药库或一级库入库单据;2:入库到药库，生成药库或一级库入库单据，并记账增加库存;3:入库药房，不确认，药房不加库存;4:入库到药房,药库出库到药房,药库不记账;null值或''：第三方入库药房或二级库，生成his一级库到二级库流水单据，并且二级库或药房增加库存，此时pharmacyDeptId为必传。
+枚举值
+-
+spdMainId
+ 否
+字符串
+-
+三方入库主单据Id
+外部输入
+三方入库主单据Id
+saveCorrelationFlag
+ 否
+字符串
+-
+是否保存关联关系，0或者null：否，1：是
+枚举值
+是否保存关联关系，0或者null：否，1：是
+参数示例
+copy
+{
+buyUserSysId:4840406066597593000
+consigneeUserSysId:4840406066597593000
+inStockDetailDTOList:[...]
+inStockStatus:"2"
+invoiceCode:"主单据发票号"
+memo:"接口入库测试"
+pharmacyDeptId:847
+receiveUserSysId:5258223514320113000
+storageDeptId:79
+supplierId:10001711
+}
+输出参数
+字段名称
+类型
+描述
+root
+对象类型
+根节点
+入库到药库不记账输出参数：
+对象类型
+businessException
+布尔型
+是否是业务异常
+code
+字符串
+错误码
+decorate
+布尔型
+是否将返回值包装为ResponseResult
+exceptionName
+字符串
+异常名称
+message
+字符串
+错误信息
+qualityMonitor
+布尔型
+质控结果
+success
+布尔型
+标记是否成功
+traceId
+字符串
+跟踪ID
+Data
+字符串
+null
+入库到药库记账输出参数:
+对象类型
+businessException
+布尔型
+是否是业务异常
+code
+字符串
+错误码
+decorate
+布尔型
+是否将返回值包装为ResponseResult
+exceptionName
+字符串
+异常名称
+message
+字符串
+错误信息
+qualityMonitor
+布尔型
+质控结果
+success
+布尔型
+标记是否成功
+traceId
+字符串
+跟踪ID
+Data
+数组类型
+List
+hisOrgId
+整型
+机构id
+hisCreaterId
+整型
+创建人Id
+hisCreaterName
+字符串
+创建人名称
+hisCreateTime
+字符串
+创建时间
+hisUpdaterId
+整型
+修改人Id
+hisUpdateTime
+字符串
+修改时间（格式yyyy-MM-dd HH:mm:ss）
+version
+整型
+版本号
+storageStockId
+整型
+库存主键
+storageDeptId
+整型
+库存对应的科室ID
+ycId
+整型
+药品id
+ycBatch
+字符串
+批次
+ycBatchNo
+字符串
+批号
+expireDate
+字符串
+过期时间(格式yyyy-MM-dd HH:mm:ss)
+quantity
+数值类型
+库存数量
+originalQuantity
+数值类型
+最初入库的数量
+stockPackId
+整型
+库存包装单位id
+retailPrice
+数值类型
+真实价格
+stockType
+字符串
+库存类型
+ycName
+字符串
+药品名称
+ycCode
+字符串
+药材编码
+ycSpec
+字符串
+药材规格名称
+producerId
+整型
+生产厂商Id
+producerName
+字符串
+生产厂商名称
+discount
+数值类型
+折扣率
+flagInvalid
+字符串
+是否作废 0否 1是
+tradePrice
+数值类型
+批发价
+supplierId
+整型
+供应商id
+supplierName
+字符串
+供应商名称
+approvalNo
+字符串
+批准文号
+catagoryId
+整型
+药材类型ID
+catagoryName
+字符串
+药材类型名称
+stockQueryId
+整型
+药品合并表ID
+instockTime
+字符串
+入库时间(格式yyyy-MM-dd HH:mm:ss)
+buyPrice
+数值类型
+购买价格
+amountPerPackage
+数值类型
+当前包装盒最小包装换算系数
+produceDate
+字符串
+生产日期(格式yyyy-MM-dd HH:mm:ss)
+packageSpec
+字符串
+包装规格
+storageInstockDetailId
+整型
+入库单明细id
+storageOutstockDetailId
+整型
+出库单明细id
+hospitalId
+整型
+医院id
+changePackageRena
+数值类型
+包装切换时价格小数余数进价，销售价，批发价相同
+drugSpecPackingId
+整型
+药材规格id
+ycShelvesId
+整型
+货架Id
+invoiceCode
+字符串
+发票号
+invoiceOneCode
+字符串
+第一发票号
+dictProvinceId
+整型
+原产地省份id
+stopQuantity
+数值类型
+停用数量
+orgId
+整型
+机构id
+入库到药房返回输出参数:
+对象类型
+businessException
+布尔型
+是否是业务异常
+code
+字符串
+错误码
+decorate
+布尔型
+是否将返回值包装为ResponseResult
+exceptionName
+字符串
+异常名称
+message
+字符串
+错误信息
+qualityMonitor
+布尔型
+质控结果
+success
+布尔型
+标记是否成功
+traceId
+字符串
+跟踪ID
+Data
+数组类型
+List
+hisOrgId
+整型
+机构id
+hisCreaterId
+整型
+创建人Id
+hisCreaterName
+字符串
+创建人名称
+hisCreateTime
+字符串
+创建时间
+hisUpdaterId
+整型
+修改人Id
+hisUpdateTime
+字符串
+修改时间（格式yyyy-MM-dd HH:mm:ss）
+version
+整型
+版本号
+pharmacyStockId
+整型
+库存主键
+pharmacyDeptId
+整型
+库存对应的科室ID
+ycId
+整型
+药品id
+ycBatch
+字符串
+批次
+ycBatchNo
+字符串
+批号
+expireDate
+字符串
+过期时间(格式yyyy-MM-dd HH:mm:ss)
+quantity
+数值类型
+库存数量
+originalQuantity
+数值类型
+最初入库的数量
+stockPackId
+整型
+库存包装单位id
+packageSpec
+字符串
+包装规格
+retailPrice
+数值类型
+真实价格
+stockType
+字符串
+库存类型
+ycName
+字符串
+药品名称
+ycCode
+字符串
+药材编码
+ycSpec
+字符串
+药材规格名称
+producerId
+整型
+生产厂商Id
+producerName
+字符串
+生产厂商名称
+discount
+数值类型
+折扣率
+flagInvalid
+字符串
+是否作废 0否 1是
+tradePrice
+数值类型
+批发价
+supplierId
+整型
+供应商id
+supplierName
+字符串
+供应商名称
+approvalNo
+字符串
+批准文号
+catagoryId
+整型
+药材类型ID
+catagoryName
+字符串
+药材类型名称
+stockQueryId
+整型
+药品合并表ID
+instockTime
+字符串
+入库时间(格式yyyy-MM-dd HH:mm:ss)
+buyPrice
+数值类型
+购买价格
+hospitalId
+整型
+医院id
+produceDate
+字符串
+生产日期(格式yyyy-MM-dd HH:mm:ss)
+storageOutstockDetailId
+整型
+出库单明细id
+drugSpecPackingId
+整型
+药材规格id
+storageStockId
+整型
+药库批次库存id
+changePackageRena
+数值类型
+包装切换时价格小数余数进价，销售价，批发价相同
+dictProvinceId
+整型
+原产地省份id
+stopQuantity
+数值类型
+停用数量
+ycShelvesId
+整型
+货架Id
+orgId
+整型
+机构id
+memo
+字符串
+备注入参明细中的memo
+输出示例
+copy
+[
+{
+businessException:false
+code:"0000"
+data:null
+decorate:true
+exceptionName:null
+ignoreQualityMonitor:false
+level:"info"
+message:"成功"
+qualityMonitor:null
+service:"msun-middle-base-resource"
+success:true
+traceId:"6176359626851746944"
+}
+{
+businessException:false
+code:"0000"
+data:[
+{
+amountPerPackage:"60.0000 "
+approvalNo:"-"
+buyPrice:0
+catagoryId:"609"
+catagoryName:"中药test"
+changePackageRena:null
+dictProvinceId:"233093627"
+discount:100
+drugSpecPackingId:"14841279"
+expireDate:"2026-12-10 00:00:00"
+flagInvalid:"0"
+hisCreateTime:"2023-11-01 10:16:11"
+hisCreaterId:"4849637972784710532"
+hisCreaterName:"系统管理员"
+hisOrgId:"10033"
+hisUpdateTime:"2023-11-01 10:16:11"
+hisUpdaterId:"4849637972784710532"
+hospitalId:"10033001"
+instockTime:"2023-11-01 10:16:11"
+invoiceCode:"fff"
+invoiceOneCode:null
+memo:"明细接口入库测试"
+orgId:"10033"
+originalQuantity:10
+packageSpec:"60.0000片/盒"
+produceDate:"2023-10-23 00:00:00"
+producerId:"233093627"
+producerName:"SHHHSY(JT)CH-上海海虹实业（集团）巢湖"
+quantity:10
+retailPrice:0
+stockPackId:"2"
+stockQueryId:"6153630745215894656"
+stockType:"0 "
+stopQuantity:0
+storageDeptId:"79"
+storageInstockDetailId:"6176329774010467460"
+storageOutstockDetailId:null
+storageStockId:"6176329800250033286"
+supplierId:"10000455"
+supplierName:"安徽"
+tradePrice:0
+version:0
+ycBatch:null
+ycBatchNo:"22222222"
+ycCode:"XY002568"
+ycId:"14841279"
+ycName:"[基](国采5)氯化钾缓释片(0.5g*60)"
+ycShelvesId:null
+ycSpec:"0.5g*60片/盒"
+}
+]
+decorate:true
+exceptionName:null
+ignoreQualityMonitor:false
+level:"info"
+message:"成功"
+qualityMonitor:null
+service:"msun-middle-base-resource"
+success:true
+traceId:"6176329761226228870"
+}
+{
+businessException:false
+code:"0000"
+data:[
+{
+approvalNo:"-"
+buyPrice:0
+catagoryId:"609"
+catagoryName:"中药test"
+changePackageRena:0
+dictProvinceId:"233093627"
+discount:100
+drugSpecPackingId:"14841279"
+expireDate:"2026-12-10 00:00:00"
+flagInvalid:"0"
+hisCreateTime:"2023-11-01 09:42:25"
+hisCreaterId:"4849637972784710532"
+hisCreaterName:"系统管理员"
+hisOrgId:"10033"
+hisUpdateTime:"2023-11-01 09:42:25"
+hisUpdaterId:"4849637972784710532"
+hospitalId:"10033001"
+instockTime:"2023-11-01 09:42:23"
+memo:"明细接口入库测试"
+orgId:"10033"
+originalQuantity:600
+packageSpec:"60.0000片/盒"
+pharmacyDeptId:"847"
+pharmacyStockId:"6176261777765958785"
+produceDate:"2023-10-23 00:00:00"
+producerId:"233093627"
+producerName:null
+quantity:600
+retailPrice:0
+stockPackId:"117"
+stockQueryId:"6153631292153136261"
+stockType:"0 "
+stopQuantity:0
+storageOutstockDetailId:"6176261796019569792"
+storageStockId:"6176261558923953286"
+supplierId:"10000455"
+supplierName:null
+tradePrice:0
+version:0
+ycBatch:null
+ycBatchNo:"22222222"
+ycCode:"XY002568"
+ycId:"14841279"
+ycName:"[基](国采5)氯化钾缓释片(0.5g*60)"
+ycShelvesId:null
+ycSpec:"0.5g*60片/盒"
+}
+]
+decorate:true
+exceptionName:null
+ignoreQualityMonitor:false
+level:"info"
+message:"成功"
+qualityMonitor:null
+service:"msun-middle-base-resource"
+success:true
+traceId:"6176261462589179015"
+}
+]
+本接口常见问题QA
+q：返回的数据为空
+a：排查下是不是inStockStatus传的3的原因。因为传3是入库药房不去页面点确认是不增加库存的，调接口只有增加库存才会返回数据。因为只有调用了这个接口才能去页面点确认按钮，所以可以理解为只要传3就不会返回数据
+﻿
+q：报错提示“报错提示规格包装不一致，请同步”
+a：入参drugId和drugSpecPackingId需要是正常的对照关系（2.5.44药品，材料字典查询接口中有返回对照关系）
+﻿
+q：如何避免二级库通过其他渠道入库导致的库存不平账差问题
+a：saveCorrelationFlag属性传1时，his这边存储了两方入库单据的关系，可以通过这个去查账
+﻿
+q：哪些参数是接口提供方（众阳）自己系统的？哪些参数是需要传递接口调用方系统的？
+a：科室id，药品材料id，药品材料规格id是接口提供方自己系统的，其他的参数是传调用方自己系统的【药材id和规格id在2.5.44接口有返回】
+药品
+2.5.42. 对接药品、材料退库（按批次创建一级库退库单并记账，然后再根据供应商创建供应商退货单并记账）。如果不按批次可使用2.5.109
+上次更新于 2026-04-16 18:29:36
+接口描述
+该接口是2.5.41接口的反流程，实现药房的退库到药库，并且药库退库到供应商，供三方接口调用，实现二级库退库到供应商的功能。
+在线测试new
+接口信息
+请求方法
+POST
+Content-Type
+application/json
+请求路径
+/msun-middle-base-resource/v1/drug-stocks-new/d
+前置接口
+2.5.41. 对接药品、材料入库接口
+业务功能分类
+药库-药品入库
+业务应用范围
+三方药品中心；摆药机颗粒机；SPD对接；共享中药房；
+请求参数
+参数名称
+是否必选
+类型
+长度
+描述
+参数来源
+来源说明
+loginUser
+ 是
+对象类型
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+-
+userSysId
+ 是
+整型
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+请求头基本信息
+userSysName
+ 是
+字符串
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+请求头基本信息
+userId
+ 是
+整型
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+请求头基本信息
+userName
+ 是
+字符串
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+请求头基本信息
+hospitalId
+ 是
+整型
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+请求头基本信息
+hospitalName
+ 是
+字符串
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+请求头基本信息
+orgId
+ 是
+整型
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+请求头基本信息
+deptCode
+ 是
+字符串
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+请求头基本信息
+deptId
+ 是
+整型
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+请求头基本信息
+deptName
+ 是
+字符串
+-
+【请求头参数，传递方式参考1.3. 接口调用流程参考→2. 配置请求头】
+外部输入
+请求头基本信息
+Body参数json
+参数名称
+是否必选
+类型
+长度
+描述
+参数来源
+来源说明
+root
+ 是
+对象类型
+-
+根节点
+-
+-
+storageDeptId
+ 是
+整型
+-
+2.1.9. 科室基本信息接口 出参：科室ID
+上游接口
+2.1.9. 科室基本信息接口 出参：科室ID
+pharmacyDeptId
+ 是
+整型
+-
+2.1.9. 科室基本信息接口 出参：科室ID
+上游接口
+2.1.9. 科室基本信息接口 出参：科室ID
+receiveUserSysId
+ 否
+整型
+-
+2.1.12. 用户身份信息接口 出参：identityId
+上游接口
+2.1.12. 用户身份信息接口 用户身份ID
+memo
+ 否
+字符串
+-
+备注
+外部输入
+备注
+outStockDetailDTOList
+ 是
+对象类型
+-
+退库明细集合
+-
+-
+pharmacyStockId
+ 是
+整型
+-
+批次库存ID【2.5.41返回的storageStockId或者pharmacyStockId，根据入库到药库还是药房来区分】
+上游接口
+批次库存ID【2.5.41返回的storageStockId或者pharmacyStockId，根据入库到药库还是药房来区分】
+quantity
+ 是
+数值类型
+-
+退库数量
+外部输入
+退库数量
+memo
+ 否
+字符串
+-
+备注（接口入库）
+外部输入
+备注（接口入库）
+isReturnToSupplier
+ 否
+字符串
+1
+是否退库到供应商 0:否 1:是 默认为1
+枚举值
+是否退库到供应商 0:否 1:是 默认为1
+参数示例
+copy
+{
+hospitalId:0
+isReturnToSupplier:""
+memo:""
+orgId:0
+outStockDetailDTOList:[
+{
+hospitalId:0
+memo:""
+orgId:0
+pharmacyOutstockDetailId:0
+pharmacyStockId:0
+quantity:0
+}
+]
+pharmacyDeptId:0
+receiveUserSysId:0
+storageDeptId:0
+}
+输出参数
+字段名称
+类型
+描述
+root
+对象类型
+根节点
+businessException
+布尔型
+是否是业务异常
+code
+字符串
+错误码
+decorate
+布尔型
+是否将返回值包装为ResponseResult
+exceptionName
+字符串
+异常名称
+message
+字符串
+错误信息
+qualityMonitor
+字符串
+质控结果
+success
+布尔型
+标记是否成功
+traceId
+字符串
+跟踪ID
+Data
+数组类型
+业务对象，继承自BaseEntity
+输出示例
+copy
+{
+businessException:true
+code:""
+data:{}
+decorate:true
+exceptionName:""
+ignoreQualityMonitor:true
+level:""
+message:""
+qualityMonitor:{
+category:""
+message:[]
+outDetails:[
+{
+isPass:""
+outDetailsMsg:""
+ruleName:""
+ruleSource:""
+}
+]
+outputType:""
+outputUrl:""
+}
+service:""
+success:true
+traceId:""
+}
+本接口常见问题QA
+q：该接口是否支持一次退库退多个批次的入库？
+a：支持的，只要库存主键id和数量对应起来就可以
+

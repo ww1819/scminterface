@@ -91,6 +91,8 @@ CALL add_mirror_column('m_yk_instock', 'tenant_id', 'varchar(64) NOT NULL DEFAUL
 /
 CALL add_mirror_column('m_yk_instock_detail', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
 /
+CALL add_mirror_column('m_merge_stock', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
+/
 CALL add_mirror_column('m_drug_batch_stock', 'tenant_id', 'varchar(64) NOT NULL DEFAULT ''''', 'SPD租户ID，枣强=zaoqiang-tcm-001', 'hospital_key');
 /
 UPDATE m_sync_batch SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
@@ -114,6 +116,8 @@ UPDATE m_producer SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id
 UPDATE m_yk_instock SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
 /
 UPDATE m_yk_instock_detail SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
+/
+UPDATE m_merge_stock SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
 /
 UPDATE m_drug_batch_stock SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
 /
@@ -162,6 +166,10 @@ CALL add_mirror_column('m_yk_instock_detail', 'insert_time', 'datetime NOT NULL 
 /
 CALL add_mirror_column('m_yk_instock_detail', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
 /
+CALL add_mirror_column('m_merge_stock', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'mirror_source');
+/
+CALL add_mirror_column('m_merge_stock', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
 CALL add_mirror_column('m_drug_batch_stock', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'mirror_source');
 /
 CALL add_mirror_column('m_drug_batch_stock', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
@@ -187,6 +195,8 @@ UPDATE m_producer SET insert_time = mirror_time, update_time = mirror_time WHERE
 UPDATE m_yk_instock SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
 /
 UPDATE m_yk_instock_detail SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_merge_stock SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
 /
 UPDATE m_drug_batch_stock SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
 /

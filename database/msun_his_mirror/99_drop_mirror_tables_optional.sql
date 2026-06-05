@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS `m_yk_instock_detail`;
 /
 DROP TABLE IF EXISTS `m_yk_instock`;
 /
+DROP TABLE IF EXISTS `m_merge_stock`;
 DROP TABLE IF EXISTS `m_drug_batch_stock`;
 /
 DROP TABLE IF EXISTS `m_producer`;

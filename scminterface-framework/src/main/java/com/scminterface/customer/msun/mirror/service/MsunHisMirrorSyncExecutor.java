@@ -72,6 +72,9 @@ public class MsunHisMirrorSyncExecutor
             case "2.5.63":
                 rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, "m_producer");
                 break;
+            case "2.5.82":
+                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, "m_merge_stock");
+                break;
             case "2.5.43":
                 rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, "m_drug_batch_stock");
                 break;

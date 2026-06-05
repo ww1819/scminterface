@@ -27,6 +27,7 @@ public final class MsunHisMirrorSqlProvider
         ALLOWED_TABLES.add("m_producer");
         ALLOWED_TABLES.add("m_yk_instock");
         ALLOWED_TABLES.add("m_yk_instock_detail");
+        ALLOWED_TABLES.add("m_merge_stock");
         ALLOWED_TABLES.add("m_drug_batch_stock");
     }
 

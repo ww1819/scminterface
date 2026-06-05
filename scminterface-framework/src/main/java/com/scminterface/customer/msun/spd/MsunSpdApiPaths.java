@@ -13,6 +13,8 @@ public final class MsunSpdApiPaths
 
     public static final String DRUG_PRODUCERES = "/msun-middle-base-dict/v1/drug-produceres";
 
+    public static final String MERGE_STOCK_INFOS = "/msun-middle-base-resource/v1/merge-stock-infos";
+
     public static final String DRUG_BATCH_STOCKS = "/msun-middle-base-resource/v1/drug-batch-stocks";
 
     public static final String QUERY_YK_INSTOCK = "/msun-middle-base-resource/v1/query-yk-instock";

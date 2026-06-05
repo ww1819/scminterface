@@ -25,6 +25,7 @@ public final class MsunHisMirrorProbeRegistry
         register("dictCategory", "2.5.58", "分类字典镜像", spec("m_dict_category", "分类主表", true));
         register("suppliers", "2.5.62", "供应商镜像", spec("m_supplier", "供应商主表", true));
         register("producers", "2.5.63", "生产厂商镜像", spec("m_producer", "厂商主表", true));
+        register("mergeStocks", "2.5.82", "合并库存镜像", spec("m_merge_stock", "合并库存", true));
         register("batchStocks", "2.5.43", "批次库存镜像", spec("m_drug_batch_stock", "批次库存", true));
         register("ykInstock", "2.5.102", "一级库入退库镜像",
                 spec("m_yk_instock", "入退库主表", true),

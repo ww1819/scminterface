@@ -369,6 +369,93 @@ CREATE TABLE IF NOT EXISTS `m_producer` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.63SPD生产厂商';
 /
 
+-- 2.5.82 SPD 合并库存
+CREATE TABLE IF NOT EXISTS `m_merge_stock` (
+  `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
+  `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
+  `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
+  `api_code` VARCHAR(32) NOT NULL DEFAULT '2.5.82' COMMENT '接口编号',
+  `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
+  `his_trace_id` VARCHAR(64) DEFAULT NULL COMMENT 'HIS traceId',
+  `request_params_json` TEXT COMMENT '请求入参JSON',
+  `raw_item_json` MEDIUMTEXT COMMENT '原始行JSON备份',
+  `mirror_source` VARCHAR(32) DEFAULT 'api' COMMENT '镜像来源',
+  `insert_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '插入时间',
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `dept_id` VARCHAR(64) DEFAULT NULL COMMENT '库存科室ID',
+  `dept_code` VARCHAR(64) DEFAULT NULL COMMENT '科室编号',
+  `dept_name` VARCHAR(200) DEFAULT NULL COMMENT '科室名称',
+  `drug_id` VARCHAR(64) DEFAULT NULL COMMENT '药品/材料ID',
+  `drug_code` VARCHAR(128) DEFAULT NULL COMMENT '药品编码',
+  `drug_name` VARCHAR(500) DEFAULT NULL COMMENT '药品名称',
+  `drug_spec_packing_id` VARCHAR(64) DEFAULT NULL COMMENT '规格包装ID',
+  `yc_stock_query_id` VARCHAR(64) DEFAULT NULL COMMENT '合并库存ID',
+  `stock_amount` DECIMAL(18,4) DEFAULT NULL COMMENT '库存数量',
+  `buy_price` DECIMAL(18,4) DEFAULT NULL COMMENT '进价',
+  `retail_price` DECIMAL(18,4) DEFAULT NULL COMMENT '零售价',
+  `spec` VARCHAR(500) DEFAULT NULL COMMENT '规格描述',
+  `category_id` VARCHAR(64) DEFAULT NULL COMMENT '药品分类ID',
+  `category_name` VARCHAR(200) DEFAULT NULL COMMENT '药品分类名称',
+  `producer_id` VARCHAR(64) DEFAULT NULL COMMENT '生产厂商ID',
+  `producer_name` VARCHAR(500) DEFAULT NULL COMMENT '生产厂商名称',
+  `min_packing_id` VARCHAR(64) DEFAULT NULL COMMENT '最小包装单位ID',
+  `min_packing_name` VARCHAR(64) DEFAULT NULL COMMENT '最小包装单位名称',
+  `packing_id` VARCHAR(64) DEFAULT NULL COMMENT '当前包装单位ID',
+  `packing_name` VARCHAR(64) DEFAULT NULL COMMENT '当前包装单位名称',
+  `spec_packing_id` VARCHAR(64) DEFAULT NULL COMMENT '规格包装单位ID',
+  `spec_packing_name` VARCHAR(64) DEFAULT NULL COMMENT '规格包装单位名称',
+  `invalid_flag` VARCHAR(16) DEFAULT NULL COMMENT '停用标识0否1是',
+  `occupy_quantity` DECIMAL(18,4) DEFAULT NULL COMMENT '占用数量',
+  PRIMARY KEY (`mirror_id`),
+  UNIQUE KEY `uk_merge_stock` (`dept_id`, `drug_id`, `drug_spec_packing_id`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
+  KEY `idx_drug_id` (`drug_id`),
+  KEY `idx_yc_stock_query` (`yc_stock_query_id`),
+  KEY `idx_sync_batch` (`sync_batch_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.82SPD合并库存';
+/
+
+-- 2.5.43 药房批次库存
+CREATE TABLE IF NOT EXISTS `m_drug_batch_stock` (
+  `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
+  `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
+  `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
+  `api_code` VARCHAR(32) NOT NULL DEFAULT '2.5.43' COMMENT '接口编号',
+  `sync_batch_no` VARCHAR(64) DEFAULT NULL COMMENT '同步批次号',
+  `his_trace_id` VARCHAR(64) DEFAULT NULL COMMENT 'HIS traceId',
+  `request_params_json` TEXT COMMENT '请求入参JSON',
+  `raw_item_json` MEDIUMTEXT COMMENT '原始行JSON备份',
+  `mirror_source` VARCHAR(32) DEFAULT 'api' COMMENT '镜像来源',
+  `insert_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '插入时间',
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `dept_id` VARCHAR(64) DEFAULT NULL COMMENT '药房科室ID',
+  `drug_id` VARCHAR(64) DEFAULT NULL COMMENT '药品/材料ID',
+  `drug_spec_packing_id` VARCHAR(64) DEFAULT NULL COMMENT '规格包装ID',
+  `batch_number` VARCHAR(128) DEFAULT NULL COMMENT '批号',
+  `stock_id` VARCHAR(64) DEFAULT NULL COMMENT '库存ID',
+  `quantity` DECIMAL(18,4) DEFAULT NULL COMMENT '库存数量',
+  `buy_price` DECIMAL(18,4) DEFAULT NULL COMMENT '进价',
+  `retail_price` DECIMAL(18,4) DEFAULT NULL COMMENT '零售价',
+  `effective` VARCHAR(32) DEFAULT NULL COMMENT '有效期',
+  `produce_date` VARCHAR(32) DEFAULT NULL COMMENT '生产日期',
+  `producer_id` VARCHAR(64) DEFAULT NULL COMMENT '生产厂商ID',
+  `producer_name` VARCHAR(500) DEFAULT NULL COMMENT '生产厂商',
+  `supplier_id` VARCHAR(64) DEFAULT NULL COMMENT '供应商ID',
+  `supplier_name` VARCHAR(500) DEFAULT NULL COMMENT '供应商',
+  `packing_id` VARCHAR(64) DEFAULT NULL COMMENT '包装ID',
+  `packing_name` VARCHAR(64) DEFAULT NULL COMMENT '包装单位',
+  `hospital_id` VARCHAR(64) DEFAULT NULL COMMENT '医院ID',
+  `org_id` VARCHAR(64) DEFAULT NULL COMMENT '机构ID',
+  PRIMARY KEY (`mirror_id`),
+  UNIQUE KEY `uk_batch_stock` (`dept_id`, `drug_id`, `drug_spec_packing_id`, `batch_number`, `tenant_id`, `active_env`),
+  KEY `idx_tenant_id` (`tenant_id`),
+  KEY `idx_drug_id` (`drug_id`),
+  KEY `idx_sync_batch` (`sync_batch_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.43药房批次库存';
+/
+
 -- 2.5.102 一级库入退库记录（主表 + 明细）
 CREATE TABLE IF NOT EXISTS `m_yk_instock` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',

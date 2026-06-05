@@ -26,7 +26,7 @@ var zqRunningAll = false;
 var zqFetchingAllPages = false;
 var zqFetchingAllRoles = false;
 
-var ZQ_API_RESP_ORDER = ['env', 'depts', 'identities', 'drugDict', 'dictCategory', 'suppliers', 'producers', 'batchStocks', 'ykInstock'];
+var ZQ_API_RESP_ORDER = ['env', 'depts', 'identities', 'drugDict', 'dictCategory', 'suppliers', 'producers', 'mergeStocks', 'batchStocks', 'ykInstock'];
 var ZQ_API_RESP_LABELS = { env: '当前环境' };
 var ZQ_LOG_TITLE_TO_KEY = { '当前环境': 'env' };
 
@@ -81,6 +81,11 @@ function zqHisSummary(result) {
                 s += ', pages=' + hisBody._probeMerged.pages + ', mergedRows=' + hisBody._probeMerged.totalRows;
             }
         }
+        if (result.data && result.data.cascadeBatch) {
+            const cb = result.data.cascadeBatch;
+            s += ', cascadeBatch=' + (cb.success || 0) + '/' + (cb.requested || 0)
+                + ', batchRows=' + (cb.batchRows || 0);
+        }
         return { text: s, ok: result.code === 200 && hisBody.success === true, hisCode: hisBody.code || '', message: hisBody.message || '' };
     }
     if (result && result.data && result.data.baseUrl) {
@@ -107,7 +112,7 @@ function zqRefreshChecklist(apiTitle, ok) {
 
 function zqInitChecklist() {
     const apis = ['当前环境', '2.1.9 科室', '2.1.12 人员身份', '2.5.44 药品材料字典', '2.5.58 分类字典',
-        '2.5.62 供应商', '2.5.63 生产厂商', '2.5.43 药房批次库存', '2.5.102 一级库入退库'];
+        '2.5.62 供应商', '2.5.63 生产厂商', '2.5.82 SPD合并库存', '2.5.43 药房批次库存', '2.5.102 一级库入退库'];
     const tbody = document.getElementById('checklistBody');
     if (!tbody) return;
     tbody.innerHTML = apis.map(function (api) {
@@ -613,8 +618,8 @@ async function zqCallApiAllPages(apiKey) {
     if (!baseParams || !zqValidateRequired(apiKey, baseParams)) return null;
 
     const pag = schema.pagination;
-    const pageSizeKey = pag.pageSizeKey || 'limitCount';
-    let pageSize = parseInt(baseParams[pageSizeKey], 10);
+    const pageSizeKey = pag.pageSizeKey || (pag.emptyPageBreak ? null : 'limitCount');
+    let pageSize = pageSizeKey ? parseInt(baseParams[pageSizeKey], 10) : (pag.defaultPageSize || 100);
     if (isNaN(pageSize) || pageSize < 1) {
         pageSize = pag.defaultPageSize || 100;
     }
@@ -642,7 +647,9 @@ async function zqCallApiAllPages(apiKey) {
         while (pageNum < maxPages) {
             pageNum++;
             const params = Object.assign({}, baseParams);
-            params[pageSizeKey] = String(pageSize);
+            if (pageSizeKey) {
+                params[pageSizeKey] = String(pageSize);
+            }
             if (cursor != null) {
                 params[cursorParam] = String(cursor);
             }
@@ -664,7 +671,11 @@ async function zqCallApiAllPages(apiKey) {
             const items = zqExtractHisDataArray(pack.result) || [];
             allItems = allItems.concat(items);
 
-            if (items.length < pageSize) {
+            if (pag.emptyPageBreak) {
+                if (items.length === 0) {
+                    break;
+                }
+            } else if (items.length < pageSize) {
                 break;
             }
             const nextCursor = zqMaxCursorFromPage(items, cursorField);
@@ -772,7 +783,7 @@ function zqRenderApiForm(apiKey, schema) {
 function zqRenderAllForms() {
     document.getElementById('form-depts').innerHTML = zqRenderApiForm('depts', MSUN_PARAM_SCHEMA.depts);
     document.getElementById('form-identities').innerHTML = zqRenderApiForm('identities', MSUN_PARAM_SCHEMA.identities);
-    ['drugDict', 'dictCategory', 'suppliers', 'producers', 'batchStocks', 'ykInstock'].forEach(function (key) {
+    ['drugDict', 'dictCategory', 'suppliers', 'producers', 'mergeStocks', 'batchStocks', 'ykInstock'].forEach(function (key) {
         document.getElementById('form-' + key).innerHTML = zqRenderApiForm(key, MSUN_PARAM_SCHEMA[key]);
     });
 }
@@ -932,6 +943,7 @@ function zqCallDrugDict() { return zqCallApi('drugDict'); }
 function zqCallDictCategory() { return zqCallApi('dictCategory'); }
 function zqCallSuppliers() { return zqCallApi('suppliers'); }
 function zqCallProducers() { return zqCallApi('producers'); }
+function zqCallMergeStocks() { return zqCallApi('mergeStocks'); }
 function zqCallBatchStocks() { return zqCallApi('batchStocks'); }
 function zqCallYkInstock() { return zqCallApi('ykInstock'); }
 
@@ -952,9 +964,13 @@ function zqFillFromLastDict() {
     const data = zqLastResult.data.hisBody.data;
     if (!Array.isArray(data) || !data.length) { alert('字典 data 为空'); return; }
     const first = data[0];
+    zqSetField('mergeStocks', 'drugId', first.drugId);
     zqSetField('batchStocks', 'drugId', first.drugId);
-    if (first.drugSpecPackingId) zqSetField('batchStocks', 'drugSpecPackingId', first.drugSpecPackingId);
-    else if (first.specPackingList && first.specPackingList.length) {
+    if (first.drugSpecPackingId) {
+        zqSetField('mergeStocks', 'drugSpecPackingId', first.drugSpecPackingId);
+        zqSetField('batchStocks', 'drugSpecPackingId', first.drugSpecPackingId);
+    } else if (first.specPackingList && first.specPackingList.length) {
+        zqSetField('mergeStocks', 'drugSpecPackingId', first.specPackingList[0].drugSpecPackingId);
         zqSetField('batchStocks', 'drugSpecPackingId', first.specPackingList[0].drugSpecPackingId);
     }
     zqSwitchTab('tab-spd', document.querySelectorAll('.tabs .tab-btn')[2]);
@@ -968,6 +984,7 @@ function zqFillDeptFromLast() {
         if (!Array.isArray(list) || !list.length || !list[0].deptId) continue;
         const deptId = list[0].deptId;
         zqSetField('identities', 'deptId', deptId);
+        zqSetField('mergeStocks', 'deptId', deptId);
         zqSetField('batchStocks', 'deptId', deptId);
         zqSetField('ykInstock', 'deptId', deptId);
         alert('已填充 deptId=' + deptId);
@@ -980,9 +997,13 @@ function zqFillFromLastDictSilent(dictRes) {
     const data = dictRes.data && dictRes.data.hisBody && dictRes.data.hisBody.data;
     if (!Array.isArray(data) || !data.length) return;
     const first = data[0];
+    zqSetField('mergeStocks', 'drugId', first.drugId);
     zqSetField('batchStocks', 'drugId', first.drugId);
-    if (first.drugSpecPackingId) zqSetField('batchStocks', 'drugSpecPackingId', first.drugSpecPackingId);
-    else if (first.specPackingList && first.specPackingList.length) {
+    if (first.drugSpecPackingId) {
+        zqSetField('mergeStocks', 'drugSpecPackingId', first.drugSpecPackingId);
+        zqSetField('batchStocks', 'drugSpecPackingId', first.drugSpecPackingId);
+    } else if (first.specPackingList && first.specPackingList.length) {
+        zqSetField('mergeStocks', 'drugSpecPackingId', first.specPackingList[0].drugSpecPackingId);
         zqSetField('batchStocks', 'drugSpecPackingId', first.specPackingList[0].drugSpecPackingId);
     }
 }
@@ -1007,6 +1028,7 @@ async function zqRunAllTests() {
         const deptRes = await zqCallDepts(); await zqSleep(400);
         if (deptRes && deptRes.data && deptRes.data.hisBody && deptRes.data.hisBody.data && deptRes.data.hisBody.data[0]) {
             zqSetField('identities', 'deptId', deptRes.data.hisBody.data[0].deptId);
+            zqSetField('mergeStocks', 'deptId', deptRes.data.hisBody.data[0].deptId);
             zqSetField('batchStocks', 'deptId', deptRes.data.hisBody.data[0].deptId);
         }
         await zqCallIdentitiesSample(); await zqSleep(400);
@@ -1015,9 +1037,18 @@ async function zqRunAllTests() {
         await zqCallDictCategory(); await zqSleep(400);
         await zqCallSuppliers(); await zqSleep(400);
         await zqCallProducers(); await zqSleep(400);
+        const ms = zqCollectFromForm('mergeStocks');
+        if (ms.deptId) {
+            await zqCallMergeStocks();
+            await zqSleep(400);
+        } else {
+            zqRecordSkipped('2.5.82 SPD合并库存', '缺少 deptId，已跳过');
+        }
         const bs = zqCollectFromForm('batchStocks');
         if (bs.deptId && bs.drugId && bs.drugSpecPackingId) { await zqCallBatchStocks(); await zqSleep(400); }
-        else zqRecordSkipped('2.5.43 药房批次库存', '缺少三要素，已跳过');
+        else if (!ms.deptId || String(ms.cascadeBatch || 'true') === 'false') {
+            zqRecordSkipped('2.5.43 药房批次库存', '缺少三要素且未由2.5.82链式触发，已跳过');
+        }
         await zqCallYkInstock();
         zqSwitchTab('tab-guide', document.querySelector('.tabs .tab-btn'));
         zqScrollToSection('guide-test-log');

@@ -126,6 +126,34 @@ var MSUN_PARAM_SCHEMA = {
             hint: 'limitCount 为每页条数；翻页时传入本页最大 producerId 作为游标'
         }
     },
+    mergeStocks: {
+        title: '2.5.82 SPD合并库存',
+        method: 'GET',
+        path: '/spd/query/merge-stock-infos',
+        logTitle: '2.5.82 SPD合并库存',
+        hint: 'deptId←2.1.9；落库后默认链式调用2.5.43批次库存',
+        fields: [
+            { key: 'deptId', label: 'deptId', required: true, hint: '库存科室ID' },
+            { key: 'categoryIdList', label: 'categoryIdList', hint: '分类ID，逗号分隔' },
+            { key: 'drugCode', label: 'drugCode', hint: '药材编码' },
+            { key: 'drugId', label: 'drugId', hint: '药材ID' },
+            { key: 'drugName', label: 'drugName', hint: '药材名称' },
+            { key: 'drugSpecPackingId', label: 'drugSpecPackingId', hint: '规格包装ID' },
+            { key: 'zeroFlag', label: 'zeroFlag', hint: '0否1是2只查零库存', options: ['', '0', '1', '2'] },
+            { key: 'maxId', label: 'maxId', hint: '翻页游标：本页最大 ycStockQueryId' },
+            { key: 'cascadeBatch', label: 'cascadeBatch', hint: '落库后链式2.5.43', defaultValue: 'true', options: ['true', 'false'] },
+            { key: 'cascadeMax', label: 'cascadeMax', hint: '链式批次最大条数', defaultValue: '500' }
+        ],
+        pagination: {
+            cursorParam: 'maxId',
+            cursorField: 'ycStockQueryId',
+            emptyPageBreak: true,
+            maxPages: 500,
+            delayMs: 300,
+            hint: '翻页传入本页最大 ycStockQueryId 作为 maxId，直至返回空 data'
+        },
+        actions: ['zqFillDeptFromLast', 'zqFillFromLastDict']
+    },
     batchStocks: {
         title: '2.5.43 药房批次库存',
         method: 'GET',

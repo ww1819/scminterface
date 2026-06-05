@@ -99,6 +99,30 @@ public class MsunSpdQueryService
         return invokeGet(runtime, "2.5.63", MsunSpdApiPaths.DRUG_PRODUCERES, params);
     }
 
+    public JSONObject queryMergeStockInfos(
+            MsunHospitalRuntime runtime,
+            Long deptId,
+            String categoryIdList,
+            String drugCode,
+            Long drugId,
+            String drugName,
+            Long drugSpecPackingId,
+            String zeroFlag,
+            Long maxId) throws Exception
+    {
+        assertRequired("deptId", deptId);
+        Map<String, Object> params = new HashMap<>(8);
+        params.put("deptId", deptId);
+        putIfPresent(params, "drugCode", drugCode);
+        putIfPresent(params, "drugId", drugId);
+        putIfPresent(params, "drugName", drugName);
+        putIfPresent(params, "drugSpecPackingId", drugSpecPackingId);
+        putIfPresent(params, "zeroFlag", zeroFlag);
+        putIfPresent(params, "maxId", maxId);
+        putCategoryIdList(params, categoryIdList);
+        return invokeGet(runtime, "2.5.82", MsunSpdApiPaths.MERGE_STOCK_INFOS, params);
+    }
+
     public JSONObject queryDrugBatchStocks(
             MsunHospitalRuntime runtime,
             Long deptId,
@@ -181,11 +205,37 @@ public class MsunSpdQueryService
         return Long.valueOf(value);
     }
 
+    private static void putCategoryIdList(Map<String, Object> params, String categoryIdList)
+    {
+        if (StringUtils.isEmpty(categoryIdList))
+        {
+            return;
+        }
+        String[] parts = categoryIdList.split(",");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts)
+        {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty())
+            {
+                if (sb.length() > 0)
+                {
+                    sb.append(',');
+                }
+                sb.append(trimmed);
+            }
+        }
+        if (sb.length() > 0)
+        {
+            params.put("categoryIdList", sb.toString());
+        }
+    }
+
     private static void assertRequired(String name, Object value)
     {
         if (value == null)
         {
-            throw new IllegalArgumentException("2.5.43 要求 " + name + " 必填");
+            throw new IllegalArgumentException(name + " 必填");
         }
     }
 }

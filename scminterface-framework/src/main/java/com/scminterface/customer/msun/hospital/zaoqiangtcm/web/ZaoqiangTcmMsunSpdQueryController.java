@@ -6,6 +6,7 @@ import com.scminterface.customer.msun.mirror.service.MsunHisMirrorSyncService;
 import com.scminterface.customer.msun.MsunVendorConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.ZaoqiangTcmHospitalConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.config.ZaoqiangTcmMsunProperties;
+import com.scminterface.customer.msun.spd.service.MsunSpdStockCascadeService;
 import com.scminterface.customer.msun.service.MsunSpdQueryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -31,15 +32,18 @@ public class ZaoqiangTcmMsunSpdQueryController
     private final MsunSpdQueryService spdQueryService;
     private final ZaoqiangTcmMsunProperties msunProperties;
     private final MsunHisMirrorSyncService mirrorSyncService;
+    private final MsunSpdStockCascadeService stockCascadeService;
 
     public ZaoqiangTcmMsunSpdQueryController(
             MsunSpdQueryService spdQueryService,
             ZaoqiangTcmMsunProperties msunProperties,
-            MsunHisMirrorSyncService mirrorSyncService)
+            MsunHisMirrorSyncService mirrorSyncService,
+            MsunSpdStockCascadeService stockCascadeService)
     {
         this.spdQueryService = spdQueryService;
         this.msunProperties = msunProperties;
         this.mirrorSyncService = mirrorSyncService;
+        this.stockCascadeService = stockCascadeService;
     }
 
     @ApiOperation("2.5.44 药品、材料字典查询")
@@ -98,6 +102,41 @@ public class ZaoqiangTcmMsunSpdQueryController
     {
         return invoke("2.5.63", () -> spdQueryService.queryDrugProducers(
                 msunProperties, keyWord, limitCount, materialOrDrug, hospitalId, orgId, producerId));
+    }
+
+    @ApiOperation("2.5.82 SPD 合并库存查询（落库后可链式调用 2.5.43）")
+    @GetMapping("/merge-stock-infos")
+    public AjaxResult mergeStockInfos(
+            @ApiParam(value = "库存科室Id", required = true) @RequestParam Long deptId,
+            @ApiParam("药材分类Id，逗号分隔") @RequestParam(required = false) String categoryIdList,
+            @RequestParam(required = false) String drugCode,
+            @RequestParam(required = false) Long drugId,
+            @RequestParam(required = false) String drugName,
+            @RequestParam(required = false) Long drugSpecPackingId,
+            @ApiParam("0否1是2只查零库存") @RequestParam(required = false) String zeroFlag,
+            @ApiParam("翻页游标：本页最大 ycStockQueryId") @RequestParam(required = false) Long maxId,
+            @ApiParam("落库后是否自动链式查询批次库存") @RequestParam(defaultValue = "true") boolean cascadeBatch,
+            @ApiParam("链式批次查询最大条数（去重后）") @RequestParam(defaultValue = "500") int cascadeMax)
+    {
+        try
+        {
+            JSONObject data = spdQueryService.queryMergeStockInfos(
+                    msunProperties, deptId, categoryIdList, drugCode, drugId, drugName, drugSpecPackingId, zeroFlag, maxId);
+            mirrorSyncService.syncQueryResult(msunProperties, "2.5.82", data);
+            if (cascadeBatch)
+            {
+                data.put("cascadeBatch", stockCascadeService.cascadeBatchStocks(msunProperties, data, cascadeMax));
+            }
+            return enrichEnv(AjaxResult.success(data));
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return AjaxResult.error(ex.getMessage());
+        }
+        catch (Exception ex)
+        {
+            return AjaxResult.error("SPD 查询接口调用失败: " + ex.getMessage());
+        }
     }
 
     @ApiOperation("2.5.43 药房批次库存查询")
