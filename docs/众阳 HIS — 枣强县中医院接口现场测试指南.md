@@ -20,7 +20,8 @@
 | 枣强 SPD 查询 | `ZaoqiangTcmHospitalConstants.SPD_QUERY_API_PREFIX` | `/api/vendor/msun/hospitals/zaoqiang-tcm-001/spd/query` |
 
 医院登记：`MsunHospitalRegistry.ZAOQIANG_TCM`（联调页下拉数据来源）。  
-新增其他众阳医院时：在登记册追加项，并在 `customer/msun/hospital/<医院>/` 下新建独立子包。
+Java 包根路径仅为 `com.scminterface.customer.msun`（**无** `customer/zaoqiangTcm` 旧包）。  
+新增其他众阳医院时：在 `MsunHospitalRegistry` 追加项，并在 `customer/msun/hospital/<医院>/` 下新建独立子包。
 
 ---
 
@@ -141,7 +142,7 @@ Controller 还会在顶层附加（`enrichEnv`）：
 
 配置项前缀：`scminterface.vendor.msun.hospitals.zaoqiang-tcm-001`（见 `ZaoqiangTcmMsunProperties`）。
 
-凭证枚举：`scminterface-framework/.../hospital/zaoqiangtcm/config/ZaoqiangTcmMsunEnvProfile.java`
+凭证枚举：`scminterface-framework/src/main/java/com/scminterface/customer/msun/hospital/zaoqiangtcm/config/ZaoqiangTcmMsunEnvProfile.java`
 
 | `active-env` | 标签 | 众阳 baseUrl | hospitalId | orgId | appId |
 |--------------|------|--------------|------------|-------|-------|
@@ -220,41 +221,33 @@ mvn install -pl scminterface-common,scminterface-framework -am -DskipTests
 
 ---
 
-## 9. 代码位置（`scminterface-framework`）
+## 9. 代码位置
 
-```
-src/main/java/com/scminterface/customer/msun/
-  MsunVendorConstants.java          # 厂家 API 前缀 /api/vendor/msun
-  MsunApiPaths.java                 # 科室、人员众阳路径
-  support/                          # MsunSignedHttpClient、MsunSm2Util、MsunOpenApiSupport
-  spd/MsunSpdApiPaths.java          # SPD 众阳路径常量
-  service/
-    MsunProbeService.java           # 科室/人员（共用）
-    MsunSpdQueryService.java        # SPD 查询（共用）
-  web/MsunHospitalListController.java
-  hospital/
-    MsunHospitalRegistry.java       # 医院登记册
-    zaoqiangtcm/
-      ZaoqiangTcmHospitalConstants.java
-      config/
-        ZaoqiangTcmMsunEnvProfile.java    # test/prod 凭证
-        ZaoqiangTcmMsunProperties.java    # 运行时配置，实现 MsunHospitalRuntime
-        ZaoqiangTcmMsunConfiguration.java
-      web/
-        ZaoqiangTcmMsunProbeController.java
-        ZaoqiangTcmMsunSpdQueryController.java
-      test/
-        ZaoqiangTcmMsunProbeMain.java
-        ZaoqiangTcmMsunSpdQueryProbeMain.java
-        ZaoqiangTcmMsunOpenApiRunner.java
-```
+众阳对接代码**全部**位于 `scminterface-framework/src/main/java/com/scminterface/customer/msun/`，按「厂家共用 → 医院客户」分层：
+
+| 层级 | 包路径 | 主要类 |
+|------|--------|--------|
+| 众阳厂家 | `...customer.msun` | `MsunVendorConstants`、`MsunApiPaths` |
+| 厂家支撑 | `...customer.msun.support` | `MsunSignedHttpClient`、`MsunSm2Util`、`MsunOpenApiSupport` |
+| SPD 路径 | `...customer.msun.spd` | `MsunSpdApiPaths` |
+| 共用服务 | `...customer.msun.service` | `MsunProbeService`、`MsunSpdQueryService` |
+| 厂家 Web | `...customer.msun.web` | `MsunHospitalListController` |
+| 医院登记 | `...customer.msun.hospital` | `MsunHospitalRegistry`、`MsunHospitalRuntime` |
+| 枣强客户 | `...customer.msun.hospital.zaoqiangtcm` | `ZaoqiangTcmHospitalConstants` |
+| 枣强配置 | `...hospital.zaoqiangtcm.config` | `ZaoqiangTcmMsunEnvProfile`、`ZaoqiangTcmMsunProperties`、`ZaoqiangTcmMsunConfiguration` |
+| 枣强入口 | `...hospital.zaoqiangtcm.web` | `ZaoqiangTcmMsunProbeController`、`ZaoqiangTcmMsunSpdQueryController` |
+| 枣强本地测试 | `...hospital.zaoqiangtcm.test` | `ZaoqiangTcmMsunProbeMain`、`ZaoqiangTcmMsunSpdQueryProbeMain`、`ZaoqiangTcmMsunOpenApiRunner` |
+
+其他模块：
 
 | 说明 | 路径 |
 |------|------|
 | 运行时配置 | `scminterface-admin/src/main/resources/application.yml` |
 | 联调页 | `scminterface-admin/src/main/resources/static/msun-probe.html` |
-| JWT 白名单 | `framework/security/JwtAuthenticationFilter.java`（`/msun-probe.html`） |
+| 联调脚本 | `scminterface-admin/src/main/resources/static/js/msun-probe.js`、`msun-param-schema.js` |
+| JWT 白名单 | `scminterface-framework/.../security/JwtAuthenticationFilter.java`（`/msun-probe.html`） |
+| 本文档 | `scminterface/docs/众阳 HIS — 枣强县中医院接口现场测试指南.md` |
 
 ---
 
-*文档与 `customer/msun` 包内代码同步维护。*
+*文档与 `com.scminterface.customer.msun` 包同步维护；旧路径 `customer/zaoqiangTcm` 已废弃删除。*
