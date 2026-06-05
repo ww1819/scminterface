@@ -75,6 +75,32 @@
             <version>5.3.7</version>
         </dependency>
 
+        <!-- 枣强中医院：众阳 OpenAPI 签名调用（科室/人员探针，见 customer.zaoqiangTcm） -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.20</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.68</version>
+        </dependency>
+        <dependency>
+            <groupId>com.msun</groupId>
+            <artifactId>msun-openapi-license</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

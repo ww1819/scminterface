@@ -52,6 +52,15 @@ scminterface:
       bootstrap: false
       # 某段 SQL 失败时是否中止启动（false 仅打日志，便于联调）
       fail-on-error: false
+  # 枣强县中医院（zaoqiang-tcm-001）众阳 SPD对接：凭证见 ZaoqiangTcmMsunEnvProfile.java
+  customer:
+    zaoqiang-tcm-001:
+      msun:
+        enabled: false
+        # test=灰度测试(GrayTest)；prod=正式 https://zqxzyyy.msuncloud.cn
+        active-env: test
+        depts-path: /msun-middle-base-common/v1/depts
+        identities-path: /msun-middle-base-common/v1/identities
 
 # 前置机服务端口（与 public.interface.url 端口保持一致）
 server:
