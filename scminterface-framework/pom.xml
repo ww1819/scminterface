@@ -75,7 +75,7 @@
             <version>5.3.7</version>
         </dependency>
 
-        <!-- 枣强中医院：众阳 OpenAPI 签名调用（科室/人员探针，见 customer.zaoqiangTcm） -->
+        <!-- 众阳 HIS：OpenAPI 签名调用（厂家共用层 customer.msun，医院客户见 hospital 子包） -->
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>

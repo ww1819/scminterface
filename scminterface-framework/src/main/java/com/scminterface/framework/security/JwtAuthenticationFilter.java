@@ -46,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
         "/index.html",
         "/spd-config.html",
         "/scm-config.html",
-        "/zaoqiang-msun-probe.html",
+        "/msun-probe.html",
         "/js/",
         "/api/datasource/status",
         "/api/spd/pushSupplier",          // SPD推送供应商档案接口（系统间调用）
