@@ -17,7 +17,21 @@ msun_his_mirror
 | 1 | `00_create_database.sql` | 建库 |
 | 2 | `01_table.sql` | 建表（11 张业务/关联表 + 批次表） |
 | 3 | `02_column.sql` | 增量字段存储过程（后续扩字段用） |
-| 4 | `03_seed_probe_sample.sql` | 探针样本落库（可选） |
+| 4 | `04_table_drug_batch_stock.sql` | 2.5.43 批次库存镜像表（增量） |
+| 5 | `03_seed_probe_sample.sql` | 探针样本落库（可选，手工） |
+
+## 应用自动落库
+
+配置同时满足时，**探针页调用**与**正式 API 调用**均自动写入镜像表：
+
+```yaml
+spring.datasource.druid.msun-his-mirror.enabled: true
+scminterface.vendor.msun.mirror.enabled: true
+```
+
+落库入口：`ZaoqiangTcmMsunProbeController` / `ZaoqiangTcmMsunSpdQueryController` → `MsunHisMirrorSyncService`。
+
+覆盖接口：2.1.9 / 2.1.12 / 2.5.44 / 2.5.58 / 2.5.62 / 2.5.63 / 2.5.43 / 2.5.102。
 
 ## 表清单
 

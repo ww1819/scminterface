@@ -17,6 +17,7 @@ public class DataSourceAvailability
 {
     private static final String SPD_ENABLED = "spring.datasource.druid.spd.enabled";
     private static final String SCM_ENABLED = "spring.datasource.druid.scm.enabled";
+    private static final String MSUN_MIRROR_ENABLED = "spring.datasource.druid.msun-his-mirror.enabled";
 
     @Autowired
     private Environment environment;
@@ -36,6 +37,8 @@ public class DataSourceAvailability
                 return Boolean.TRUE.equals(environment.getProperty(SPD_ENABLED, Boolean.class, false));
             case SCM:
                 return Boolean.TRUE.equals(environment.getProperty(SCM_ENABLED, Boolean.class, false));
+            case MSUN_HIS_MIRROR:
+                return Boolean.TRUE.equals(environment.getProperty(MSUN_MIRROR_ENABLED, Boolean.class, false));
             default:
                 return false;
         }
@@ -51,7 +54,21 @@ public class DataSourceAvailability
         {
             return dynamicDataSource.isRegistered(type.name());
         }
-        String beanName = type == DataSourceType.SPD ? "spdDataSource" : "scmDataSource";
+        String beanName;
+        switch (type)
+        {
+            case SPD:
+                beanName = "spdDataSource";
+                break;
+            case SCM:
+                beanName = "scmDataSource";
+                break;
+            case MSUN_HIS_MIRROR:
+                beanName = "msunHisMirrorDataSource";
+                break;
+            default:
+                return false;
+        }
         return SpringUtils.containsBean(beanName);
     }
 
@@ -65,7 +82,19 @@ public class DataSourceAvailability
     {
         if (!isAvailable(type))
         {
-            String key = type == DataSourceType.SCM ? "scm" : "spd";
+            String key;
+            switch (type)
+            {
+                case SCM:
+                    key = "scm";
+                    break;
+                case MSUN_HIS_MIRROR:
+                    key = "msun-his-mirror";
+                    break;
+                default:
+                    key = "spd";
+                    break;
+            }
             throw new IllegalStateException(
                 "数据源 " + type.name() + " 未启用（请检查 spring.datasource.druid." + key + ".enabled）");
         }

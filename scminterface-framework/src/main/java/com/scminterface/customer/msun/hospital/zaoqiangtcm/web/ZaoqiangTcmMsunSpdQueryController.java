@@ -1,6 +1,8 @@
 package com.scminterface.customer.msun.hospital.zaoqiangtcm.web;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.common.core.domain.AjaxResult;
+import com.scminterface.customer.msun.mirror.service.MsunHisMirrorSyncService;
 import com.scminterface.customer.msun.MsunVendorConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.ZaoqiangTcmHospitalConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.config.ZaoqiangTcmMsunProperties;
@@ -28,13 +30,16 @@ public class ZaoqiangTcmMsunSpdQueryController
 {
     private final MsunSpdQueryService spdQueryService;
     private final ZaoqiangTcmMsunProperties msunProperties;
+    private final MsunHisMirrorSyncService mirrorSyncService;
 
     public ZaoqiangTcmMsunSpdQueryController(
             MsunSpdQueryService spdQueryService,
-            ZaoqiangTcmMsunProperties msunProperties)
+            ZaoqiangTcmMsunProperties msunProperties,
+            MsunHisMirrorSyncService mirrorSyncService)
     {
         this.spdQueryService = spdQueryService;
         this.msunProperties = msunProperties;
+        this.mirrorSyncService = mirrorSyncService;
     }
 
     @ApiOperation("2.5.44 药品、材料字典查询")
@@ -52,7 +57,7 @@ public class ZaoqiangTcmMsunSpdQueryController
             @RequestParam(required = false) Long hospitalId,
             @RequestParam(required = false) Long orgId)
     {
-        return invoke(() -> spdQueryService.queryDrugDictInfos(
+        return invoke("2.5.44", () -> spdQueryService.queryDrugDictInfos(
                 msunProperties, drugCode, drugId, drugName, startTime, endTime, limitCount, materialOrDrug,
                 specialFlag, invalidFlag, hospitalId, orgId));
     }
@@ -63,7 +68,7 @@ public class ZaoqiangTcmMsunSpdQueryController
             @RequestParam(required = false) String keyWord,
             @RequestParam(required = false) Integer limitCount)
     {
-        return invoke(() -> spdQueryService.queryDictCategory(msunProperties, keyWord, limitCount));
+        return invoke("2.5.58", () -> spdQueryService.queryDictCategory(msunProperties, keyWord, limitCount));
     }
 
     @ApiOperation("2.5.62 SPD 供应商查询")
@@ -75,7 +80,7 @@ public class ZaoqiangTcmMsunSpdQueryController
             @RequestParam(required = false) Long hospitalId,
             @RequestParam(required = false) Long orgId)
     {
-        return invoke(() -> spdQueryService.queryDrugSuppliers(
+        return invoke("2.5.62", () -> spdQueryService.queryDrugSuppliers(
                 msunProperties, keyWord, limitCount, materialOrDrug, hospitalId, orgId));
     }
 
@@ -88,7 +93,7 @@ public class ZaoqiangTcmMsunSpdQueryController
             @RequestParam(required = false) Long hospitalId,
             @RequestParam(required = false) Long orgId)
     {
-        return invoke(() -> spdQueryService.queryDrugProducers(
+        return invoke("2.5.63", () -> spdQueryService.queryDrugProducers(
                 msunProperties, keyWord, limitCount, materialOrDrug, hospitalId, orgId));
     }
 
@@ -99,14 +104,14 @@ public class ZaoqiangTcmMsunSpdQueryController
             @ApiParam(value = "药品/材料Id", required = true) @RequestParam Long drugId,
             @ApiParam(value = "规格包装Id", required = true) @RequestParam Long drugSpecPackingId)
     {
-        return invoke(() -> spdQueryService.queryDrugBatchStocks(msunProperties, deptId, drugId, drugSpecPackingId));
+        return invoke("2.5.43", () -> spdQueryService.queryDrugBatchStocks(msunProperties, deptId, drugId, drugSpecPackingId));
     }
 
     @ApiOperation("2.5.102 一级库入库和退库记录查询")
     @PostMapping("/yk-instock")
     public AjaxResult ykInstock(@RequestBody Map<String, Object> body)
     {
-        return invoke(() -> spdQueryService.queryYkInstock(
+        return invoke("2.5.102", () -> spdQueryService.queryYkInstock(
                 msunProperties,
                 parseLong(body.get("deptId")),
                 stringVal(body.get("startTime")),
@@ -115,11 +120,13 @@ public class ZaoqiangTcmMsunSpdQueryController
                 stringVal(body.get("type"))));
     }
 
-    private AjaxResult invoke(SpdQueryCall call)
+    private AjaxResult invoke(String apiCode, SpdQueryCall call)
     {
         try
         {
-            return enrichEnv(AjaxResult.success(call.run()));
+            JSONObject data = call.run();
+            mirrorSyncService.syncQueryResult(msunProperties, apiCode, data);
+            return enrichEnv(AjaxResult.success(data));
         }
         catch (IllegalArgumentException ex)
         {
@@ -165,6 +172,6 @@ public class ZaoqiangTcmMsunSpdQueryController
     @FunctionalInterface
     private interface SpdQueryCall
     {
-        Object run() throws Exception;
+        JSONObject run() throws Exception;
     }
 }

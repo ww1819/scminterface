@@ -55,6 +55,9 @@ scminterface:
   # 众阳 HIS 厂家 — 各医院客户独立配置（凭证见各医院 *MsunEnvProfile.java）
   vendor:
     msun:
+      # 查询接口回参落镜像库（探针页与正式 API 共用）；须同时启用 spring.datasource.druid.msun-his-mirror
+      mirror:
+        enabled: true
       hospitals:
         # 枣强县中医院（zaoqiang-tcm-001）
         zaoqiang-tcm-001:

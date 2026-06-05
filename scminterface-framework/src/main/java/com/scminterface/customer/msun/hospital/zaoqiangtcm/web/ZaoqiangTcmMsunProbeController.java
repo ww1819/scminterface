@@ -4,6 +4,8 @@ import com.scminterface.common.core.domain.AjaxResult;
 import com.scminterface.customer.msun.MsunVendorConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.ZaoqiangTcmHospitalConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.config.ZaoqiangTcmMsunProperties;
+import com.alibaba.fastjson2.JSONObject;
+import com.scminterface.customer.msun.mirror.service.MsunHisMirrorSyncService;
 import com.scminterface.customer.msun.service.MsunProbeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,11 +29,16 @@ public class ZaoqiangTcmMsunProbeController
 {
     private final MsunProbeService probeService;
     private final ZaoqiangTcmMsunProperties msunProperties;
+    private final MsunHisMirrorSyncService mirrorSyncService;
 
-    public ZaoqiangTcmMsunProbeController(MsunProbeService probeService, ZaoqiangTcmMsunProperties msunProperties)
+    public ZaoqiangTcmMsunProbeController(
+            MsunProbeService probeService,
+            ZaoqiangTcmMsunProperties msunProperties,
+            MsunHisMirrorSyncService mirrorSyncService)
     {
         this.probeService = probeService;
         this.msunProperties = msunProperties;
+        this.mirrorSyncService = mirrorSyncService;
     }
 
     @ApiOperation("当前众阳连接环境（不含密钥）")
@@ -67,8 +74,9 @@ public class ZaoqiangTcmMsunProbeController
     {
         try
         {
-            return enrichEnv(AjaxResult.success(
-                    probeService.fetchDepts(msunProperties, hospitalAreaId, invalidFlag, deptId, deptName)));
+            JSONObject data = probeService.fetchDepts(msunProperties, hospitalAreaId, invalidFlag, deptId, deptName);
+            mirrorSyncService.syncQueryResult(msunProperties, "2.1.9", data);
+            return enrichEnv(AjaxResult.success(data));
         }
         catch (Exception ex)
         {
@@ -86,8 +94,9 @@ public class ZaoqiangTcmMsunProbeController
     {
         try
         {
-            return enrichEnv(AjaxResult.success(
-                    probeService.fetchIdentities(msunProperties, roleType, deptId, identityId, userId)));
+            JSONObject data = probeService.fetchIdentities(msunProperties, roleType, deptId, identityId, userId);
+            mirrorSyncService.syncQueryResult(msunProperties, "2.1.12", data);
+            return enrichEnv(AjaxResult.success(data));
         }
         catch (IllegalArgumentException ex)
         {
@@ -106,7 +115,9 @@ public class ZaoqiangTcmMsunProbeController
     {
         try
         {
-            return enrichEnv(AjaxResult.success(probeService.fetchIdentitiesByFirstDept(msunProperties, roleType)));
+            JSONObject data = probeService.fetchIdentitiesByFirstDept(msunProperties, roleType);
+            mirrorSyncService.syncQueryResult(msunProperties, "2.1.12", data);
+            return enrichEnv(AjaxResult.success(data));
         }
         catch (Exception ex)
         {

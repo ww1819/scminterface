@@ -15,6 +15,11 @@ public enum DataSourceType
     /**
      * SCM数据源
      */
-    SCM
+    SCM,
+
+    /**
+     * 众阳 HIS 接口镜像库
+     */
+    MSUN_HIS_MIRROR
 }
 

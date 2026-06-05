@@ -57,6 +57,30 @@ public class DruidConfig
     }
 
     @Bean
+    @ConfigurationProperties("spring.datasource.druid.msun-his-mirror")
+    @ConditionalOnProperty(prefix = "spring.datasource.druid.msun-his-mirror", name = "enabled", havingValue = "true", matchIfMissing = false)
+    public DataSource msunHisMirrorDataSource(DruidProperties druidProperties)
+    {
+        try
+        {
+            DruidDataSource dataSource = DruidDataSourceBuilder.create().build();
+            DruidDataSource configuredDataSource = druidProperties.dataSource(dataSource);
+            configuredDataSource.setInitialSize(0);
+            configuredDataSource.setTestOnBorrow(false);
+            configuredDataSource.setTestWhileIdle(false);
+            configuredDataSource.setBreakAfterAcquireFailure(true);
+            configuredDataSource.setConnectionErrorRetryAttempts(0);
+            log.info("众阳HIS镜像库数据源配置成功");
+            return configuredDataSource;
+        }
+        catch (Exception e)
+        {
+            log.warn("众阳HIS镜像库数据源配置失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Bean
     @ConfigurationProperties("spring.datasource.druid.scm")
     @ConditionalOnProperty(prefix = "spring.datasource.druid.scm", name = "enabled", havingValue = "true", matchIfMissing = false)
     public DataSource scmDataSource(DruidProperties druidProperties)
@@ -88,7 +112,8 @@ public class DruidConfig
     {
         boolean spdEnabled = isDataSourceEnabled(environment, "spd");
         boolean scmEnabled = isDataSourceEnabled(environment, "scm");
-        logDataSourceSwitchConfig(environment, spdEnabled, scmEnabled);
+        boolean msunMirrorEnabled = isDataSourceEnabled(environment, "msun-his-mirror");
+        logDataSourceSwitchConfig(environment, spdEnabled, scmEnabled, msunMirrorEnabled);
         Map<Object, Object> targetDataSources = new HashMap<>();
         DataSource defaultDataSource = null;
 
@@ -146,6 +171,27 @@ public class DruidConfig
             log.warn("SCM数据源不可用，已跳过: {}", e.getMessage());
         }
 
+        try
+        {
+            if (msunMirrorEnabled && SpringUtils.containsBean("msunHisMirrorDataSource"))
+            {
+                DataSource mirrorDs = SpringUtils.getBean("msunHisMirrorDataSource");
+                if (mirrorDs != null)
+                {
+                    targetDataSources.put(DataSourceType.MSUN_HIS_MIRROR.name(), mirrorDs);
+                    log.info("众阳HIS镜像库数据源已添加到动态数据源");
+                }
+            }
+            else if (!msunMirrorEnabled)
+            {
+                log.info("众阳HIS镜像库未启用(spring.datasource.druid.msun-his-mirror.enabled=false)");
+            }
+        }
+        catch (Exception e)
+        {
+            log.warn("众阳HIS镜像库数据源不可用，已跳过: {}", e.getMessage());
+        }
+
         // 如果没有任何数据源可用，进入“无数据库模式”
         if (targetDataSources.isEmpty())
         {
@@ -169,12 +215,14 @@ public class DruidConfig
             environment.getProperty("spring.datasource.druid." + key + ".enabled", Boolean.class, false));
     }
 
-    private static void logDataSourceSwitchConfig(Environment environment, boolean spd, boolean scm)
+    private static void logDataSourceSwitchConfig(Environment environment, boolean spd, boolean scm, boolean msunMirror)
     {
         String spdUrl = environment.getProperty("spring.datasource.druid.spd.url");
         String scmUrl = environment.getProperty("spring.datasource.druid.scm.url");
-        log.info("数据源开关(以 Environment 最终合并结果为准): SPD enabled={}, SCM enabled={}", spd, scm);
-        log.info("数据源 JDBC: SPD url={}; SCM url={}", spdUrl, scmUrl);
+        String mirrorUrl = environment.getProperty("spring.datasource.druid.msun-his-mirror.url");
+        log.info("数据源开关(以 Environment 最终合并结果为准): SPD enabled={}, SCM enabled={}, MSUN_MIRROR enabled={}",
+                spd, scm, msunMirror);
+        log.info("数据源 JDBC: SPD url={}; SCM url={}; MSUN_MIRROR url={}", spdUrl, scmUrl, mirrorUrl);
         if (scm && scmUrl != null && scmUrl.contains("localhost"))
         {
             log.warn("SCM 已启用且指向 localhost，多为 jar 内置默认或 jar 同目录 config/application-druid.yml 覆盖了 scm.enabled=false，"
