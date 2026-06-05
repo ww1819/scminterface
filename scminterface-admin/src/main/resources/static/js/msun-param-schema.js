@@ -48,7 +48,16 @@ var MSUN_PARAM_SCHEMA = {
             { key: 'hospitalId', label: 'hospitalId', hint: '留空用服务端配置' },
             { key: 'orgId', label: 'orgId', hint: '留空用服务端配置' }
         ],
-        actions: ['zqFillFromLastDict']
+        actions: ['zqFillFromLastDict'],
+        pagination: {
+            pageSizeKey: 'limitCount',
+            defaultPageSize: 100,
+            maxPages: 500,
+            cursorParam: 'drugId',
+            cursorField: 'drugId',
+            delayMs: 300,
+            hint: 'limitCount 为每页条数；翻页时传入本页最大 drugId 作为游标'
+        }
     },
     dictCategory: {
         title: '2.5.58 SPD 药品材料分类',
@@ -58,7 +67,16 @@ var MSUN_PARAM_SCHEMA = {
         fields: [
             { key: 'keyWord', label: 'keyWord', hint: '分类名称模糊', defaultValue: '西药' },
             { key: 'limitCount', label: 'limitCount', hint: '查询条数', defaultValue: '20' }
-        ]
+        ],
+        pagination: {
+            pageSizeKey: 'limitCount',
+            defaultPageSize: 100,
+            maxPages: 200,
+            cursorParam: 'hisDictId',
+            cursorField: 'hisDictId',
+            delayMs: 300,
+            hint: 'limitCount 为每页条数；翻页时传入本页最大 hisDictId 作为游标'
+        }
     },
     suppliers: {
         title: '2.5.62 SPD 供应商',
@@ -71,7 +89,16 @@ var MSUN_PARAM_SCHEMA = {
             { key: 'materialOrDrug', label: 'materialOrDrug', hint: '0药品 1或2材料', defaultValue: '0', options: ['0', '1', '2'] },
             { key: 'hospitalId', label: 'hospitalId', hint: '留空用服务端' },
             { key: 'orgId', label: 'orgId', hint: '留空用服务端' }
-        ]
+        ],
+        pagination: {
+            pageSizeKey: 'limitCount',
+            defaultPageSize: 100,
+            maxPages: 500,
+            cursorParam: 'supplierId',
+            cursorField: 'supplierId',
+            delayMs: 300,
+            hint: 'limitCount 为每页条数；翻页时传入本页最大 supplierId 作为游标'
+        }
     },
     producers: {
         title: '2.5.63 SPD 生产厂商',
@@ -84,7 +111,16 @@ var MSUN_PARAM_SCHEMA = {
             { key: 'materialOrDrug', label: 'materialOrDrug', hint: '0药品 1或2材料', defaultValue: '0', options: ['0', '1', '2'] },
             { key: 'hospitalId', label: 'hospitalId', hint: '留空用服务端' },
             { key: 'orgId', label: 'orgId', hint: '留空用服务端' }
-        ]
+        ],
+        pagination: {
+            pageSizeKey: 'limitCount',
+            defaultPageSize: 100,
+            maxPages: 500,
+            cursorParam: 'producerId',
+            cursorField: 'producerId',
+            delayMs: 300,
+            hint: 'limitCount 为每页条数；翻页时传入本页最大 producerId 作为游标'
+        }
     },
     batchStocks: {
         title: '2.5.43 药房批次库存',

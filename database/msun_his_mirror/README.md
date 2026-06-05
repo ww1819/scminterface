@@ -32,6 +32,8 @@ scminterface.vendor.msun.mirror.enabled: true
 
 表不存在时落库失败仅记日志，不影响接口返回。
 
+探针页每个查询接口提供 **「查看镜像数据」**，调用 `GET .../mirror/data/{probeKey}` 读取 SPD 库 `m_*` 表（按 `tenant_id` + `active_env` 隔离，每表最多 200 条/页）。
+
 ## 表清单
 
 | 表名 | 接口 | 说明 |
@@ -52,6 +54,7 @@ scminterface.vendor.msun.mirror.enabled: true
 ## 设计说明
 
 - 主键统一 **UUID7**，`VARCHAR(36)`（含连字符）；应用落库由 `ZsUuid7.newString()` 生成，upsert 冲突时不更新主键列。
+- 每张表含 **`insert_time`（插入时间）**、**`update_time`（更新时间）**；新行插入两者，业务唯一键冲突时保留 `insert_time` 并刷新 `update_time` 及其余字段（`ON DUPLICATE KEY UPDATE`）。
 - 每张表含镜像元数据：`hospital_key`、`tenant_id`（枣强=`zaoqiang-tcm-001`）、`active_env`、`sync_batch_no`、`raw_item_json` 等。
 - 应用落库时 `tenant_id` 取自医院运行时 `MsunHospitalRuntime.getTenantId()`。
 - `raw_item_json` 保留 HIS 原始行，字段不全时可从 JSON 补数。

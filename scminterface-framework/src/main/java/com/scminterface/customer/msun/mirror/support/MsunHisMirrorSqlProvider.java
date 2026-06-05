@@ -81,7 +81,8 @@ public final class MsunHisMirrorSqlProvider
         boolean first = true;
         for (String col : cols)
         {
-            if ("mirror_id".equals(col) || "rel_id".equals(col) || "detail_id".equals(col) || "batch_id".equals(col))
+            if ("mirror_id".equals(col) || "rel_id".equals(col) || "detail_id".equals(col) || "batch_id".equals(col)
+                    || "insert_time".equals(col))
             {
                 continue;
             }
@@ -99,5 +100,43 @@ public final class MsunHisMirrorSqlProvider
     {
         return "DELETE FROM m_yk_instock_detail WHERE hospital_key = #{hospitalKey} AND active_env = #{activeEnv} "
                 + "AND storage_instock_id = #{storageInstockId}";
+    }
+
+    public String countMirrorRows(Map<String, Object> params)
+    {
+        return buildMirrorSelectSql(params, true);
+    }
+
+    public String listMirrorRows(Map<String, Object> params)
+    {
+        return buildMirrorSelectSql(params, false);
+    }
+
+    private static String buildMirrorSelectSql(Map<String, Object> params, boolean countOnly)
+    {
+        String table = (String) params.get("table");
+        if (!ALLOWED_TABLES.contains(table))
+        {
+            throw new IllegalArgumentException("非法镜像表: " + table);
+        }
+        StringBuilder sql = new StringBuilder(160);
+        if (countOnly)
+        {
+            sql.append("SELECT COUNT(*) FROM `").append(table).append("` WHERE hospital_key = #{hospitalKey} ");
+        }
+        else
+        {
+            sql.append("SELECT * FROM `").append(table).append("` WHERE hospital_key = #{hospitalKey} ");
+        }
+        sql.append("AND tenant_id = #{tenantId} AND active_env = #{activeEnv}");
+        if (params.get("apiCode") != null)
+        {
+            sql.append(" AND api_code = #{apiCode}");
+        }
+        if (!countOnly)
+        {
+            sql.append(" ORDER BY update_time DESC LIMIT #{limit} OFFSET #{offset}");
+        }
+        return sql.toString();
     }
 }

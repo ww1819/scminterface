@@ -49,6 +49,21 @@ public final class MsunHisMirrorRowSupport
         }
     }
 
+    /** 新行写入插入/更新时间；upsert 冲突时 SQL 保留 insert_time、刷新 update_time。 */
+    public static void stampTimestamps(Map<String, Object> row)
+    {
+        if (row == null)
+        {
+            return;
+        }
+        Date now = new Date();
+        row.put("update_time", now);
+        if (!row.containsKey("insert_time"))
+        {
+            row.put("insert_time", now);
+        }
+    }
+
     public static Map<String, Object> buildMirrorRow(
             MsunHospitalRuntime runtime,
             String apiCode,
@@ -68,7 +83,6 @@ public final class MsunHisMirrorRowSupport
         row.put("request_params_json", requestParamsJson);
         row.put("raw_item_json", item == null ? null : item.toJSONString());
         row.put("mirror_source", mirrorSource);
-        row.put("mirror_time", new Date());
         if (item != null)
         {
             for (String key : item.keySet())
@@ -97,7 +111,6 @@ public final class MsunHisMirrorRowSupport
         row.put("tenant_id", runtime.getTenantId());
         row.put("active_env", runtime.getActiveEnv());
         row.put("sync_batch_no", syncBatchNo);
-        row.put("mirror_time", new Date());
         row.putAll(fields);
         return row;
     }

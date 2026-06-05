@@ -233,13 +233,13 @@ public class MsunHisMirrorSyncExecutor
         batch.put("mirror_source", MIRROR_SOURCE_API);
         batch.put("record_count", recordCount);
         batch.put("remark", "API查询自动落库");
-        batch.put("mirror_time", new java.util.Date());
         upsertRow("m_sync_batch", batch);
     }
 
     private void upsertRow(String table, Map<String, Object> row)
     {
         MsunHisMirrorRowSupport.ensurePrimaryKey(table, row);
+        MsunHisMirrorRowSupport.stampTimestamps(row);
         mirrorMapper.upsertMirrorRow(table, row);
     }
 }

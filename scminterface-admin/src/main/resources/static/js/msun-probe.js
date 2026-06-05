@@ -23,6 +23,7 @@ var zqLastResult = null;
 var zqLastApiKey = null;
 var zqResponseStore = {};
 var zqRunningAll = false;
+var zqFetchingAllPages = false;
 
 var ZQ_API_RESP_ORDER = ['env', 'depts', 'identities', 'drugDict', 'dictCategory', 'suppliers', 'producers', 'batchStocks', 'ykInstock'];
 var ZQ_API_RESP_LABELS = { env: '当前环境' };
@@ -72,6 +73,9 @@ function zqHisSummary(result) {
     if (hisBody && typeof hisBody === 'object') {
         let s = 'HIS success=' + hisBody.success + ', code=' + (hisBody.code || '') + ', message=' + (hisBody.message || '');
         if (Array.isArray(hisBody.data)) s += ', data.length=' + hisBody.data.length;
+        if (hisBody._probeMerged) {
+            s += ', pages=' + hisBody._probeMerged.pages + ', mergedRows=' + hisBody._probeMerged.totalRows;
+        }
         return { text: s, ok: result.code === 200 && hisBody.success === true, hisCode: hisBody.code || '', message: hisBody.message || '' };
     }
     if (result && result.data && result.data.baseUrl) {
@@ -357,19 +361,53 @@ async function zqCopyResponseJson(apiKey) {
     }
 }
 
+function zqMirrorRespKey(apiKey) {
+    return 'mirror_' + apiKey;
+}
+
+function zqEnsureRespCard(apiKey, label) {
+    let card = document.getElementById('resp-card-' + apiKey);
+    if (card) return card;
+    const stack = document.getElementById('responseStack');
+    if (!stack) return null;
+    card = document.createElement('div');
+    card.className = 'api-resp-card empty';
+    card.id = 'resp-card-' + apiKey;
+    card.dataset.apiKey = apiKey;
+    card.innerHTML =
+        '<div class="resp-head"><div class="resp-head-row"><div class="resp-head-body"><strong>' +
+        zqEscapeHtml(label || apiKey) + '</strong><span class="api-resp-placeholder"> · 尚未加载</span></div></div></div>' +
+        '<div class="api-resp-body"></div>';
+    stack.appendChild(card);
+    return card;
+}
+
+function zqMirrorSummary(result) {
+    const data = result && result.data;
+    if (!data || !Array.isArray(data.tables)) return null;
+    let totalRows = 0;
+    data.tables.forEach(function (t) { totalRows += (t.total || 0); });
+    return '镜像表 ' + data.tables.length + ' 张，合计约 ' + totalRows + ' 行（当前页展示见 tables[].rows）';
+}
+
 function zqShowResult(apiKey, title, requestLine, result, elapsedMs) {
     zqLastResult = result;
     zqLastApiKey = apiKey;
-    zqRecordTest(title, result, elapsedMs);
+    if (!String(apiKey).startsWith('mirror_')) {
+        zqRecordTest(title, result, elapsedMs);
+    }
+    zqEnsureRespCard(apiKey, title);
     const card = document.getElementById('resp-card-' + apiKey);
     if (!card) return;
     const sum = zqHisSummary(result);
+    const mirrorSum = zqMirrorSummary(result);
     const body = zqRenderResponseBody(result);
     zqResponseStore[apiKey] = { text: body.text, format: body.format };
     const headBody =
         '<strong>' + zqEscapeHtml(title) + '</strong> · ' + elapsedMs + 'ms<br>' +
         '<code class="req-line">' + zqEscapeHtml(requestLine) + '</code><br>' +
         '<span class="summary">' + zqEscapeHtml(sum.text) + '</span>' +
+        (mirrorSum ? '<br><span class="summary">' + zqEscapeHtml(mirrorSum) + '</span>' : '') +
         (result && result.activeEnv ? '<br><span class="env-tag">环境: ' + result.activeEnv + ' · ' + (result.msunBaseUrl || '') + '</span>' : '');
     card.classList.remove('empty');
     card.innerHTML =
@@ -412,12 +450,10 @@ function zqReplayLog(idx) {
     zqShowResult(apiKey, item.api, '历史记录 · ' + item.time, item.raw, item.elapsedMs || 0);
 }
 
-async function zqInvoke(apiKey, title, method, path, queryParams, body) {
-    if (!zqCheckLogin()) return null;
+async function zqInvokeRaw(method, path, queryParams, body) {
     const qs = queryParams ? zqBuildQuery(queryParams) : '';
     const url = msunHospitalApi() + path + qs;
     const requestLine = method + ' ' + url + (body ? '\nBody: ' + zqFmtJson(body) : '');
-    zqSetMeta('请求中: ' + title + '…');
     const t0 = Date.now();
     let result;
     try {
@@ -425,10 +461,147 @@ async function zqInvoke(apiKey, title, method, path, queryParams, body) {
     } catch (e) {
         result = { code: 500, msg: e.message };
     }
-    const elapsed = Date.now() - t0;
-    zqShowResult(apiKey, title, requestLine, result, elapsed);
+    return { result: result, elapsed: Date.now() - t0, requestLine: requestLine };
+}
+
+async function zqInvoke(apiKey, title, method, path, queryParams, body) {
+    if (!zqCheckLogin()) return null;
+    zqSetMeta('请求中: ' + title + '…');
+    const pack = await zqInvokeRaw(method, path, queryParams, body);
+    zqShowResult(apiKey, title, pack.requestLine, pack.result, pack.elapsed);
     zqSetMeta('完成: ' + title);
-    return result;
+    return pack.result;
+}
+
+function zqExtractHisDataArray(result) {
+    const data = result && result.data && result.data.hisBody && result.data.hisBody.data;
+    return Array.isArray(data) ? data : null;
+}
+
+function zqIsHisOk(result) {
+    const hisBody = result && result.data && result.data.hisBody;
+    return !!(result && result.code === 200 && hisBody && hisBody.success === true);
+}
+
+function zqMaxCursorFromPage(items, field) {
+    let max = null;
+    items.forEach(function (item) {
+        if (!item || item[field] === undefined || item[field] === null) return;
+        const text = String(item[field]).trim();
+        if (!text) return;
+        const num = Number(text);
+        if (!isNaN(num)) {
+            if (max === null || num > max) max = num;
+        }
+    });
+    return max;
+}
+
+function zqSetBlockBusy(apiKey, busy) {
+    const block = document.getElementById('block-' + apiKey);
+    if (!block) return;
+    block.querySelectorAll('.btn-call').forEach(function (btn) {
+        btn.disabled = !!busy;
+    });
+}
+
+async function zqCallApiAllPages(apiKey) {
+    if (!zqCheckLogin() || zqFetchingAllPages) return null;
+    const schema = MSUN_PARAM_SCHEMA[apiKey];
+    if (!schema || !schema.pagination) {
+        alert(schema ? schema.title + ' 无翻页逻辑，请使用单页调用' : '未知接口');
+        return null;
+    }
+    let baseParams = zqMergeJsonOverride(apiKey, zqCollectFromForm(apiKey));
+    if (!baseParams || !zqValidateRequired(apiKey, baseParams)) return null;
+
+    const pag = schema.pagination;
+    const pageSizeKey = pag.pageSizeKey || 'limitCount';
+    let pageSize = parseInt(baseParams[pageSizeKey], 10);
+    if (isNaN(pageSize) || pageSize < 1) {
+        pageSize = pag.defaultPageSize || 100;
+    }
+    const cursorParam = pag.cursorParam;
+    const cursorField = pag.cursorField || cursorParam;
+    const maxPages = pag.maxPages || 500;
+    const delayMs = pag.delayMs || 300;
+
+    if (baseParams[cursorParam] !== undefined && baseParams[cursorParam] !== null && String(baseParams[cursorParam]).trim() !== '') {
+        if (!confirm('全量拉取将忽略表单中的 ' + cursorParam + '，从首条记录开始翻页。是否继续？')) {
+            return null;
+        }
+    }
+    delete baseParams[cursorParam];
+
+    zqFetchingAllPages = true;
+    zqSetBlockBusy(apiKey, true);
+    let allItems = [];
+    let pageNum = 0;
+    let cursor = null;
+    let lastPack = null;
+    let totalElapsed = 0;
+
+    try {
+        while (pageNum < maxPages) {
+            pageNum++;
+            const params = Object.assign({}, baseParams);
+            params[pageSizeKey] = String(pageSize);
+            if (cursor != null) {
+                params[cursorParam] = String(cursor);
+            }
+            zqSetMeta('全量拉取: ' + schema.title + ' 第 ' + pageNum + ' 页…（已合并 ' + allItems.length + ' 条）');
+
+            const pack = schema.bodyMode
+                ? await zqInvokeRaw(schema.method, schema.path, null, params)
+                : await zqInvokeRaw(schema.method, schema.path, params, null);
+            totalElapsed += pack.elapsed;
+            lastPack = pack;
+
+            if (!zqIsHisOk(pack.result)) {
+                const failTitle = schema.logTitle + '（全量第' + pageNum + '页失败）';
+                zqShowResult(apiKey, failTitle, pack.requestLine, pack.result, totalElapsed);
+                zqSetMeta('全量拉取失败: ' + failTitle);
+                return pack.result;
+            }
+
+            const items = zqExtractHisDataArray(pack.result) || [];
+            allItems = allItems.concat(items);
+
+            if (items.length < pageSize) {
+                break;
+            }
+            const nextCursor = zqMaxCursorFromPage(items, cursorField);
+            if (nextCursor == null || nextCursor === cursor) {
+                break;
+            }
+            cursor = nextCursor;
+            if (pageNum < maxPages) {
+                await zqSleep(delayMs);
+            }
+        }
+
+        const merged = JSON.parse(JSON.stringify(lastPack.result));
+        merged.data.hisBody.data = allItems;
+        merged.data.hisBody._probeMerged = {
+            pages: pageNum,
+            totalRows: allItems.length,
+            pageSize: pageSize,
+            cursorParam: cursorParam,
+            mode: 'allPages'
+        };
+        merged.data.requestParams = Object.assign({}, baseParams);
+        merged.data.requestParams[pageSizeKey] = pageSize;
+
+        const title = schema.logTitle + '（全量 ' + pageNum + ' 页 / ' + allItems.length + ' 条）';
+        const requestLine = schema.method + ' ' + schema.path + ' [全量翻页 x' + pageNum + ', pageSize=' + pageSize
+            + ', cursor=' + cursorParam + ']\n首屏参数: ' + zqFmtJson(baseParams);
+        zqShowResult(apiKey, title, requestLine, merged, totalElapsed);
+        zqSetMeta('全量拉取完成: ' + title);
+        return merged;
+    } finally {
+        zqFetchingAllPages = false;
+        zqSetBlockBusy(apiKey, false);
+    }
 }
 
 function zqSwitchTab(tabId, btn) {
@@ -468,10 +641,17 @@ function zqRenderField(apiKey, field) {
 
 function zqRenderApiForm(apiKey, schema) {
     const fieldsHtml = schema.fields.map(function (f) { return zqRenderField(apiKey, f); }).join('');
-    let actions = '<button type="button" class="btn-call" onclick="zqCallApi(\'' + apiKey + '\')">调用</button>' +
+    const singleLabel = schema.pagination ? '调用（单页）' : '调用';
+    let actions = '<button type="button" class="btn-call" onclick="zqCallApi(\'' + apiKey + '\')">' + singleLabel + '</button>';
+    if (schema.pagination) {
+        actions += '<button type="button" class="btn-call warn" onclick="zqCallApiAllPages(\'' + apiKey + '\')" title="'
+            + zqEscapeHtml(schema.pagination.hint || '') + '">获取全部分页</button>';
+    }
+    actions += '<button type="button" class="btn-call secondary" onclick="zqViewMirrorData(\'' + apiKey + '\')">查看镜像数据</button>' +
+        '<button type="button" class="btn-call secondary" onclick="zqGotoMirrorData(\'' + apiKey + '\')">跳转镜像回参</button>' +
         '<button type="button" class="btn-call secondary" onclick="zqResetApi(\'' + apiKey + '\')">重置</button>' +
         '<button type="button" class="btn-call secondary" onclick="zqSyncJsonFromForm(\'' + apiKey + '\')">表单→JSON</button>' +
-        '<button type="button" class="btn-call secondary" onclick="zqGotoResponse(\'' + apiKey + '\')">查看回参</button>';
+        '<button type="button" class="btn-call secondary" onclick="zqGotoResponse(\'' + apiKey + '\')">查看HIS回参</button>';
     if (schema.actions) {
         schema.actions.forEach(function (fn) {
             if (fn === 'zqCallIdentitiesSample') actions += '<button type="button" class="btn-call secondary" onclick="zqCallIdentitiesSample()">自动取首科室</button>';
@@ -609,6 +789,32 @@ function zqInitYkDefaults() {
     const endEl = document.getElementById(zqFieldId('ykInstock', 'endTime'));
     if (startEl && !startEl.value) startEl.value = zqFormatDt(new Date(now.getTime() - 7 * 86400000));
     if (endEl && !endEl.value) endEl.value = zqFormatDt(now);
+}
+
+function zqGotoMirrorData(apiKey) {
+    zqSwitchRightTab('right-current', document.querySelector('.right-tabs .right-tab-btn'));
+    zqFocusResponseCard(zqMirrorRespKey(apiKey));
+}
+
+async function zqViewMirrorData(apiKey) {
+    if (!zqCheckLogin()) return null;
+    const schema = MSUN_PARAM_SCHEMA[apiKey];
+    if (!schema) return null;
+    const url = msunHospitalApi() + '/mirror/data/' + apiKey + '?limit=50&offset=0';
+    zqSetMeta('查询镜像库: ' + schema.title + '…');
+    const t0 = Date.now();
+    let result;
+    try {
+        result = await get(url);
+    } catch (e) {
+        result = { code: 500, msg: e.message };
+    }
+    const elapsed = Date.now() - t0;
+    const mirrorKey = zqMirrorRespKey(apiKey);
+    const title = '[镜像] ' + schema.logTitle;
+    zqShowResult(mirrorKey, title, 'GET ' + url, result, elapsed);
+    zqSetMeta('完成: ' + title);
+    return result;
 }
 
 async function zqCallApi(apiKey) {

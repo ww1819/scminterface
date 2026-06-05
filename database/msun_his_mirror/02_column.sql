@@ -117,6 +117,79 @@ UPDATE m_yk_instock_detail SET tenant_id = hospital_key WHERE tenant_id = '' OR 
 /
 UPDATE m_drug_batch_stock SET tenant_id = hospital_key WHERE tenant_id = '' OR tenant_id IS NULL;
 /
+-- ========== insert_time / update_time（由 mirror_time 迁移）==========
+CALL add_mirror_column('m_sync_batch', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'remark');
+/
+CALL add_mirror_column('m_sync_batch', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_dept', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'mirror_source');
+/
+CALL add_mirror_column('m_dept', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_dept_category_rel', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'category_id');
+/
+CALL add_mirror_column('m_dept_category_rel', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_user_identity', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'mirror_source');
+/
+CALL add_mirror_column('m_user_identity', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_user_identity_account', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'account_no');
+/
+CALL add_mirror_column('m_user_identity_account', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_drug_dict', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'mirror_source');
+/
+CALL add_mirror_column('m_drug_dict', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_dict_category', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'mirror_source');
+/
+CALL add_mirror_column('m_dict_category', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_supplier', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'mirror_source');
+/
+CALL add_mirror_column('m_supplier', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_producer', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'mirror_source');
+/
+CALL add_mirror_column('m_producer', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_yk_instock', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'mirror_source');
+/
+CALL add_mirror_column('m_yk_instock', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_yk_instock_detail', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'storage_instock_id');
+/
+CALL add_mirror_column('m_yk_instock_detail', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+CALL add_mirror_column('m_drug_batch_stock', 'insert_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP', '插入时间', 'mirror_source');
+/
+CALL add_mirror_column('m_drug_batch_stock', 'update_time', 'datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', '更新时间', 'insert_time');
+/
+UPDATE m_sync_batch SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_dept SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_dept_category_rel SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_user_identity SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_user_identity_account SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_drug_dict SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_dict_category SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_supplier SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_producer SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_yk_instock SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_yk_instock_detail SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
+UPDATE m_drug_batch_stock SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
+/
 -- ========== 预留：后续 HIS 回参新增字段在此追加 ==========
 -- CALL add_mirror_column('m_drug_dict', 'new_field_from_his', 'varchar(128)', 'HIS新增字段说明', 'org_id');
 /

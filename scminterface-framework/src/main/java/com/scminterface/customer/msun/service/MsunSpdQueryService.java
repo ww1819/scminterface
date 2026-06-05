@@ -48,11 +48,16 @@ public class MsunSpdQueryService
         return invokeGet(runtime, "2.5.44", MsunSpdApiPaths.DRUG_DICT_INFOS, params);
     }
 
-    public JSONObject queryDictCategory(MsunHospitalRuntime runtime, String keyWord, Integer limitCount) throws Exception
+    public JSONObject queryDictCategory(
+            MsunHospitalRuntime runtime,
+            String keyWord,
+            Integer limitCount,
+            Long hisDictId) throws Exception
     {
-        Map<String, Object> params = new HashMap<>(2);
+        Map<String, Object> params = new HashMap<>(3);
         putIfPresent(params, "keyWord", keyWord);
         putIfPresent(params, "limitCount", limitCount);
+        putIfPresent(params, "hisDictId", hisDictId);
         return invokeGet(runtime, "2.5.58", MsunSpdApiPaths.DICT_CATEGORY, params);
     }
 
@@ -62,14 +67,16 @@ public class MsunSpdQueryService
             Integer limitCount,
             String materialOrDrug,
             Long hospitalId,
-            Long orgId) throws Exception
+            Long orgId,
+            Long supplierId) throws Exception
     {
-        Map<String, Object> params = new HashMap<>(5);
+        Map<String, Object> params = new HashMap<>(6);
         putIfPresent(params, "keyWord", keyWord);
         putIfPresent(params, "limitCount", limitCount);
         putIfPresent(params, "materialOrDrug", materialOrDrug);
         putIfPresent(params, "hospitalId", hospitalId != null ? hospitalId : parseLong(runtime.getHospitalId()));
         putIfPresent(params, "orgId", orgId != null ? orgId : parseLong(runtime.getOrgId()));
+        putIfPresent(params, "supplierId", supplierId);
         return invokeGet(runtime, "2.5.62", MsunSpdApiPaths.DRUG_SUPPLIERES, params);
     }
 
@@ -79,14 +86,16 @@ public class MsunSpdQueryService
             Integer limitCount,
             String materialOrDrug,
             Long hospitalId,
-            Long orgId) throws Exception
+            Long orgId,
+            Long producerId) throws Exception
     {
-        Map<String, Object> params = new HashMap<>(5);
+        Map<String, Object> params = new HashMap<>(6);
         putIfPresent(params, "keyWord", keyWord);
         putIfPresent(params, "limitCount", limitCount);
         putIfPresent(params, "materialOrDrug", materialOrDrug);
         putIfPresent(params, "hospitalId", hospitalId != null ? hospitalId : parseLong(runtime.getHospitalId()));
         putIfPresent(params, "orgId", orgId != null ? orgId : parseLong(runtime.getOrgId()));
+        putIfPresent(params, "producerId", producerId);
         return invokeGet(runtime, "2.5.63", MsunSpdApiPaths.DRUG_PRODUCERES, params);
     }
 

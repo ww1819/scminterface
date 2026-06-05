@@ -66,9 +66,10 @@ public class ZaoqiangTcmMsunSpdQueryController
     @GetMapping("/dict-category")
     public AjaxResult dictCategory(
             @RequestParam(required = false) String keyWord,
-            @RequestParam(required = false) Integer limitCount)
+            @RequestParam(required = false) Integer limitCount,
+            @ApiParam("翻页游标：本页最大 hisDictId") @RequestParam(required = false) Long hisDictId)
     {
-        return invoke("2.5.58", () -> spdQueryService.queryDictCategory(msunProperties, keyWord, limitCount));
+        return invoke("2.5.58", () -> spdQueryService.queryDictCategory(msunProperties, keyWord, limitCount, hisDictId));
     }
 
     @ApiOperation("2.5.62 SPD 供应商查询")
@@ -78,10 +79,11 @@ public class ZaoqiangTcmMsunSpdQueryController
             @RequestParam(required = false) Integer limitCount,
             @RequestParam(required = false) String materialOrDrug,
             @RequestParam(required = false) Long hospitalId,
-            @RequestParam(required = false) Long orgId)
+            @RequestParam(required = false) Long orgId,
+            @ApiParam("翻页游标：本页最大 supplierId") @RequestParam(required = false) Long supplierId)
     {
         return invoke("2.5.62", () -> spdQueryService.queryDrugSuppliers(
-                msunProperties, keyWord, limitCount, materialOrDrug, hospitalId, orgId));
+                msunProperties, keyWord, limitCount, materialOrDrug, hospitalId, orgId, supplierId));
     }
 
     @ApiOperation("2.5.63 SPD 生产厂商查询")
@@ -91,10 +93,11 @@ public class ZaoqiangTcmMsunSpdQueryController
             @RequestParam(required = false) Integer limitCount,
             @RequestParam(required = false) String materialOrDrug,
             @RequestParam(required = false) Long hospitalId,
-            @RequestParam(required = false) Long orgId)
+            @RequestParam(required = false) Long orgId,
+            @ApiParam("翻页游标：本页最大 producerId") @RequestParam(required = false) Long producerId)
     {
         return invoke("2.5.63", () -> spdQueryService.queryDrugProducers(
-                msunProperties, keyWord, limitCount, materialOrDrug, hospitalId, orgId));
+                msunProperties, keyWord, limitCount, materialOrDrug, hospitalId, orgId, producerId));
     }
 
     @ApiOperation("2.5.43 药房批次库存查询")
