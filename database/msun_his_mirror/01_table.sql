@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS `m_drug_dict` (
   `insert_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '插入时间',
   `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `drug_id` VARCHAR(64) NOT NULL COMMENT '药品/材料ID',
-  `drug_spec_packing_id` VARCHAR(64) DEFAULT NULL COMMENT '规格包装ID',
+  `drug_spec_packing_id` VARCHAR(64) DEFAULT NULL COMMENT '众阳HIS产品档案唯一键（同步至fd_material.his_spec_packing_id）',
   `drug_name` VARCHAR(500) DEFAULT NULL COMMENT '名称',
   `spec` VARCHAR(500) DEFAULT NULL COMMENT '规格',
   `min_packing_id` VARCHAR(64) DEFAULT NULL COMMENT '最小包装ID',

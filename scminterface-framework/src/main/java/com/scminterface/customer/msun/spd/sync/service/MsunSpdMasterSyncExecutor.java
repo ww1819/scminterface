@@ -238,21 +238,25 @@ public class MsunSpdMasterSyncExecutor
         int count = 0;
         for (Map<String, Object> row : rows)
         {
-            ensureUnit(tenantId, str(row, "min_packing_id"), str(row, "min_packing_name"));
-            ensureUnit(tenantId, str(row, "dose_unit_id"), str(row, "dose_unit_name"));
-            ensureUnit(tenantId, str(row, "min_dose_unit_id"), str(row, "dose_unit_name"));
-        }
-        for (Map<String, Object> row : rows)
-        {
-            String drugId = str(row, "drug_id");
-            String specPackingId = str(row, "drug_spec_packing_id");
-            if (StringUtils.isEmpty(drugId))
+            if (!isMaterialRow(row))
             {
                 continue;
             }
+            // 耗材单位：仅使用众阳镜像中的最小包装单位
+            ensureUnit(tenantId, str(row, "min_packing_id"), str(row, "min_packing_name"));
+        }
+        for (Map<String, Object> row : rows)
+        {
+            if (!isMaterialRow(row))
+            {
+                continue;
+            }
+            String drugId = str(row, "drug_id");
+            // drug_spec_packing_id = 众阳HIS产品档案唯一键 → fd_material.his_spec_packing_id
+            String specPackingId = str(row, "drug_spec_packing_id");
             if (StringUtils.isEmpty(specPackingId))
             {
-                specPackingId = "0";
+                continue;
             }
             Long supplierId = resolveSupplierId(tenantId, str(row, "supplier_id"));
             Long factoryId = resolveFactoryId(tenantId, str(row, "produce_id"));
@@ -271,6 +275,7 @@ public class MsunSpdMasterSyncExecutor
             spd.put("registerNo", MsunSpdFieldSupport.truncate(str(row, "approved_no"), 100));
             spd.put("medicalNo", MsunSpdFieldSupport.truncate(str(row, "national_medical_insurance_code"), 100));
             spd.put("hisId", drugId);
+            // his_spec_packing_id：众阳HIS产品档案唯一键（drug_spec_packing_id）
             spd.put("hisSpecPackingId", specPackingId);
             spd.put("tenantId", tenantId);
             spd.put("delFlag", MsunSpdFieldSupport.toFdDelFlag(str(row, "invalid_flag")));
@@ -365,6 +370,13 @@ public class MsunSpdMasterSyncExecutor
                 runtime.getTenantId(),
                 runtime.getActiveEnv(),
                 batchNo);
+    }
+
+    /** 仅同步材料（material_or_drug=1），不同步药品 */
+    private static boolean isMaterialRow(Map<String, Object> row)
+    {
+        String flag = str(row, "material_or_drug");
+        return "1".equals(flag);
     }
 
     private static String buildLoginName(Map<String, Object> row, String identityId)

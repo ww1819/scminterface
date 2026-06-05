@@ -52,7 +52,9 @@ public final class MsunSpdFieldSupport
         return null;
     }
 
-    /** HIS 单位 ID 缺失时用名称生成稳定键 */
+    /**
+     * 众阳最小包装单位 ID（min_packing_id）；缺失时用名称生成稳定键供 fd_unit.his_unit_id 使用。
+     */
     public static String resolveHisUnitId(String hisUnitId, String unitName)
     {
         if (StringUtils.isNotEmpty(hisUnitId))
