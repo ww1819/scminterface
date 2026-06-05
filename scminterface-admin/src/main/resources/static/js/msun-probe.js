@@ -24,6 +24,7 @@ var zqLastApiKey = null;
 var zqResponseStore = {};
 var zqRunningAll = false;
 var zqFetchingAllPages = false;
+var zqFetchingAllRoles = false;
 
 var ZQ_API_RESP_ORDER = ['env', 'depts', 'identities', 'drugDict', 'dictCategory', 'suppliers', 'producers', 'batchStocks', 'ykInstock'];
 var ZQ_API_RESP_LABELS = { env: '当前环境' };
@@ -74,7 +75,11 @@ function zqHisSummary(result) {
         let s = 'HIS success=' + hisBody.success + ', code=' + (hisBody.code || '') + ', message=' + (hisBody.message || '');
         if (Array.isArray(hisBody.data)) s += ', data.length=' + hisBody.data.length;
         if (hisBody._probeMerged) {
-            s += ', pages=' + hisBody._probeMerged.pages + ', mergedRows=' + hisBody._probeMerged.totalRows;
+            if (hisBody._probeMerged.mode === 'allRoleTypes') {
+                s += ', roleTypes=' + hisBody._probeMerged.roleTypes + ', mergedRows=' + hisBody._probeMerged.totalRows;
+            } else {
+                s += ', pages=' + hisBody._probeMerged.pages + ', mergedRows=' + hisBody._probeMerged.totalRows;
+            }
         }
         return { text: s, ok: result.code === 200 && hisBody.success === true, hisCode: hisBody.code || '', message: hisBody.message || '' };
     }
@@ -306,7 +311,29 @@ function zqResponseActionsHtml(apiKey, format) {
         '<button type="button" class="resp-act-btn" onclick="zqTreeCollapseAll(\'' + apiKey + '\')">折叠</button>' +
         '<button type="button" class="resp-act-btn" onclick="zqSelectResponseJson(\'' + apiKey + '\')">全选</button>' +
         '<button type="button" class="resp-act-btn primary" onclick="zqCopyResponseJson(\'' + apiKey + '\')">复制</button>' +
+        '<button type="button" class="resp-act-btn" onclick="zqDownloadResponseJson(\'' + apiKey + '\')">下载</button>' +
         '</div>';
+}
+
+function zqDownloadResponseJson(apiKey) {
+    const text = (zqResponseStore[apiKey] && zqResponseStore[apiKey].text) ||
+        ((document.getElementById('resp-raw-' + apiKey) || {}).value || '');
+    if (!text.trim()) {
+        alert('暂无回参可下载');
+        return;
+    }
+    const hospitalKey = (msunSelectedHospital && msunSelectedHospital.hospitalKey) || 'hospital';
+    const ts = zqFormatDt(new Date()).replace(/[:\s]/g, '-');
+    const blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = hospitalKey + '-' + apiKey + '-' + ts + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    zqSetMeta('已下载: ' + a.download);
 }
 
 function zqEmptyRespCardHtml(apiKey, label) {
@@ -538,8 +565,45 @@ function zqSetBlockBusy(apiKey, busy) {
     });
 }
 
+async function zqCallApiAllRoleTypes(apiKey) {
+    if (!zqCheckLogin() || zqFetchingAllRoles || zqFetchingAllPages) return null;
+    const schema = MSUN_PARAM_SCHEMA[apiKey];
+    if (!schema || !schema.roleTypeSweep) {
+        alert(schema ? schema.title + ' 无 roleType 遍历逻辑' : '未知接口');
+        return null;
+    }
+
+    const deptId = zqGetFieldValue(apiKey, { key: 'deptId' });
+    const identityId = zqGetFieldValue(apiKey, { key: 'identityId' });
+    const userId = zqGetFieldValue(apiKey, { key: 'userId' });
+    if (deptId || identityId || userId) {
+        if (!confirm('获取全部用户将仅按 roleType 0~8 遍历，忽略 deptId / identityId / userId。是否继续？')) {
+            return null;
+        }
+    }
+
+    const allPath = schema.roleTypeSweep.path || (schema.path + '/all');
+    zqFetchingAllRoles = true;
+    zqSetBlockBusy(apiKey, true);
+    try {
+        zqSetMeta('获取全部用户: 服务端遍历 roleType 0~8…');
+        const pack = await zqInvokeRaw(schema.method, allPath, null, null);
+        const merged = pack.result;
+        const hisBody = merged && merged.data && merged.data.hisBody;
+        const totalRows = (hisBody && hisBody._probeMerged && hisBody._probeMerged.totalRows)
+            || (hisBody && Array.isArray(hisBody.data) ? hisBody.data.length : 0);
+        const title = schema.logTitle + '（全部用户 roleType 0~8 / ' + totalRows + ' 条）';
+        zqShowResult(apiKey, title, pack.requestLine, merged, pack.elapsed);
+        zqSetMeta('全部用户拉取完成: ' + totalRows + ' 条');
+        return merged;
+    } finally {
+        zqFetchingAllRoles = false;
+        zqSetBlockBusy(apiKey, false);
+    }
+}
+
 async function zqCallApiAllPages(apiKey) {
-    if (!zqCheckLogin() || zqFetchingAllPages) return null;
+    if (!zqCheckLogin() || zqFetchingAllPages || zqFetchingAllRoles) return null;
     const schema = MSUN_PARAM_SCHEMA[apiKey];
     if (!schema || !schema.pagination) {
         alert(schema ? schema.title + ' 无翻页逻辑，请使用单页调用' : '未知接口');
@@ -679,6 +743,10 @@ function zqRenderApiForm(apiKey, schema) {
     if (schema.pagination) {
         actions += '<button type="button" class="btn-call warn" onclick="zqCallApiAllPages(\'' + apiKey + '\')" title="'
             + zqEscapeHtml(schema.pagination.hint || '') + '">获取全部分页</button>';
+    }
+    if (schema.roleTypeSweep) {
+        actions += '<button type="button" class="btn-call warn" onclick="zqCallApiAllRoleTypes(\'' + apiKey + '\')" title="'
+            + zqEscapeHtml(schema.roleTypeSweep.hint || '') + '">获取全部用户</button>';
     }
     actions += '<button type="button" class="btn-call secondary" onclick="zqViewMirrorData(\'' + apiKey + '\')">查看镜像数据</button>' +
         '<button type="button" class="btn-call secondary" onclick="zqResetApi(\'' + apiKey + '\')">重置</button>' +

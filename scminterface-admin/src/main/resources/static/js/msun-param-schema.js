@@ -28,7 +28,11 @@ var MSUN_PARAM_SCHEMA = {
             { key: 'identityId', label: 'identityId', hint: '用户身份ID' },
             { key: 'userId', label: 'userId', hint: '用户ID' }
         ],
-        actions: ['zqCallIdentitiesSample', 'zqFillDeptFromLast']
+        actions: ['zqCallIdentitiesSample', 'zqFillDeptFromLast'],
+        roleTypeSweep: {
+            path: '/identities/all',
+            hint: '服务端按 roleType 0~8 遍历合并全部用户，可下载 JSON'
+        }
     },
     drugDict: {
         title: '2.5.44 药品、材料字典',

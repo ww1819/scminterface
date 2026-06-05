@@ -61,6 +61,7 @@ public class ZaoqiangTcmMsunProbeController
         info.put("documentUrl", msunProperties.getDocumentUrl());
         info.put("deptsUrl", msunProperties.deptsUrl());
         info.put("identitiesUrl", msunProperties.identitiesUrl());
+        info.put("identitiesAllPath", ZaoqiangTcmHospitalConstants.API_PREFIX + "/identities/all");
         return AjaxResult.success(info);
     }
 
@@ -105,6 +106,22 @@ public class ZaoqiangTcmMsunProbeController
         catch (Exception ex)
         {
             return AjaxResult.error("人员身份接口调用失败: " + ex.getMessage());
+        }
+    }
+
+    @ApiOperation("2.1.12 获取全部用户：按 roleType 0-8 遍历合并（供下载/镜像落库）")
+    @GetMapping("/identities/all")
+    public AjaxResult fetchIdentitiesAll()
+    {
+        try
+        {
+            JSONObject data = probeService.fetchIdentitiesAllRoleTypes(msunProperties);
+            mirrorSyncService.syncQueryResult(msunProperties, "2.1.12", data);
+            return enrichEnv(AjaxResult.success(data));
+        }
+        catch (Exception ex)
+        {
+            return AjaxResult.error("获取全部用户失败: " + ex.getMessage());
         }
     }
 
