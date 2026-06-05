@@ -20,6 +20,7 @@ function msunLsKey() {
 
 var zqTestLog = [];
 var zqLastResult = null;
+var zqLastResponseText = '';
 var zqRunningAll = false;
 
 function zqFieldId(apiKey, fieldKey) {
@@ -107,18 +108,72 @@ function zqSwitchRightTab(tabId, btn) {
     if (btn) btn.classList.add('active');
 }
 
+function zqResponseActionsHtml() {
+    return '<div class="resp-actions">' +
+        '<button type="button" class="resp-act-btn" onclick="zqSelectResponseJson()">全选</button>' +
+        '<button type="button" class="resp-act-btn primary" onclick="zqCopyResponseJson()">复制</button>' +
+        '</div>';
+}
+
+function zqRenderResponseJson(result) {
+    zqLastResponseText = zqFmtJson(result);
+    return '<pre class="resp-json" id="responseJsonPre">' + zqEscapeHtml(zqLastResponseText) + '</pre>';
+}
+
+function zqSelectResponseJson() {
+    const pre = document.getElementById('responseJsonPre');
+    if (!pre || !pre.textContent) {
+        alert('暂无回参可选中');
+        return;
+    }
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    pre.focus();
+}
+
+async function zqCopyResponseJson() {
+    const text = zqLastResponseText || ((document.getElementById('responseJsonPre') || {}).textContent || '');
+    if (!text.trim()) {
+        alert('暂无回参可复制');
+        return;
+    }
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        }
+        zqSetMeta('回参 JSON 已复制到剪贴板');
+    } catch (e) {
+        zqSelectResponseJson();
+        alert('自动复制失败，已全选回参，请按 Ctrl+C 复制');
+    }
+}
+
 function zqShowResult(title, requestLine, result, elapsedMs) {
     zqLastResult = result;
     zqRecordTest(title, result, elapsedMs);
     const box = document.getElementById('responseBox');
     const sum = zqHisSummary(result);
-    box.innerHTML =
-        '<div class="resp-head ' + (sum.ok ? 'ok' : 'err') + '">' +
+    const headBody =
         '<strong>' + zqEscapeHtml(title) + '</strong> · ' + elapsedMs + 'ms<br>' +
         '<code class="req-line">' + zqEscapeHtml(requestLine) + '</code><br>' +
         '<span class="summary">' + zqEscapeHtml(sum.text) + '</span>' +
-        (result && result.activeEnv ? '<br><span class="env-tag">环境: ' + result.activeEnv + ' · ' + (result.msunBaseUrl || '') + '</span>' : '') +
-        '</div><pre class="resp-json">' + zqEscapeHtml(zqFmtJson(result)) + '</pre>';
+        (result && result.activeEnv ? '<br><span class="env-tag">环境: ' + result.activeEnv + ' · ' + (result.msunBaseUrl || '') + '</span>' : '');
+    box.innerHTML =
+        '<div class="resp-head ' + (sum.ok ? 'ok' : 'err') + '">' +
+        '<div class="resp-head-row"><div class="resp-head-body">' + headBody + '</div>' + zqResponseActionsHtml() + '</div>' +
+        '</div>' + zqRenderResponseJson(result);
     zqSwitchRightTab('right-current', document.querySelector('.right-tabs .right-tab-btn'));
 }
 
@@ -141,9 +196,10 @@ function zqRenderTestLog() {
 function zqReplayLog(idx) {
     const item = zqTestLog[idx];
     if (!item || !item.raw) return;
+    const headBody = zqEscapeHtml(item.api) + ' · ' + zqEscapeHtml(item.time);
     document.getElementById('responseBox').innerHTML =
-        '<div class="resp-head">' + zqEscapeHtml(item.api) + ' · ' + zqEscapeHtml(item.time) + '</div>' +
-        '<pre class="resp-json">' + zqEscapeHtml(zqFmtJson(item.raw)) + '</pre>';
+        '<div class="resp-head"><div class="resp-head-row"><div class="resp-head-body">' + headBody + '</div>' +
+        zqResponseActionsHtml() + '</div></div>' + zqRenderResponseJson(item.raw);
     zqSwitchRightTab('right-current', document.querySelector('.right-tabs .right-tab-btn'));
 }
 
