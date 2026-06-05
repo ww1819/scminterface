@@ -110,11 +110,27 @@ function zqInitChecklist() {
     }).join('');
 }
 
-function zqSwitchRightTab(tabId, btn) {
-    document.querySelectorAll('.right-tab-panel').forEach(function (p) { p.classList.remove('active'); });
-    document.querySelectorAll('.right-tabs .right-tab-btn').forEach(function (b) { b.classList.remove('active'); });
-    document.getElementById(tabId).classList.add('active');
-    if (btn) btn.classList.add('active');
+function zqOwnerKeyForResp(apiKey) {
+    return String(apiKey).replace(/^mirror_/, '');
+}
+
+function zqTabIdForApiKey(apiKey) {
+    const k = zqOwnerKeyForResp(apiKey);
+    if (k === 'env') return 'tab-guide';
+    if (k === 'depts' || k === 'identities') return 'tab-base';
+    return 'tab-spd';
+}
+
+function zqSwitchTabForApiKey(apiKey) {
+    const tabId = zqTabIdForApiKey(apiKey);
+    const idx = { 'tab-guide': 0, 'tab-base': 1, 'tab-spd': 2 }[tabId];
+    const btn = document.querySelectorAll('.tabs .tab-btn')[idx];
+    zqSwitchTab(tabId, btn);
+}
+
+function zqScrollToSection(sectionId) {
+    const el = document.getElementById(sectionId);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function zqInitRespMeta() {
@@ -293,16 +309,26 @@ function zqResponseActionsHtml(apiKey, format) {
         '</div>';
 }
 
-function zqInitResponseStack() {
-    const stack = document.getElementById('responseStack');
-    if (!stack) return;
-    stack.innerHTML = ZQ_API_RESP_ORDER.map(function (apiKey) {
-        const label = ZQ_API_RESP_LABELS[apiKey] || apiKey;
-        return '<div class="api-resp-card empty" id="resp-card-' + apiKey + '" data-api-key="' + apiKey + '">' +
-            '<div class="resp-head"><div class="resp-head-row"><div class="resp-head-body"><strong>' +
-            zqEscapeHtml(label) + '</strong><span class="api-resp-placeholder"> · 尚未调用</span></div></div></div>' +
-            '<div class="api-resp-body"></div></div>';
-    }).join('');
+function zqEmptyRespCardHtml(apiKey, label) {
+    return '<div class="api-resp-card empty" id="resp-card-' + apiKey + '" data-api-key="' + apiKey + '">' +
+        '<div class="resp-head"><div class="resp-head-row"><div class="resp-head-body"><strong>' +
+        zqEscapeHtml(label) + '</strong><span class="api-resp-placeholder"> · 尚未调用</span></div></div></div>' +
+        '<div class="api-resp-body"></div></div>';
+}
+
+function zqRenderInlineRespSlotContent(ownerKey) {
+    const hisLabel = ZQ_API_RESP_LABELS[ownerKey] || ownerKey;
+    let html = '<div class="inline-resp-label">HIS 回参</div>' + zqEmptyRespCardHtml(ownerKey, hisLabel);
+    if (ownerKey !== 'env') {
+        html += '<div class="inline-resp-label mirror">镜像库数据</div>' +
+            zqEmptyRespCardHtml(zqMirrorRespKey(ownerKey), '[镜像] ' + hisLabel);
+    }
+    return html;
+}
+
+function zqInitInlineRespSlots() {
+    const envSlot = document.getElementById('resp-slot-env');
+    if (envSlot) envSlot.innerHTML = zqRenderInlineRespSlotContent('env');
 }
 
 function zqFocusResponseCard(apiKey) {
@@ -310,11 +336,17 @@ function zqFocusResponseCard(apiKey) {
     const card = document.getElementById('resp-card-' + apiKey);
     if (!card) return;
     card.classList.add('active-card');
-    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const owner = zqOwnerKeyForResp(apiKey);
+    const block = document.getElementById('block-' + owner);
+    if (block) {
+        block.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
 function zqGotoResponse(apiKey) {
-    zqSwitchRightTab('right-current', document.querySelector('.right-tabs .right-tab-btn'));
+    zqSwitchTabForApiKey(apiKey);
     zqFocusResponseCard(apiKey);
 }
 
@@ -368,8 +400,9 @@ function zqMirrorRespKey(apiKey) {
 function zqEnsureRespCard(apiKey, label) {
     let card = document.getElementById('resp-card-' + apiKey);
     if (card) return card;
-    const stack = document.getElementById('responseStack');
-    if (!stack) return null;
+    const owner = zqOwnerKeyForResp(apiKey);
+    const slot = document.getElementById('resp-slot-' + owner);
+    if (!slot) return null;
     card = document.createElement('div');
     card.className = 'api-resp-card empty';
     card.id = 'resp-card-' + apiKey;
@@ -378,7 +411,7 @@ function zqEnsureRespCard(apiKey, label) {
         '<div class="resp-head"><div class="resp-head-row"><div class="resp-head-body"><strong>' +
         zqEscapeHtml(label || apiKey) + '</strong><span class="api-resp-placeholder"> · 尚未加载</span></div></div></div>' +
         '<div class="api-resp-body"></div>';
-    stack.appendChild(card);
+    slot.appendChild(card);
     return card;
 }
 
@@ -423,7 +456,7 @@ function zqShowResult(apiKey, title, requestLine, result, elapsedMs) {
     rawTa.readOnly = true;
     rawTa.value = body.text;
     bodyEl.appendChild(rawTa);
-    zqSwitchRightTab('right-current', document.querySelector('.right-tabs .right-tab-btn'));
+    zqSwitchTabForApiKey(apiKey);
     zqFocusResponseCard(apiKey);
 }
 
@@ -648,10 +681,8 @@ function zqRenderApiForm(apiKey, schema) {
             + zqEscapeHtml(schema.pagination.hint || '') + '">获取全部分页</button>';
     }
     actions += '<button type="button" class="btn-call secondary" onclick="zqViewMirrorData(\'' + apiKey + '\')">查看镜像数据</button>' +
-        '<button type="button" class="btn-call secondary" onclick="zqGotoMirrorData(\'' + apiKey + '\')">跳转镜像回参</button>' +
         '<button type="button" class="btn-call secondary" onclick="zqResetApi(\'' + apiKey + '\')">重置</button>' +
-        '<button type="button" class="btn-call secondary" onclick="zqSyncJsonFromForm(\'' + apiKey + '\')">表单→JSON</button>' +
-        '<button type="button" class="btn-call secondary" onclick="zqGotoResponse(\'' + apiKey + '\')">查看HIS回参</button>';
+        '<button type="button" class="btn-call secondary" onclick="zqSyncJsonFromForm(\'' + apiKey + '\')">表单→JSON</button>';
     if (schema.actions) {
         schema.actions.forEach(function (fn) {
             if (fn === 'zqCallIdentitiesSample') actions += '<button type="button" class="btn-call secondary" onclick="zqCallIdentitiesSample()">自动取首科室</button>';
@@ -666,7 +697,8 @@ function zqRenderApiForm(apiKey, schema) {
         '<details class="json-editor-wrap"><summary>高级：JSON 入参编辑（覆盖表单，POST 接口可直接编辑）</summary>' +
         '<textarea id="' + zqJsonId(apiKey) + '" class="json-editor" rows="6" placeholder="{}"></textarea>' +
         '<button type="button" class="btn-call secondary" onclick="zqSyncFormFromJson(\'' + apiKey + '\')">JSON→表单</button></details>' +
-        '<div class="tool-row">' + actions + '</div></div>';
+        '<div class="tool-row">' + actions + '</div>' +
+        '<div class="api-inline-resp" id="resp-slot-' + apiKey + '">' + zqRenderInlineRespSlotContent(apiKey) + '</div></div>';
 }
 
 function zqRenderAllForms() {
@@ -789,11 +821,6 @@ function zqInitYkDefaults() {
     const endEl = document.getElementById(zqFieldId('ykInstock', 'endTime'));
     if (startEl && !startEl.value) startEl.value = zqFormatDt(new Date(now.getTime() - 7 * 86400000));
     if (endEl && !endEl.value) endEl.value = zqFormatDt(now);
-}
-
-function zqGotoMirrorData(apiKey) {
-    zqSwitchRightTab('right-current', document.querySelector('.right-tabs .right-tab-btn'));
-    zqFocusResponseCard(zqMirrorRespKey(apiKey));
 }
 
 async function zqViewMirrorData(apiKey) {
@@ -924,7 +951,8 @@ async function zqRunAllTests() {
         if (bs.deptId && bs.drugId && bs.drugSpecPackingId) { await zqCallBatchStocks(); await zqSleep(400); }
         else zqRecordSkipped('2.5.43 药房批次库存', '缺少三要素，已跳过');
         await zqCallYkInstock();
-        zqSwitchRightTab('right-log', document.querySelectorAll('.right-tabs .right-tab-btn')[1]);
+        zqSwitchTab('tab-guide', document.querySelector('.tabs .tab-btn'));
+        zqScrollToSection('guide-test-log');
     } finally {
         zqRunningAll = false;
         if (btn) btn.disabled = false;
@@ -948,7 +976,8 @@ function zqExportFeedback() {
     lines.push('', '补充说明：' + (note || '无'), '', '--- 最近回参 ---', zqFmtJson(zqLastResult));
     const ta = document.getElementById('feedbackExport');
     if (ta) { ta.value = lines.join('\n'); ta.style.display = 'block'; }
-    zqSwitchRightTab('right-feedback', document.querySelectorAll('.right-tabs .right-tab-btn')[2]);
+    zqSwitchTab('tab-guide', document.querySelector('.tabs .tab-btn'));
+    zqScrollToSection('guide-feedback-section');
 }
 
 function zqCopyFeedback() {
@@ -1028,8 +1057,8 @@ function msunOnHospitalChange() {
 document.addEventListener('DOMContentLoaded', async function () {
     if (!zqCheckLogin()) return;
     zqInitRespMeta();
-    zqInitResponseStack();
     zqRenderAllForms();
+    zqInitInlineRespSlots();
     zqInitYkDefaults();
     zqInitChecklist();
     zqRenderTestLog();

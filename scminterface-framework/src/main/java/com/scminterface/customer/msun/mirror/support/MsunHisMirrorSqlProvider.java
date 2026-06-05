@@ -1,13 +1,14 @@
 package com.scminterface.customer.msun.mirror.support;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 /**
  * MyBatis 动态 upsert SQL（表名白名单，防注入）。
+ * Provider 方法须为 public static，否则 MyBatis 无法反射调用（私有构造会触发 IllegalAccessException）。
  */
 public final class MsunHisMirrorSqlProvider
 {
@@ -34,7 +35,7 @@ public final class MsunHisMirrorSqlProvider
     }
 
     @SuppressWarnings("unchecked")
-    public String upsertMirrorRow(Map<String, Object> params)
+    public static String upsertMirrorRow(Map<String, Object> params)
     {
         String table = (String) params.get("table");
         Map<String, Object> row = (Map<String, Object>) params.get("row");
@@ -96,18 +97,18 @@ public final class MsunHisMirrorSqlProvider
         return sql.toString();
     }
 
-    public String deleteYkInstockDetails(Map<String, Object> params)
+    public static String deleteYkInstockDetails(Map<String, Object> params)
     {
         return "DELETE FROM m_yk_instock_detail WHERE hospital_key = #{hospitalKey} AND active_env = #{activeEnv} "
                 + "AND storage_instock_id = #{storageInstockId}";
     }
 
-    public String countMirrorRows(Map<String, Object> params)
+    public static String countMirrorRows(Map<String, Object> params)
     {
         return buildMirrorSelectSql(params, true);
     }
 
-    public String listMirrorRows(Map<String, Object> params)
+    public static String listMirrorRows(Map<String, Object> params)
     {
         return buildMirrorSelectSql(params, false);
     }

@@ -28,11 +28,11 @@
             border: 1px solid rgba(255,255,255,.35); border-radius: 6px; font-size: 13px;
         }
         .layout {
-            display: grid;
-            grid-template-columns: minmax(400px, 1fr) minmax(440px, 1.15fr);
-            gap: 16px; padding: 16px; max-width: 1680px; margin: 0 auto;
+            display: block;
+            padding: 16px;
+            max-width: 1100px;
+            margin: 0 auto;
         }
-        @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
         .panel {
             background: #fff; border-radius: 10px;
             box-shadow: 0 1px 6px rgba(0,0,0,.08); overflow: hidden;
@@ -52,19 +52,29 @@
         .tab-btn.active, .right-tab-btn.active { background: #ccfbf1; color: #0f766e; font-weight: 600; }
         .tab-panel, .right-tab-panel { display: none; padding: 16px 18px 20px; }
         .tab-panel.active, .right-tab-panel.active { display: block; }
-        .panel-body-scroll {
-            max-height: calc(100vh - 220px);
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-        .response-stack {
-            max-height: calc(100vh - 200px);
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
+        .panel-body-scroll { overflow: visible; }
         .api-block {
-            border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 14px;
+            border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 18px;
         }
+        .api-inline-resp {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px dashed #cbd5e1;
+        }
+        .inline-resp-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0f766e;
+            margin: 4px 0 8px;
+        }
+        .inline-resp-label.mirror { color: #b45309; }
+        .api-block .api-resp-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .api-block .api-resp-card .resp-head { position: static; }
         .api-block h3 { font-size: 14px; color: #111827; margin-bottom: 4px; }
         .api-desc { font-size: 12px; color: #6b7280; margin-bottom: 12px; line-height: 1.5; }
         .form-grid {
@@ -207,7 +217,7 @@
 
     <div class="layout">
         <div class="panel">
-            <div class="panel-title">接口调用（左侧滚动选接口 · 调用后右侧对应窗口保留回参）</div>
+            <div class="panel-title">接口联调（回参紧跟各接口下方，上下滚动即可对照）</div>
             <div class="tabs">
                 <button type="button" class="tab-btn active" onclick="zqSwitchTab('tab-guide', this)">环境与清单</button>
                 <button type="button" class="tab-btn" onclick="zqSwitchTab('tab-base', this)">科室/人员</button>
@@ -215,10 +225,11 @@
             </div>
             <div class="panel-body-scroll">
             <div id="tab-guide" class="tab-panel active">
-                <div class="api-block">
+                <div class="api-block" id="block-env">
                     <h3>连接环境</h3>
                     <p class="api-desc">服务端 <code>active-env=prod</code> 时对接枣强正式库 <code>zqxzyyy.msuncloud.cn</code>。</p>
                     <button type="button" class="btn-call" onclick="zqLoadEnv()">刷新环境</button>
+                    <div id="resp-slot-env" class="api-inline-resp"></div>
                 </div>
                 <div class="api-block">
                     <h3>一键顺序测试（推荐给实施人员）</h3>
@@ -238,7 +249,17 @@
                         <tbody id="checklistBody"></tbody>
                     </table>
                 </div>
-                <div class="api-block">
+                <div class="api-block" id="guide-test-log">
+                    <h3>测试记录</h3>
+                    <p class="api-desc">本次页面会话内的调用记录，可点「查看」跳转到对应接口下方回参。</p>
+                    <table class="chk-table">
+                        <thead>
+                            <tr><th>#</th><th>时间</th><th>接口</th><th>结果</th><th>code/message</th><th></th></tr>
+                        </thead>
+                        <tbody id="testLogBody"></tbody>
+                    </table>
+                </div>
+                <div class="api-block" id="guide-feedback-section">
                     <h3>反馈信息（写入导出文本）</h3>
                     <div class="form-grid">
                         <div class="field"><label>测试人</label><input id="fb_tester" placeholder="姓名"></div>
@@ -247,6 +268,11 @@
                             <textarea id="fb_note" rows="2" placeholder="网络、VPN、众阳工单号等"></textarea>
                         </div>
                     </div>
+                    <div class="tool-row">
+                        <button type="button" class="btn-call" onclick="zqExportFeedback()">生成反馈文本</button>
+                        <button type="button" class="btn-call secondary" onclick="zqCopyFeedback()">复制到剪贴板</button>
+                    </div>
+                    <textarea id="feedbackExport" readonly placeholder="点击「生成反馈文本」后显示…"></textarea>
                 </div>
             </div>
 
@@ -266,36 +292,6 @@
             </div>
             </div>
             <div class="meta-bar" id="metaInfo">就绪</div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-title">回参与反馈</div>
-            <div class="right-tabs">
-                <button type="button" class="right-tab-btn active" onclick="zqSwitchRightTab('right-current', this)">各接口回参</button>
-                <button type="button" class="right-tab-btn" onclick="zqSwitchRightTab('right-log', this)">测试记录</button>
-                <button type="button" class="right-tab-btn" onclick="zqSwitchRightTab('right-feedback', this)">导出反馈</button>
-            </div>
-            <div id="right-current" class="right-tab-panel active">
-                <p class="api-desc" style="padding:12px 16px 0;margin:0">每个接口独立窗口，调用后自动定位；可上下滚动回看历史回参。</p>
-                <div id="responseStack" class="response-stack"></div>
-            </div>
-            <div id="right-log" class="right-tab-panel">
-                <p class="api-desc">本次页面会话内的调用记录，可点「查看」回看 JSON。</p>
-                <table class="chk-table">
-                    <thead>
-                        <tr><th>#</th><th>时间</th><th>接口</th><th>结果</th><th>code/message</th><th></th></tr>
-                    </thead>
-                    <tbody id="testLogBody"></tbody>
-                </table>
-            </div>
-            <div id="right-feedback" class="right-tab-panel">
-                <p class="api-desc">填写左侧「测试人」后点击生成，再「复制反馈」发给项目组。</p>
-                <div class="tool-row">
-                    <button type="button" class="btn-call" onclick="zqExportFeedback()">生成反馈文本</button>
-                    <button type="button" class="btn-call secondary" onclick="zqCopyFeedback()">复制到剪贴板</button>
-                </div>
-                <textarea id="feedbackExport" readonly placeholder="点击「生成反馈文本」后显示…"></textarea>
-            </div>
         </div>
     </div>
 
