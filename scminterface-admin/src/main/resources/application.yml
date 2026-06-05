@@ -58,6 +58,9 @@ scminterface:
       # 查询接口回参落 SPD 库 m_* 镜像表（探针与正式 API 共用）；须 spd.enabled=true 且实施人员已手工建表
       mirror:
         enabled: true
+      # 镜像 m_* 落库后 upsert 至 SPD 主数据（fd_department/fd_supplier/...）；须执行 database/msun_his_mirror/05_spd_master_sync_columns.sql
+      spd-master-sync:
+        enabled: true
       hospitals:
         # 枣强县中医院（zaoqiang-tcm-001）
         zaoqiang-tcm-001:

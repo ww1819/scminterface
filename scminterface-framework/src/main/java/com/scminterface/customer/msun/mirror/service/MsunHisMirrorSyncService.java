@@ -5,6 +5,7 @@ import com.scminterface.common.utils.StringUtils;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.mirror.config.MsunHisMirrorProperties;
+import com.scminterface.customer.msun.spd.sync.service.MsunSpdMasterSyncService;
 import com.scminterface.framework.datasource.DataSourceAvailability;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -25,15 +26,18 @@ public class MsunHisMirrorSyncService
     private final MsunHisMirrorProperties mirrorProperties;
     private final DataSourceAvailability dataSourceAvailability;
     private final MsunHisMirrorSyncExecutor syncExecutor;
+    private final MsunSpdMasterSyncService spdMasterSyncService;
 
     public MsunHisMirrorSyncService(
             MsunHisMirrorProperties mirrorProperties,
             DataSourceAvailability dataSourceAvailability,
-            MsunHisMirrorSyncExecutor syncExecutor)
+            MsunHisMirrorSyncExecutor syncExecutor,
+            MsunSpdMasterSyncService spdMasterSyncService)
     {
         this.mirrorProperties = mirrorProperties;
         this.dataSourceAvailability = dataSourceAvailability;
         this.syncExecutor = syncExecutor;
+        this.spdMasterSyncService = spdMasterSyncService;
     }
 
     /**
@@ -62,6 +66,7 @@ public class MsunHisMirrorSyncService
             {
                 log.info("众阳HIS镜像落库完成 hospital={} api={} batch={} rows={}",
                         runtime.getHospitalKey(), apiCode, batchNo, rows);
+                spdMasterSyncService.syncAfterMirror(runtime, apiCode, batchNo, rows);
             }
         }
         catch (Exception ex)

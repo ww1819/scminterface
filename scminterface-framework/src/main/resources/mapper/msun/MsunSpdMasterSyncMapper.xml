@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.customer.msun.spd.sync.mapper.MsunSpdMasterSyncMapper">
+
+    <sql id="mirrorBatchWhere">
+        hospital_key = #{hospitalKey}
+        AND tenant_id = #{tenantId}
+        AND active_env = #{activeEnv}
+        AND sync_batch_no = #{syncBatchNo}
+    </sql>
+
+    <select id="listMirrorRowsByBatch" resultType="java.util.HashMap">
+        SELECT * FROM ${table}
+        WHERE <include refid="mirrorBatchWhere"/>
+    </select>
+
+    <select id="selectFdDepartmentIdByHisId" resultType="java.lang.Long">
+        SELECT id FROM fd_department
+        WHERE tenant_id = #{tenantId} AND his_id = #{hisId} AND del_flag = 0
+        LIMIT 1
+    </select>
+
+    <select id="selectFdSupplierIdByHisId" resultType="java.lang.Long">
+        SELECT id FROM fd_supplier
+        WHERE tenant_id = #{tenantId} AND his_id = #{hisId} AND del_flag = 0
+        LIMIT 1
+    </select>
+
+    <select id="selectFdFactoryIdByHisId" resultType="java.lang.Long">
+        SELECT factory_id FROM fd_factory
+        WHERE tenant_id = #{tenantId} AND his_id = #{hisId} AND del_flag = 0
+        LIMIT 1
+    </select>
+
+    <select id="selectFdWarehouseCategoryIdByHisId" resultType="java.lang.Long">
+        SELECT warehouse_category_id FROM fd_warehouse_category
+        WHERE tenant_id = #{tenantId} AND his_id = #{hisId} AND del_flag = 0
+        LIMIT 1
+    </select>
+
+    <select id="selectFdUnitIdByHisUnitId" resultType="java.lang.Long">
+        SELECT unit_id FROM fd_unit
+        WHERE tenant_id = #{tenantId} AND his_unit_id = #{hisUnitId} AND del_flag = 0
+        LIMIT 1
+    </select>
+
+    <select id="selectSysUserIdByHisIdentity" resultType="java.lang.Long">
+        SELECT user_id FROM sys_user
+        WHERE customer_id = #{customerId} AND his_identity_id = #{hisIdentityId} AND del_flag = '0'
+        LIMIT 1
+    </select>
+
+    <insert id="upsertFdDepartment">
+        INSERT INTO fd_department (
+            code, name, referred_name, his_id, tenant_id, del_flag, parent_id, create_by, create_time, update_by, update_time
+        ) VALUES (
+            #{code}, #{name}, #{referredName}, #{hisId}, #{tenantId}, #{delFlag}, #{parentId},
+            #{createBy}, NOW(), #{updateBy}, NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            code = VALUES(code),
+            name = VALUES(name),
+            referred_name = VALUES(referred_name),
+            del_flag = VALUES(del_flag),
+            update_by = VALUES(update_by),
+            update_time = NOW()
+    </insert>
+
+    <update id="updateFdDepartmentParent">
+        UPDATE fd_department child
+        INNER JOIN fd_department parent
+            ON parent.tenant_id = child.tenant_id AND parent.his_id = #{hisParentId} AND parent.del_flag = 0
+        SET child.parent_id = parent.id,
+            child.update_by = 'msun-mirror-sync',
+            child.update_time = NOW()
+        WHERE child.tenant_id = #{tenantId}
+          AND child.his_id = #{hisDeptId}
+          AND child.del_flag = 0
+    </update>
+
+    <insert id="upsertFdSupplier">
+        INSERT INTO fd_supplier (
+            code, name, referred_code, his_id, tenant_id, del_flag,
+            address, phone, contacts, contacts_phone, tax_number,
+            create_by, create_time, update_by, update_time
+        ) VALUES (
+            #{code}, #{name}, #{referredCode}, #{hisId}, #{tenantId}, #{delFlag},
+            #{address}, #{phone}, #{contacts}, #{contactsPhone}, #{taxNumber},
+            #{createBy}, NOW(), #{updateBy}, NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            code = VALUES(code),
+            name = VALUES(name),
+            referred_code = VALUES(referred_code),
+            del_flag = VALUES(del_flag),
+            address = VALUES(address),
+            phone = VALUES(phone),
+            contacts = VALUES(contacts),
+            contacts_phone = VALUES(contacts_phone),
+            tax_number = VALUES(tax_number),
+            update_by = VALUES(update_by),
+            update_time = NOW()
+    </insert>
+
+    <insert id="upsertFdFactory">
+        INSERT INTO fd_factory (
+            factory_code, factory_name, factory_referred_code, factory_address, factory_contact,
+            his_id, tenant_id, del_flag, create_by, create_time, update_by, update_time
+        ) VALUES (
+            #{factoryCode}, #{factoryName}, #{factoryReferredCode}, #{factoryAddress}, #{factoryContact},
+            #{hisId}, #{tenantId}, #{delFlag}, #{createBy}, NOW(), #{updateBy}, NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            factory_code = VALUES(factory_code),
+            factory_name = VALUES(factory_name),
+            factory_referred_code = VALUES(factory_referred_code),
+            factory_address = VALUES(factory_address),
+            factory_contact = VALUES(factory_contact),
+            del_flag = VALUES(del_flag),
+            update_by = VALUES(update_by),
+            update_time = NOW()
+    </insert>
+
+    <insert id="upsertFdWarehouseCategory">
+        INSERT INTO fd_warehouse_category (
+            warehouse_category_code, warehouse_category_name, referred_name, his_id, tenant_id, del_flag,
+            create_by, create_time, update_by, update_time
+        ) VALUES (
+            #{warehouseCategoryCode}, #{warehouseCategoryName}, #{referredName}, #{hisId}, #{tenantId}, #{delFlag},
+            #{createBy}, NOW(), #{updateBy}, NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            warehouse_category_code = VALUES(warehouse_category_code),
+            warehouse_category_name = VALUES(warehouse_category_name),
+            referred_name = VALUES(referred_name),
+            del_flag = VALUES(del_flag),
+            update_by = VALUES(update_by),
+            update_time = NOW()
+    </insert>
+
+    <insert id="upsertFdUnit">
+        INSERT INTO fd_unit (
+            unit_code, unit_name, his_unit_id, tenant_id, del_flag, create_by, create_time, update_by, update_time
+        ) VALUES (
+            #{unitCode}, #{unitName}, #{hisUnitId}, #{tenantId}, #{delFlag},
+            #{createBy}, NOW(), #{updateBy}, NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            unit_code = VALUES(unit_code),
+            unit_name = VALUES(unit_name),
+            del_flag = VALUES(del_flag),
+            update_by = VALUES(update_by),
+            update_time = NOW()
+    </insert>
+
+    <insert id="upsertFdMaterial">
+        INSERT INTO fd_material (
+            code, name, speci, model, price, sale_price, referred_name, register_no, medical_no,
+            his_id, his_spec_packing_id, tenant_id, del_flag,
+            supplier_id, factory_id, storeroom_id, unit_id,
+            create_by, create_time, update_by, update_time
+        ) VALUES (
+            #{code}, #{name}, #{speci}, #{model}, #{price}, #{salePrice}, #{referredName}, #{registerNo}, #{medicalNo},
+            #{hisId}, #{hisSpecPackingId}, #{tenantId}, #{delFlag},
+            #{supplierId}, #{factoryId}, #{storeroomId}, #{unitId},
+            #{createBy}, NOW(), #{updateBy}, NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            code = VALUES(code),
+            name = VALUES(name),
+            speci = VALUES(speci),
+            model = VALUES(model),
+            price = VALUES(price),
+            sale_price = VALUES(sale_price),
+            referred_name = VALUES(referred_name),
+            register_no = VALUES(register_no),
+            medical_no = VALUES(medical_no),
+            del_flag = VALUES(del_flag),
+            supplier_id = VALUES(supplier_id),
+            factory_id = VALUES(factory_id),
+            storeroom_id = VALUES(storeroom_id),
+            unit_id = VALUES(unit_id),
+            update_by = VALUES(update_by),
+            update_time = NOW()
+    </insert>
+
+    <insert id="upsertSysUser">
+        INSERT INTO sys_user (
+            user_name, nick_name, his_id, his_identity_id, customer_id, dept_id,
+            status, del_flag, password, create_by, create_time, update_by, update_time
+        ) VALUES (
+            #{userName}, #{nickName}, #{hisId}, #{hisIdentityId}, #{customerId}, #{deptId},
+            #{status}, #{delFlag}, #{password}, #{createBy}, NOW(), #{updateBy}, NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            nick_name = VALUES(nick_name),
+            his_id = VALUES(his_id),
+            dept_id = VALUES(dept_id),
+            status = VALUES(status),
+            del_flag = VALUES(del_flag),
+            update_by = VALUES(update_by),
+            update_time = NOW()
+    </insert>
+
+    <insert id="insertSysUserDepartmentIfAbsent">
+        INSERT INTO sys_user_department (user_id, department_id, status, tenant_id, create_by, create_time)
+        SELECT #{userId}, #{departmentId}, #{status}, #{tenantId}, #{createBy}, NOW()
+        FROM DUAL
+        WHERE NOT EXISTS (
+            SELECT 1 FROM sys_user_department
+            WHERE user_id = #{userId} AND department_id = #{departmentId}
+        )
+    </insert>
+
+</mapper>

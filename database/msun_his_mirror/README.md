@@ -15,6 +15,7 @@
 | 2 | `02_column.sql` | 增量字段存储过程 |
 | 3 | `04_table_drug_batch_stock.sql` | 2.5.43 批次库存（可选） |
 | 4 | `03_seed_probe_sample.sql` | 样本数据（可选，手工） |
+| 5 | `05_spd_master_sync_columns.sql` | SPD 主数据表补列与组合唯一键（镜像→fd_* 同步前置） |
 | — | `99_drop_mirror_tables_optional.sql` | 新客户清理全部镜像表（可选） |
 
 执行前在客户端中 `USE aspt;`（或实际 SPD 库名）。
@@ -26,9 +27,23 @@
 ```yaml
 spring.datasource.druid.spd.enabled: true
 scminterface.vendor.msun.mirror.enabled: true
+scminterface.vendor.msun.spd-master-sync.enabled: true
 ```
 
 落库使用 **SPD 数据源**（`@DataSource(SPD)`），无需额外数据源配置。
+
+镜像 `m_*` 写入成功后，若已执行 `05_spd_master_sync_columns.sql`，会自动 **upsert** 至 SPD 主数据表：
+
+| 接口 | 镜像表 | SPD 表 |
+|------|--------|--------|
+| 2.1.9 | `m_dept` | `fd_department` |
+| 2.1.12 | `m_user_identity` | `sys_user` + `sys_user_department` |
+| 2.5.62 | `m_supplier` | `fd_supplier` |
+| 2.5.63 | `m_producer` | `fd_factory` |
+| 2.5.58 | `m_dict_category` | `fd_warehouse_category` |
+| 2.5.44 | `m_drug_dict` | `fd_unit` + `fd_material` |
+
+同步按本批次 `sync_batch_no` 读取镜像行；`tenant_id` 写入各 SPD 表（`sys_user` 使用 `customer_id`）。
 
 表不存在时落库失败仅记日志，不影响接口返回。
 
