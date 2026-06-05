@@ -20,8 +20,13 @@ function msunLsKey() {
 
 var zqTestLog = [];
 var zqLastResult = null;
-var zqLastResponseText = '';
+var zqLastApiKey = null;
+var zqResponseStore = {};
 var zqRunningAll = false;
+
+var ZQ_API_RESP_ORDER = ['env', 'depts', 'identities', 'drugDict', 'dictCategory', 'suppliers', 'producers', 'batchStocks', 'ykInstock'];
+var ZQ_API_RESP_LABELS = { env: '当前环境' };
+var ZQ_LOG_TITLE_TO_KEY = { '当前环境': 'env' };
 
 function zqFieldId(apiKey, fieldKey) {
     return 'zq_' + apiKey + '_' + fieldKey;
@@ -108,34 +113,226 @@ function zqSwitchRightTab(tabId, btn) {
     if (btn) btn.classList.add('active');
 }
 
-function zqResponseActionsHtml() {
-    return '<div class="resp-actions">' +
-        '<button type="button" class="resp-act-btn" onclick="zqSelectResponseJson()">全选</button>' +
-        '<button type="button" class="resp-act-btn primary" onclick="zqCopyResponseJson()">复制</button>' +
+function zqInitRespMeta() {
+    Object.keys(MSUN_PARAM_SCHEMA).forEach(function (apiKey) {
+        ZQ_API_RESP_LABELS[apiKey] = MSUN_PARAM_SCHEMA[apiKey].title;
+        ZQ_LOG_TITLE_TO_KEY[MSUN_PARAM_SCHEMA[apiKey].logTitle] = apiKey;
+    });
+}
+
+function zqDetectFormat(text) {
+    const s = String(text || '').trim();
+    if (!s) return 'text';
+    if (s.charAt(0) === '<' && /<\/?[a-zA-Z]/.test(s)) return 'xml';
+    if (s.charAt(0) === '{' || s.charAt(0) === '[') {
+        try { JSON.parse(s); return 'json'; } catch (e) { /* ignore */ }
+    }
+    return 'text';
+}
+
+function zqResultToText(result) {
+    if (result === null || result === undefined) return '';
+    if (typeof result === 'string') return result;
+    return zqFmtJson(result);
+}
+
+function zqRenderJsonTree(value, keyLabel) {
+    if (value === null || value === undefined || typeof value !== 'object') {
+        let keyHtml = (keyLabel !== undefined && keyLabel !== null)
+            ? '<span class="tree-key">' + zqEscapeHtml(String(keyLabel)) + ': </span>' : '';
+        if (typeof value === 'string' && zqDetectFormat(value) === 'xml') {
+            const xmlHtml = zqRenderXmlTree(value);
+            if (xmlHtml) {
+                return '<span class="tree-leaf">' + keyHtml +
+                    '<span class="format-inline xml">XML</span></span>' +
+                    '<div class="tree-nested-xml">' + xmlHtml + '</div>';
+            }
+        }
+        let valHtml;
+        if (value === null) valHtml = '<span class="jv-null">null</span>';
+        else if (typeof value === 'string') valHtml = '<span class="jv-str">"' + zqEscapeHtml(value) + '"</span>';
+        else if (typeof value === 'boolean') valHtml = '<span class="jv-bool">' + value + '</span>';
+        else valHtml = '<span class="jv-num">' + zqEscapeHtml(String(value)) + '</span>';
+        return '<span class="tree-leaf">' + keyHtml + valHtml + '</span>';
+    }
+    const isArr = Array.isArray(value);
+    const entries = isArr
+        ? value.map(function (v, i) { return [i, v]; })
+        : Object.keys(value).map(function (k) { return [k, value[k]]; });
+    const keyPrefix = (keyLabel !== undefined && keyLabel !== null)
+        ? '<span class="tree-key">' + zqEscapeHtml(isArr ? String(keyLabel) : '"' + keyLabel + '"') + ': </span>'
+        : '';
+    if (!entries.length) {
+        return '<span class="tree-leaf">' + keyPrefix + '<span class="jv-null">' + (isArr ? '[]' : '{}') + '</span></span>';
+    }
+    let html = '<div class="tree-branch">' + keyPrefix +
+        '<span class="tree-toggle expanded" onclick="zqTreeToggle(this)">▼</span>' +
+        '<span class="tree-brace">' + (isArr ? '[' : '{') + '</span>' +
+        '<div class="tree-children">';
+    entries.forEach(function (pair) {
+        html += '<div class="tree-line">' + zqRenderJsonTree(pair[1], isArr ? pair[0] : pair[0]) + '</div>';
+    });
+    html += '</div><span class="tree-brace">' + (isArr ? ']' : '}') + '</span></div>';
+    return html;
+}
+
+function zqRenderXmlNode(node) {
+    if (!node || node.nodeType !== 1) return '';
+    const childElements = Array.prototype.filter.call(node.childNodes, function (n) { return n.nodeType === 1; });
+    const textContent = Array.prototype.filter.call(node.childNodes, function (n) {
+        return n.nodeType === 3 && n.textContent.trim();
+    }).map(function (n) { return n.textContent.trim(); }).join(' ');
+    let html = '<div class="tree-branch xml-node">';
+    if (childElements.length) {
+        html += '<span class="tree-toggle expanded" onclick="zqTreeToggle(this)">▼</span>';
+    }
+    html += '<span class="tree-tag">&lt;' + zqEscapeHtml(node.nodeName);
+    for (let i = 0; i < node.attributes.length; i++) {
+        const a = node.attributes[i];
+        html += ' <span class="xml-attr">' + zqEscapeHtml(a.name) + '="' + zqEscapeHtml(a.value) + '"</span>';
+    }
+    html += '&gt;</span>';
+    if (childElements.length) {
+        html += '<div class="tree-children">';
+        Array.prototype.forEach.call(node.childNodes, function (ch) {
+            if (ch.nodeType === 1) html += zqRenderXmlNode(ch);
+            else if (ch.nodeType === 3 && ch.textContent.trim()) {
+                html += '<span class="xml-text">' + zqEscapeHtml(ch.textContent.trim()) + '</span>';
+            }
+        });
+        html += '</div>';
+    } else if (textContent) {
+        html += '<span class="xml-text">' + zqEscapeHtml(textContent) + '</span>';
+    }
+    html += '<span class="tree-tag">&lt;/' + zqEscapeHtml(node.nodeName) + '&gt;</span></div>';
+    return html;
+}
+
+function zqRenderXmlTree(xmlString) {
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(xmlString, 'text/xml');
+        if (doc.querySelector('parsererror')) return null;
+        if (!doc.documentElement) return null;
+        return zqRenderXmlNode(doc.documentElement);
+    } catch (e) {
+        return null;
+    }
+}
+
+function zqRenderResponseBody(result) {
+    if (typeof result === 'string') {
+        const fmt = zqDetectFormat(result);
+        if (fmt === 'xml') {
+            const xmlHtml = zqRenderXmlTree(result);
+            if (xmlHtml) {
+                return { format: 'xml', html: '<div class="tree-view">' + xmlHtml + '</div>', text: result };
+            }
+        }
+        if (fmt === 'json') {
+            try {
+                const parsed = JSON.parse(result);
+                return {
+                    format: 'json',
+                    html: '<div class="tree-view">' + zqRenderJsonTree(parsed) + '</div>',
+                    text: zqFmtJson(parsed)
+                };
+            } catch (e) { /* fall through */ }
+        }
+        return { format: 'text', html: '<pre class="resp-plain">' + zqEscapeHtml(result) + '</pre>', text: result };
+    }
+    const text = zqFmtJson(result);
+    return {
+        format: 'json',
+        html: '<div class="tree-view">' + zqRenderJsonTree(result) + '</div>',
+        text: text
+    };
+}
+
+function zqTreeToggle(el) {
+    const branch = el.closest('.tree-branch');
+    if (!branch) return;
+    const children = branch.querySelector(':scope > .tree-children');
+    if (!children) return;
+    const collapsed = children.classList.toggle('collapsed');
+    el.textContent = collapsed ? '▶' : '▼';
+    el.classList.toggle('collapsed', collapsed);
+}
+
+function zqTreeExpandAll(apiKey) {
+    const card = document.getElementById('resp-card-' + apiKey);
+    if (!card) return;
+    card.querySelectorAll('.tree-children').forEach(function (c) { c.classList.remove('collapsed'); });
+    card.querySelectorAll('.tree-toggle').forEach(function (t) {
+        t.textContent = '▼';
+        t.classList.remove('collapsed');
+    });
+}
+
+function zqTreeCollapseAll(apiKey) {
+    const card = document.getElementById('resp-card-' + apiKey);
+    if (!card) return;
+    card.querySelectorAll('.tree-children').forEach(function (c) { c.classList.add('collapsed'); });
+    card.querySelectorAll('.tree-toggle').forEach(function (t) {
+        t.textContent = '▶';
+        t.classList.add('collapsed');
+    });
+}
+
+function zqResponseActionsHtml(apiKey, format) {
+    const badge = format ? '<span class="format-badge ' + format + '">' + format.toUpperCase() + '</span>' : '';
+    return '<div class="resp-actions">' + badge +
+        '<button type="button" class="resp-act-btn" onclick="zqTreeExpandAll(\'' + apiKey + '\')">展开</button>' +
+        '<button type="button" class="resp-act-btn" onclick="zqTreeCollapseAll(\'' + apiKey + '\')">折叠</button>' +
+        '<button type="button" class="resp-act-btn" onclick="zqSelectResponseJson(\'' + apiKey + '\')">全选</button>' +
+        '<button type="button" class="resp-act-btn primary" onclick="zqCopyResponseJson(\'' + apiKey + '\')">复制</button>' +
         '</div>';
 }
 
-function zqRenderResponseJson(result) {
-    zqLastResponseText = zqFmtJson(result);
-    return '<pre class="resp-json" id="responseJsonPre">' + zqEscapeHtml(zqLastResponseText) + '</pre>';
+function zqInitResponseStack() {
+    const stack = document.getElementById('responseStack');
+    if (!stack) return;
+    stack.innerHTML = ZQ_API_RESP_ORDER.map(function (apiKey) {
+        const label = ZQ_API_RESP_LABELS[apiKey] || apiKey;
+        return '<div class="api-resp-card empty" id="resp-card-' + apiKey + '" data-api-key="' + apiKey + '">' +
+            '<div class="resp-head"><div class="resp-head-row"><div class="resp-head-body"><strong>' +
+            zqEscapeHtml(label) + '</strong><span class="api-resp-placeholder"> · 尚未调用</span></div></div></div>' +
+            '<div class="api-resp-body"></div></div>';
+    }).join('');
 }
 
-function zqSelectResponseJson() {
-    const pre = document.getElementById('responseJsonPre');
-    if (!pre || !pre.textContent) {
+function zqFocusResponseCard(apiKey) {
+    document.querySelectorAll('.api-resp-card').forEach(function (c) { c.classList.remove('active-card'); });
+    const card = document.getElementById('resp-card-' + apiKey);
+    if (!card) return;
+    card.classList.add('active-card');
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function zqGotoResponse(apiKey) {
+    zqSwitchRightTab('right-current', document.querySelector('.right-tabs .right-tab-btn'));
+    zqFocusResponseCard(apiKey);
+}
+
+function zqSelectResponseJson(apiKey) {
+    const ta = document.getElementById('resp-raw-' + apiKey);
+    if (!ta || !ta.value) {
         alert('暂无回参可选中');
         return;
     }
-    const range = document.createRange();
-    range.selectNodeContents(pre);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-    pre.focus();
+    ta.style.position = 'fixed';
+    ta.style.left = '0';
+    ta.style.top = '0';
+    ta.style.width = '2px';
+    ta.style.height = '2px';
+    ta.style.opacity = '0';
+    ta.focus();
+    ta.select();
 }
 
-async function zqCopyResponseJson() {
-    const text = zqLastResponseText || ((document.getElementById('responseJsonPre') || {}).textContent || '');
+async function zqCopyResponseJson(apiKey) {
+    const text = (zqResponseStore[apiKey] && zqResponseStore[apiKey].text) ||
+        ((document.getElementById('resp-raw-' + apiKey) || {}).value || '');
     if (!text.trim()) {
         alert('暂无回参可复制');
         return;
@@ -153,28 +350,43 @@ async function zqCopyResponseJson() {
             document.execCommand('copy');
             document.body.removeChild(ta);
         }
-        zqSetMeta('回参 JSON 已复制到剪贴板');
+        zqSetMeta((ZQ_API_RESP_LABELS[apiKey] || apiKey) + ' 回参已复制');
     } catch (e) {
-        zqSelectResponseJson();
+        zqSelectResponseJson(apiKey);
         alert('自动复制失败，已全选回参，请按 Ctrl+C 复制');
     }
 }
 
-function zqShowResult(title, requestLine, result, elapsedMs) {
+function zqShowResult(apiKey, title, requestLine, result, elapsedMs) {
     zqLastResult = result;
+    zqLastApiKey = apiKey;
     zqRecordTest(title, result, elapsedMs);
-    const box = document.getElementById('responseBox');
+    const card = document.getElementById('resp-card-' + apiKey);
+    if (!card) return;
     const sum = zqHisSummary(result);
+    const body = zqRenderResponseBody(result);
+    zqResponseStore[apiKey] = { text: body.text, format: body.format };
     const headBody =
         '<strong>' + zqEscapeHtml(title) + '</strong> · ' + elapsedMs + 'ms<br>' +
         '<code class="req-line">' + zqEscapeHtml(requestLine) + '</code><br>' +
         '<span class="summary">' + zqEscapeHtml(sum.text) + '</span>' +
         (result && result.activeEnv ? '<br><span class="env-tag">环境: ' + result.activeEnv + ' · ' + (result.msunBaseUrl || '') + '</span>' : '');
-    box.innerHTML =
+    card.classList.remove('empty');
+    card.innerHTML =
         '<div class="resp-head ' + (sum.ok ? 'ok' : 'err') + '">' +
-        '<div class="resp-head-row"><div class="resp-head-body">' + headBody + '</div>' + zqResponseActionsHtml() + '</div>' +
-        '</div>' + zqRenderResponseJson(result);
+        '<div class="resp-head-row"><div class="resp-head-body">' + headBody + '</div>' +
+        zqResponseActionsHtml(apiKey, body.format) + '</div></div>' +
+        '<div class="api-resp-body"></div>';
+    const bodyEl = card.querySelector('.api-resp-body');
+    bodyEl.innerHTML = body.html;
+    const rawTa = document.createElement('textarea');
+    rawTa.className = 'resp-raw-store';
+    rawTa.id = 'resp-raw-' + apiKey;
+    rawTa.readOnly = true;
+    rawTa.value = body.text;
+    bodyEl.appendChild(rawTa);
     zqSwitchRightTab('right-current', document.querySelector('.right-tabs .right-tab-btn'));
+    zqFocusResponseCard(apiKey);
 }
 
 function zqRenderTestLog() {
@@ -196,14 +408,11 @@ function zqRenderTestLog() {
 function zqReplayLog(idx) {
     const item = zqTestLog[idx];
     if (!item || !item.raw) return;
-    const headBody = zqEscapeHtml(item.api) + ' · ' + zqEscapeHtml(item.time);
-    document.getElementById('responseBox').innerHTML =
-        '<div class="resp-head"><div class="resp-head-row"><div class="resp-head-body">' + headBody + '</div>' +
-        zqResponseActionsHtml() + '</div></div>' + zqRenderResponseJson(item.raw);
-    zqSwitchRightTab('right-current', document.querySelector('.right-tabs .right-tab-btn'));
+    const apiKey = ZQ_LOG_TITLE_TO_KEY[item.api] || zqLastApiKey || 'env';
+    zqShowResult(apiKey, item.api, '历史记录 · ' + item.time, item.raw, item.elapsedMs || 0);
 }
 
-async function zqInvoke(title, method, path, queryParams, body) {
+async function zqInvoke(apiKey, title, method, path, queryParams, body) {
     if (!zqCheckLogin()) return null;
     const qs = queryParams ? zqBuildQuery(queryParams) : '';
     const url = msunHospitalApi() + path + qs;
@@ -217,7 +426,7 @@ async function zqInvoke(title, method, path, queryParams, body) {
         result = { code: 500, msg: e.message };
     }
     const elapsed = Date.now() - t0;
-    zqShowResult(title, requestLine, result, elapsed);
+    zqShowResult(apiKey, title, requestLine, result, elapsed);
     zqSetMeta('完成: ' + title);
     return result;
 }
@@ -261,7 +470,8 @@ function zqRenderApiForm(apiKey, schema) {
     const fieldsHtml = schema.fields.map(function (f) { return zqRenderField(apiKey, f); }).join('');
     let actions = '<button type="button" class="btn-call" onclick="zqCallApi(\'' + apiKey + '\')">调用</button>' +
         '<button type="button" class="btn-call secondary" onclick="zqResetApi(\'' + apiKey + '\')">重置</button>' +
-        '<button type="button" class="btn-call secondary" onclick="zqSyncJsonFromForm(\'' + apiKey + '\')">表单→JSON</button>';
+        '<button type="button" class="btn-call secondary" onclick="zqSyncJsonFromForm(\'' + apiKey + '\')">表单→JSON</button>' +
+        '<button type="button" class="btn-call secondary" onclick="zqGotoResponse(\'' + apiKey + '\')">查看回参</button>';
     if (schema.actions) {
         schema.actions.forEach(function (fn) {
             if (fn === 'zqCallIdentitiesSample') actions += '<button type="button" class="btn-call secondary" onclick="zqCallIdentitiesSample()">自动取首科室</button>';
@@ -406,13 +616,13 @@ async function zqCallApi(apiKey) {
     let params = zqMergeJsonOverride(apiKey, zqCollectFromForm(apiKey));
     if (!params || !zqValidateRequired(apiKey, params)) return null;
     if (schema.bodyMode) {
-        return zqInvoke(schema.logTitle, schema.method, schema.path, null, params);
+        return zqInvoke(apiKey, schema.logTitle, schema.method, schema.path, null, params);
     }
-    return zqInvoke(schema.logTitle, schema.method, schema.path, params, null);
+    return zqInvoke(apiKey, schema.logTitle, schema.method, schema.path, params, null);
 }
 
 async function zqLoadEnv() {
-    return zqInvoke('当前环境', 'GET', '/env', null, null);
+    return zqInvoke('env', '当前环境', 'GET', '/env', null, null);
 }
 
 function zqCallDepts() { return zqCallApi('depts'); }
@@ -426,7 +636,7 @@ function zqCallYkInstock() { return zqCallApi('ykInstock'); }
 
 async function zqCallIdentitiesSample() {
     const roleType = zqGetFieldValue('identities', { key: 'roleType' }) || '0';
-    return zqInvoke('2.1.12 人员身份', 'GET', '/identities/sample', { roleType: roleType }, null);
+    return zqInvoke('identities', '2.1.12 人员身份', 'GET', '/identities/sample', { roleType: roleType }, null);
 }
 
 function zqSetField(apiKey, fieldKey, value) {
@@ -611,6 +821,8 @@ function msunOnHospitalChange() {
 
 document.addEventListener('DOMContentLoaded', async function () {
     if (!zqCheckLogin()) return;
+    zqInitRespMeta();
+    zqInitResponseStack();
     zqRenderAllForms();
     zqInitYkDefaults();
     zqInitChecklist();

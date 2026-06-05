@@ -52,6 +52,16 @@
         .tab-btn.active, .right-tab-btn.active { background: #ccfbf1; color: #0f766e; font-weight: 600; }
         .tab-panel, .right-tab-panel { display: none; padding: 16px 18px 20px; }
         .tab-panel.active, .right-tab-panel.active { display: block; }
+        .panel-body-scroll {
+            max-height: calc(100vh - 220px);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .response-stack {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
         .api-block {
             border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 14px;
         }
@@ -79,7 +89,13 @@
             font-size: 11px; cursor: pointer;
         }
         .meta-bar { padding: 10px 18px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; }
-        #responseBox { padding: 0; min-height: 320px; }
+        .api-resp-card { border-bottom: 1px solid #e5e7eb; }
+        .api-resp-card:last-child { border-bottom: none; }
+        .api-resp-card .resp-head { position: sticky; top: 0; z-index: 2; }
+        .api-resp-card.empty .api-resp-body { display: none; }
+        .api-resp-card.empty .resp-head { background: #f9fafb; color: #6b7280; }
+        .api-resp-card.active-card .resp-head { box-shadow: inset 3px 0 0 #0d9488; }
+        .api-resp-placeholder { padding: 10px 16px; font-size: 12px; color: #9ca3af; }
         .resp-head { padding: 12px 16px; font-size: 12px; border-bottom: 1px solid #e5e7eb; }
         .resp-head.ok { background: #ecfdf5; color: #065f46; }
         .resp-head.err { background: #fef2f2; color: #991b1b; }
@@ -93,13 +109,43 @@
         .resp-act-btn:hover { background: #f3f4f6; }
         .resp-act-btn.primary { background: #0d9488; border-color: #0d9488; color: #fff; }
         .resp-act-btn.primary:hover { background: #0f766e; }
+        .format-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px;
+            font-weight: 600; background: #334155; color: #94a3b8; margin-left: 4px;
+        }
+        .format-badge.json { background: #1e3a5f; color: #7dd3fc; }
+        .format-badge.xml { background: #3b2f1e; color: #fcd34d; }
         .req-line { display: block; margin-top: 6px; word-break: break-all; font-size: 11px; opacity: .9; }
         .summary { display: block; margin-top: 4px; }
         .env-tag { font-size: 11px; opacity: .85; }
-        .resp-json {
-            margin: 0; padding: 14px 16px; font-size: 12px; line-height: 1.5;
-            overflow: auto; max-height: calc(100vh - 240px);
-            background: #1e293b; color: #e2e8f0;
+        .api-resp-body {
+            margin: 0; padding: 10px 12px 14px; font-size: 12px; line-height: 1.55;
+            background: #1e293b; color: #e2e8f0; max-height: 420px; overflow: auto;
+        }
+        .tree-view { font-family: Consolas, 'Courier New', monospace; font-size: 12px; }
+        .tree-branch { margin-left: 0; }
+        .tree-line { margin-left: 18px; }
+        .tree-toggle {
+            display: inline-block; width: 14px; cursor: pointer; color: #94a3b8;
+            user-select: none; font-size: 10px;
+        }
+        .tree-toggle:hover { color: #f8fafc; }
+        .tree-children.collapsed { display: none; }
+        .tree-key { color: #7dd3fc; }
+        .tree-brace { color: #94a3b8; }
+        .jv-str { color: #86efac; }
+        .jv-num { color: #fcd34d; }
+        .jv-bool { color: #f472b6; }
+        .jv-null { color: #94a3b8; }
+        .tree-tag { color: #f472b6; }
+        .xml-attr { color: #7dd3fc; }
+        .xml-text { color: #86efac; }
+        .format-inline { font-size: 10px; padding: 0 4px; border-radius: 3px; margin: 0 4px; }
+        .format-inline.xml { background: #3b2f1e; color: #fcd34d; }
+        .tree-nested-xml { margin: 4px 0 4px 18px; border-left: 1px solid #334155; padding-left: 8px; }
+        .resp-plain { margin: 0; white-space: pre-wrap; word-break: break-all; }
+        .resp-raw-store {
+            position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0;
         }
         .hint { font-size: 11px; color: #9ca3af; margin-top: 8px; line-height: 1.5; }
         .field-hint { display: block; font-size: 10px; color: #9ca3af; margin-top: 2px; line-height: 1.35; }
@@ -160,13 +206,13 @@
 
     <div class="layout">
         <div class="panel">
-            <div class="panel-title">接口调用（按文档入参列表编辑 → 调用 → 右侧查看回参）</div>
+            <div class="panel-title">接口调用（左侧滚动选接口 · 调用后右侧对应窗口保留回参）</div>
             <div class="tabs">
                 <button type="button" class="tab-btn active" onclick="zqSwitchTab('tab-guide', this)">环境与清单</button>
                 <button type="button" class="tab-btn" onclick="zqSwitchTab('tab-base', this)">科室/人员</button>
                 <button type="button" class="tab-btn" onclick="zqSwitchTab('tab-spd', this)">SPD 查询</button>
             </div>
-
+            <div class="panel-body-scroll">
             <div id="tab-guide" class="tab-panel active">
                 <div class="api-block">
                     <h3>连接环境</h3>
@@ -217,18 +263,20 @@
                 <div id="form-ykInstock"></div>
                 <p class="hint">推送 2.5.41 / 2.5.42 未开放，避免误写正式库。</p>
             </div>
+            </div>
             <div class="meta-bar" id="metaInfo">就绪</div>
         </div>
 
         <div class="panel">
             <div class="panel-title">回参与反馈</div>
             <div class="right-tabs">
-                <button type="button" class="right-tab-btn active" onclick="zqSwitchRightTab('right-current', this)">当前回参</button>
+                <button type="button" class="right-tab-btn active" onclick="zqSwitchRightTab('right-current', this)">各接口回参</button>
                 <button type="button" class="right-tab-btn" onclick="zqSwitchRightTab('right-log', this)">测试记录</button>
                 <button type="button" class="right-tab-btn" onclick="zqSwitchRightTab('right-feedback', this)">导出反馈</button>
             </div>
             <div id="right-current" class="right-tab-panel active">
-                <div id="responseBox"><pre class="resp-json">加载环境信息中…</pre></div>
+                <p class="api-desc" style="padding:12px 16px 0;margin:0">每个接口独立窗口，调用后自动定位；可上下滚动回看历史回参。</p>
+                <div id="responseStack" class="response-stack"></div>
             </div>
             <div id="right-log" class="right-tab-panel">
                 <p class="api-desc">本次页面会话内的调用记录，可点「查看」回看 JSON。</p>
