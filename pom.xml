@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-	
+
     <groupId>com.scminterface</groupId>
     <artifactId>scminterface</artifactId>
     <version>1.0.0</version>
@@ -11,7 +11,7 @@
     <name>scminterface</name>
     <url>http://www.scminterface.vip</url>
     <description>SCM接口服务系统</description>
-    
+
     <properties>
         <scminterface.version>1.0.0</scminterface.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,7 +24,7 @@
         <fastjson.version>2.0.34</fastjson.version>
         <jwt.version>0.9.1</jwt.version>
     </properties>
-	
+
     <!-- 依赖声明 -->
     <dependencyManagement>
         <dependencies>
@@ -91,6 +91,12 @@
                 <groupId>com.scminterface</groupId>
                 <artifactId>scminterface-common</artifactId>
                 <version>${scminterface.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.msun</groupId>
+                <artifactId>msun-openapi-license</artifactId>
+                <version>1.0.0</version>
             </dependency>
 
         </dependencies>

@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf073aeb-cc7a-4374-83aa-b49b51d24c02" name="更改" comment="" />
+    <list default="true" id="cf073aeb-cc7a-4374-83aa-b49b51d24c02" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -97,7 +99,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;工件&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;MavenSettings&quot;,
@@ -161,6 +163,10 @@
       <workItem from="1778148366043" duration="343000" />
       <workItem from="1778239105054" duration="1841000" />
       <workItem from="1780561671743" duration="614000" />
+      <workItem from="1780588407367" duration="662000" />
+      <workItem from="1780590689770" duration="51000" />
+      <workItem from="1780619073688" duration="1600000" />
+      <workItem from="1780621547122" duration="85000" />
     </task>
     <servers />
   </component>
