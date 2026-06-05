@@ -39,7 +39,9 @@ public class ZaoqiangTcmMsunSpdQueryService
             Integer limitCount,
             Integer materialOrDrug,
             String specialFlag,
-            String invalidFlag) throws Exception
+            String invalidFlag,
+            Long hospitalId,
+            Long orgId) throws Exception
     {
         Map<String, Object> params = new HashMap<>(12);
         putIfPresent(params, "drugCode", drugCode);
@@ -51,8 +53,8 @@ public class ZaoqiangTcmMsunSpdQueryService
         putIfPresent(params, "materialOrDrug", materialOrDrug);
         putIfPresent(params, "specialFlag", specialFlag);
         putIfPresent(params, "invalidFlag", invalidFlag);
-        putIfPresent(params, "hospitalId", parseLong(properties.getHospitalId()));
-        putIfPresent(params, "orgId", parseLong(properties.getOrgId()));
+        putIfPresent(params, "hospitalId", hospitalId != null ? hospitalId : parseLong(properties.getHospitalId()));
+        putIfPresent(params, "orgId", orgId != null ? orgId : parseLong(properties.getOrgId()));
         return invokeGet("2.5.44", ZaoqiangTcmMsunSpdApiPaths.DRUG_DICT_INFOS, params);
     }
 
@@ -69,14 +71,16 @@ public class ZaoqiangTcmMsunSpdQueryService
     public JSONObject queryDrugSuppliers(
             String keyWord,
             Integer limitCount,
-            String materialOrDrug) throws Exception
+            String materialOrDrug,
+            Long hospitalId,
+            Long orgId) throws Exception
     {
         Map<String, Object> params = new HashMap<>(5);
         putIfPresent(params, "keyWord", keyWord);
         putIfPresent(params, "limitCount", limitCount);
         putIfPresent(params, "materialOrDrug", materialOrDrug);
-        putIfPresent(params, "hospitalId", parseLong(properties.getHospitalId()));
-        putIfPresent(params, "orgId", parseLong(properties.getOrgId()));
+        putIfPresent(params, "hospitalId", hospitalId != null ? hospitalId : parseLong(properties.getHospitalId()));
+        putIfPresent(params, "orgId", orgId != null ? orgId : parseLong(properties.getOrgId()));
         return invokeGet("2.5.62", ZaoqiangTcmMsunSpdApiPaths.DRUG_SUPPLIERES, params);
     }
 
@@ -84,14 +88,16 @@ public class ZaoqiangTcmMsunSpdQueryService
     public JSONObject queryDrugProducers(
             String keyWord,
             Integer limitCount,
-            String materialOrDrug) throws Exception
+            String materialOrDrug,
+            Long hospitalId,
+            Long orgId) throws Exception
     {
         Map<String, Object> params = new HashMap<>(5);
         putIfPresent(params, "keyWord", keyWord);
         putIfPresent(params, "limitCount", limitCount);
         putIfPresent(params, "materialOrDrug", materialOrDrug);
-        putIfPresent(params, "hospitalId", parseLong(properties.getHospitalId()));
-        putIfPresent(params, "orgId", parseLong(properties.getOrgId()));
+        putIfPresent(params, "hospitalId", hospitalId != null ? hospitalId : parseLong(properties.getHospitalId()));
+        putIfPresent(params, "orgId", orgId != null ? orgId : parseLong(properties.getOrgId()));
         return invokeGet("2.5.63", ZaoqiangTcmMsunSpdApiPaths.DRUG_PRODUCERES, params);
     }
 

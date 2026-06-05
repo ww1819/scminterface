@@ -47,10 +47,13 @@ public class ZaoqiangTcmMsunSpdQueryController
             @RequestParam(required = false) Integer limitCount,
             @RequestParam(required = false) Integer materialOrDrug,
             @RequestParam(required = false) String specialFlag,
-            @RequestParam(required = false) String invalidFlag)
+            @RequestParam(required = false) String invalidFlag,
+            @RequestParam(required = false) Long hospitalId,
+            @RequestParam(required = false) Long orgId)
     {
         return invoke(() -> spdQueryService.queryDrugDictInfos(
-                drugCode, drugId, drugName, startTime, endTime, limitCount, materialOrDrug, specialFlag, invalidFlag));
+                drugCode, drugId, drugName, startTime, endTime, limitCount, materialOrDrug, specialFlag, invalidFlag,
+                hospitalId, orgId));
     }
 
     @ApiOperation("2.5.58 SPD 药品材料分类字典查询")
@@ -67,9 +70,11 @@ public class ZaoqiangTcmMsunSpdQueryController
     public AjaxResult drugSuppliers(
             @RequestParam(required = false) String keyWord,
             @RequestParam(required = false) Integer limitCount,
-            @RequestParam(required = false) String materialOrDrug)
+            @RequestParam(required = false) String materialOrDrug,
+            @RequestParam(required = false) Long hospitalId,
+            @RequestParam(required = false) Long orgId)
     {
-        return invoke(() -> spdQueryService.queryDrugSuppliers(keyWord, limitCount, materialOrDrug));
+        return invoke(() -> spdQueryService.queryDrugSuppliers(keyWord, limitCount, materialOrDrug, hospitalId, orgId));
     }
 
     @ApiOperation("2.5.63 SPD 生产厂商查询")
@@ -77,9 +82,11 @@ public class ZaoqiangTcmMsunSpdQueryController
     public AjaxResult drugProducers(
             @RequestParam(required = false) String keyWord,
             @RequestParam(required = false) Integer limitCount,
-            @RequestParam(required = false) String materialOrDrug)
+            @RequestParam(required = false) String materialOrDrug,
+            @RequestParam(required = false) Long hospitalId,
+            @RequestParam(required = false) Long orgId)
     {
-        return invoke(() -> spdQueryService.queryDrugProducers(keyWord, limitCount, materialOrDrug));
+        return invoke(() -> spdQueryService.queryDrugProducers(keyWord, limitCount, materialOrDrug, hospitalId, orgId));
     }
 
     @ApiOperation("2.5.43 药房批次库存查询")

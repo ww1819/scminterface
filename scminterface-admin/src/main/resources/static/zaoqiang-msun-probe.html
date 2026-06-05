@@ -21,139 +21,109 @@
             box-shadow: 0 2px 8px rgba(0,0,0,.12);
         }
         .header h1 { font-size: 20px; font-weight: 600; }
-        .header-sub { font-size: 12px; opacity: .85; margin-top: 4px; }
-        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .header-sub { font-size: 12px; opacity: .85; margin-top: 4px; max-width: 720px; line-height: 1.5; }
+        .header-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
         .btn-link {
-            color: #fff;
-            text-decoration: none;
-            padding: 6px 14px;
-            border: 1px solid rgba(255,255,255,.35);
-            border-radius: 6px;
-            font-size: 13px;
+            color: #fff; text-decoration: none; padding: 6px 14px;
+            border: 1px solid rgba(255,255,255,.35); border-radius: 6px; font-size: 13px;
         }
         .layout {
             display: grid;
-            grid-template-columns: minmax(380px, 1fr) minmax(420px, 1.1fr);
-            gap: 16px;
-            padding: 16px;
-            max-width: 1600px;
-            margin: 0 auto;
+            grid-template-columns: minmax(400px, 1fr) minmax(440px, 1.15fr);
+            gap: 16px; padding: 16px; max-width: 1680px; margin: 0 auto;
         }
-        @media (max-width: 960px) {
-            .layout { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
         .panel {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 1px 6px rgba(0,0,0,.08);
-            overflow: hidden;
+            background: #fff; border-radius: 10px;
+            box-shadow: 0 1px 6px rgba(0,0,0,.08); overflow: hidden;
         }
         .panel-title {
-            padding: 14px 18px;
-            font-weight: 600;
-            border-bottom: 1px solid #e5e7eb;
-            background: #f9fafb;
-            font-size: 15px;
+            padding: 14px 18px; font-weight: 600; border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb; font-size: 15px;
         }
-        .tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            padding: 10px 12px;
-            border-bottom: 1px solid #e5e7eb;
-            background: #fafafa;
+        .tabs, .right-tabs {
+            display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb; background: #fafafa;
         }
-        .tab-btn {
-            border: none;
-            background: transparent;
-            padding: 8px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            color: #4b5563;
+        .tab-btn, .right-tab-btn {
+            border: none; background: transparent; padding: 8px 14px;
+            border-radius: 6px; cursor: pointer; font-size: 13px; color: #4b5563;
         }
-        .tab-btn.active { background: #ccfbf1; color: #0f766e; font-weight: 600; }
-        .tab-panel { display: none; padding: 16px 18px 20px; }
-        .tab-panel.active { display: block; }
+        .tab-btn.active, .right-tab-btn.active { background: #ccfbf1; color: #0f766e; font-weight: 600; }
+        .tab-panel, .right-tab-panel { display: none; padding: 16px 18px 20px; }
+        .tab-panel.active, .right-tab-panel.active { display: block; }
         .api-block {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 14px;
-            margin-bottom: 14px;
+            border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 14px;
         }
         .api-block h3 { font-size: 14px; color: #111827; margin-bottom: 4px; }
-        .api-desc { font-size: 12px; color: #6b7280; margin-bottom: 12px; }
+        .api-desc { font-size: 12px; color: #6b7280; margin-bottom: 12px; line-height: 1.5; }
         .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 10px 14px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px 14px;
         }
-        .field label {
-            display: block;
-            font-size: 12px;
-            color: #374151;
-            margin-bottom: 4px;
+        .field label { display: block; font-size: 12px; color: #374151; margin-bottom: 4px; }
+        .field input, .field select, .field textarea {
+            width: 100%; padding: 7px 10px; border: 1px solid #d1d5db;
+            border-radius: 6px; font-size: 13px;
         }
-        .field input, .field select {
-            width: 100%;
-            padding: 7px 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-        .field input:focus { outline: none; border-color: #14b8a6; }
+        .field input:focus, .field textarea:focus { outline: none; border-color: #14b8a6; }
         .btn-call {
-            margin-top: 12px;
-            background: #0d9488;
-            color: #fff;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
+            margin-top: 12px; background: #0d9488; color: #fff; border: none;
+            padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 13px;
         }
         .btn-call:hover { background: #0f766e; }
+        .btn-call:disabled { opacity: .5; cursor: not-allowed; }
         .btn-call.secondary { background: #64748b; margin-left: 8px; }
-        .meta-bar {
-            padding: 10px 18px;
-            font-size: 12px;
-            color: #6b7280;
-            border-top: 1px solid #e5e7eb;
+        .btn-call.warn { background: #d97706; }
+        .btn-mini {
+            border: none; background: #e5e7eb; padding: 2px 8px; border-radius: 4px;
+            font-size: 11px; cursor: pointer;
         }
-        #responseBox { padding: 0; min-height: 400px; }
-        .resp-head {
-            padding: 12px 16px;
-            font-size: 12px;
-            border-bottom: 1px solid #e5e7eb;
-        }
+        .meta-bar { padding: 10px 18px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; }
+        #responseBox { padding: 0; min-height: 320px; }
+        .resp-head { padding: 12px 16px; font-size: 12px; border-bottom: 1px solid #e5e7eb; }
         .resp-head.ok { background: #ecfdf5; color: #065f46; }
         .resp-head.err { background: #fef2f2; color: #991b1b; }
         .req-line { display: block; margin-top: 6px; word-break: break-all; font-size: 11px; opacity: .9; }
         .summary { display: block; margin-top: 4px; }
         .env-tag { font-size: 11px; opacity: .85; }
         .resp-json {
-            margin: 0;
-            padding: 14px 16px;
-            font-size: 12px;
-            line-height: 1.5;
-            overflow: auto;
-            max-height: calc(100vh - 200px);
-            background: #1e293b;
-            color: #e2e8f0;
+            margin: 0; padding: 14px 16px; font-size: 12px; line-height: 1.5;
+            overflow: auto; max-height: calc(100vh - 240px);
+            background: #1e293b; color: #e2e8f0;
         }
-        .hint {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 8px;
-            line-height: 1.5;
+        .hint { font-size: 11px; color: #9ca3af; margin-top: 8px; line-height: 1.5; }
+        .field-hint { display: block; font-size: 10px; color: #9ca3af; margin-top: 2px; line-height: 1.35; }
+        .req { color: #dc2626; }
+        .json-editor-wrap { margin-top: 12px; font-size: 12px; }
+        .json-editor-wrap summary { cursor: pointer; color: #0f766e; padding: 6px 0; }
+        .json-editor {
+            width: 100%; margin-top: 8px; font-family: Consolas, monospace; font-size: 12px;
+            border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; min-height: 100px;
         }
+        .chk-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        .chk-table th, .chk-table td { border: 1px solid #e5e7eb; padding: 8px 10px; text-align: left; }
+        .chk-table th { background: #f9fafb; }
+        .chk-status.pending { color: #6b7280; }
+        .chk-status.pass { color: #059669; font-weight: 600; }
+        .chk-status.fail { color: #dc2626; font-weight: 600; }
+        .log-ok td { background: #f0fdf4; }
+        .log-fail td { background: #fef2f2; }
+        .empty-hint { text-align: center; color: #9ca3af; padding: 20px !important; }
+        #feedbackExport {
+            width: 100%; min-height: 280px; margin-top: 12px; font-family: monospace;
+            font-size: 12px; display: none;
+        }
+        .tool-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     </style>
 </head>
 <body>
     <div class="header">
         <div>
-            <h1>枣强中医院 · 众阳 OpenAPI 联调</h1>
-            <div class="header-sub">租户 zaoqiang-tcm-001 · 查询接口探针 · 回参仅供开发对照，不落库</div>
+            <h1>枣强中医院 · 众阳接口统一联调</h1>
+            <div class="header-sub">
+                租户 zaoqiang-tcm-001 · 科室/人员 + SPD 查询（共 8 项）· 正式库 prod ·
+                操作说明见项目文档 <code>docs/枣强中医院-众阳接口现场测试指南.md</code>
+            </div>
         </div>
         <div class="header-actions">
             <a href="/index.html" class="btn-link">返回主页</a>
@@ -163,124 +133,98 @@
 
     <div class="layout">
         <div class="panel">
-            <div class="panel-title">请求参数（可编辑后点击「调用」）</div>
+            <div class="panel-title">接口调用（按文档入参列表编辑 → 调用 → 右侧查看回参）</div>
             <div class="tabs">
-                <button type="button" class="tab-btn active" onclick="zqSwitchTab('tab-env', this)">环境</button>
+                <button type="button" class="tab-btn active" onclick="zqSwitchTab('tab-guide', this)">环境与清单</button>
                 <button type="button" class="tab-btn" onclick="zqSwitchTab('tab-base', this)">科室/人员</button>
                 <button type="button" class="tab-btn" onclick="zqSwitchTab('tab-spd', this)">SPD 查询</button>
             </div>
 
-            <div id="tab-env" class="tab-panel active">
+            <div id="tab-guide" class="tab-panel active">
                 <div class="api-block">
                     <h3>连接环境</h3>
-                    <p class="api-desc">由服务端 application.yml 的 active-env 决定（当前应为正式 prod）。</p>
-                    <button type="button" class="btn-call" onclick="zqLoadEnv()">刷新环境信息</button>
+                    <p class="api-desc">服务端 <code>active-env=prod</code> 时对接枣强正式库 <code>zqxzyyy.msuncloud.cn</code>。</p>
+                    <button type="button" class="btn-call" onclick="zqLoadEnv()">刷新环境</button>
+                </div>
+                <div class="api-block">
+                    <h3>一键顺序测试（推荐给实施人员）</h3>
+                    <p class="api-desc">按文档推荐顺序自动调用：环境 → 科室 → 人员 → 字典 → 分类 → 供应商 → 厂商 → 批次库存(条件允许) → 入退库。</p>
+                    <div class="tool-row">
+                        <button type="button" class="btn-call warn" id="btnRunAll" onclick="zqRunAllTests()">一键顺序测试</button>
+                        <button type="button" class="btn-call secondary" onclick="zqSaveAllParams()">保存参数到本地</button>
+                        <button type="button" class="btn-call secondary" onclick="zqExportFeedback()">生成反馈</button>
+                        <button type="button" class="btn-call secondary" onclick="zqCopyFeedback()">复制反馈</button>
+                    </div>
+                    <p class="hint">各接口表单字段与文档入参一一对应；展开「高级 JSON」可手工覆盖或编辑 POST 请求体。</p>
+                </div>
+                <div class="api-block">
+                    <h3>测试清单</h3>
+                    <table class="chk-table">
+                        <thead><tr><th>接口</th><th>状态</th></tr></thead>
+                        <tbody id="checklistBody"></tbody>
+                    </table>
+                </div>
+                <div class="api-block">
+                    <h3>反馈信息（写入导出文本）</h3>
+                    <div class="form-grid">
+                        <div class="field"><label>测试人</label><input id="fb_tester" placeholder="姓名"></div>
+                        <div class="field" style="grid-column: 1 / -1;">
+                            <label>补充说明</label>
+                            <textarea id="fb_note" rows="2" placeholder="网络、VPN、众阳工单号等"></textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div id="tab-base" class="tab-panel">
-                <div class="api-block">
-                    <h3>2.1.9 科室基本信息</h3>
-                    <p class="api-desc">GET /msun/.../depts</p>
-                    <div class="form-grid">
-                        <div class="field"><label>invalidFlag</label><input id="dept_invalidFlag" value="-1" placeholder="-1全量"></div>
-                        <div class="field"><label>hospitalAreaId</label><input id="dept_hospitalAreaId" placeholder="可选"></div>
-                        <div class="field"><label>deptId</label><input id="dept_deptId" placeholder="可选"></div>
-                        <div class="field"><label>deptName</label><input id="dept_deptName" placeholder="可选"></div>
-                    </div>
-                    <button type="button" class="btn-call" onclick="zqCallDepts()">调用</button>
-                </div>
-                <div class="api-block">
-                    <h3>2.1.12 用户身份信息</h3>
-                    <p class="api-desc">roleType / deptId / identityId / userId 至少填一项</p>
-                    <div class="form-grid">
-                        <div class="field"><label>roleType</label><input id="id_roleType" placeholder="0管理员"></div>
-                        <div class="field"><label>deptId</label><input id="id_deptId" placeholder="科室ID"></div>
-                        <div class="field"><label>identityId</label><input id="id_identityId"></div>
-                        <div class="field"><label>userId</label><input id="id_userId"></div>
-                    </div>
-                    <button type="button" class="btn-call" onclick="zqCallIdentities()">调用</button>
-                    <button type="button" class="btn-call secondary" onclick="zqCallIdentitiesSample()">自动取首科室</button>
-                </div>
+                <div id="form-depts"></div>
+                <div id="form-identities"></div>
             </div>
 
             <div id="tab-spd" class="tab-panel">
-                <div class="api-block">
-                    <h3>2.5.44 药品、材料字典</h3>
-                    <div class="form-grid">
-                        <div class="field"><label>limitCount</label><input id="dd_limitCount" value="10"></div>
-                        <div class="field"><label>materialOrDrug</label><input id="dd_materialOrDrug" placeholder="0药品 1材料"></div>
-                        <div class="field"><label>drugCode</label><input id="dd_drugCode"></div>
-                        <div class="field"><label>drugId</label><input id="dd_drugId"></div>
-                        <div class="field"><label>drugName</label><input id="dd_drugName"></div>
-                        <div class="field"><label>invalidFlag</label><input id="dd_invalidFlag" value="0"></div>
-                        <div class="field"><label>startTime</label><input id="dd_startTime" placeholder="yyyy-MM-dd HH:mm:ss"></div>
-                        <div class="field"><label>endTime</label><input id="dd_endTime" placeholder="yyyy-MM-dd HH:mm:ss"></div>
-                    </div>
-                    <button type="button" class="btn-call" onclick="zqCallDrugDict()">调用</button>
-                </div>
-                <div class="api-block">
-                    <h3>2.5.58 分类字典</h3>
-                    <div class="form-grid">
-                        <div class="field"><label>keyWord</label><input id="dc_keyWord" value="西药"></div>
-                        <div class="field"><label>limitCount</label><input id="dc_limitCount" value="20"></div>
-                    </div>
-                    <button type="button" class="btn-call" onclick="zqCallDictCategory()">调用</button>
-                </div>
-                <div class="api-block">
-                    <h3>2.5.62 供应商</h3>
-                    <div class="form-grid">
-                        <div class="field"><label>keyWord</label><input id="sup_keyWord"></div>
-                        <div class="field"><label>limitCount</label><input id="sup_limitCount" value="20"></div>
-                        <div class="field"><label>materialOrDrug</label><input id="sup_materialOrDrug" placeholder="0药品"></div>
-                    </div>
-                    <button type="button" class="btn-call" onclick="zqCallSuppliers()">调用</button>
-                </div>
-                <div class="api-block">
-                    <h3>2.5.63 生产厂商</h3>
-                    <div class="form-grid">
-                        <div class="field"><label>keyWord</label><input id="prod_keyWord"></div>
-                        <div class="field"><label>limitCount</label><input id="prod_limitCount" value="20"></div>
-                        <div class="field"><label>materialOrDrug</label><input id="prod_materialOrDrug" placeholder="0药品"></div>
-                    </div>
-                    <button type="button" class="btn-call" onclick="zqCallProducers()">调用</button>
-                </div>
-                <div class="api-block">
-                    <h3>2.5.43 药房批次库存</h3>
-                    <p class="api-desc">三项必填，ID 来自 2.5.44 与 2.1.9</p>
-                    <div class="form-grid">
-                        <div class="field"><label>deptId *</label><input id="bs_deptId" placeholder="药房科室"></div>
-                        <div class="field"><label>drugId *</label><input id="bs_drugId"></div>
-                        <div class="field"><label>drugSpecPackingId *</label><input id="bs_drugSpecPackingId"></div>
-                    </div>
-                    <button type="button" class="btn-call" onclick="zqCallBatchStocks()">调用</button>
-                </div>
-                <div class="api-block">
-                    <h3>2.5.102 一级库入退库记录</h3>
-                    <p class="api-desc">POST JSON，startTime / endTime 必填</p>
-                    <div class="form-grid">
-                        <div class="field"><label>startTime *</label><input id="yk_startTime"></div>
-                        <div class="field"><label>endTime *</label><input id="yk_endTime"></div>
-                        <div class="field"><label>deptId</label><input id="yk_deptId"></div>
-                        <div class="field"><label>type</label><input id="yk_type" placeholder="0入库 1退库"></div>
-                        <div class="field"><label>instockCode</label><input id="yk_instockCode"></div>
-                    </div>
-                    <button type="button" class="btn-call" onclick="zqCallYkInstock()">调用</button>
-                </div>
-                <p class="hint">推送接口 2.5.41 / 2.5.42 未开放，避免误写正式库。</p>
+                <div id="form-drugDict"></div>
+                <div id="form-dictCategory"></div>
+                <div id="form-suppliers"></div>
+                <div id="form-producers"></div>
+                <div id="form-batchStocks"></div>
+                <div id="form-ykInstock"></div>
+                <p class="hint">推送 2.5.41 / 2.5.42 未开放，避免误写正式库。</p>
             </div>
             <div class="meta-bar" id="metaInfo">就绪</div>
         </div>
 
         <div class="panel">
-            <div class="panel-title">接口回参（JSON）</div>
-            <div id="responseBox">
-                <pre class="resp-json">加载环境信息中…</pre>
+            <div class="panel-title">回参与反馈</div>
+            <div class="right-tabs">
+                <button type="button" class="right-tab-btn active" onclick="zqSwitchRightTab('right-current', this)">当前回参</button>
+                <button type="button" class="right-tab-btn" onclick="zqSwitchRightTab('right-log', this)">测试记录</button>
+                <button type="button" class="right-tab-btn" onclick="zqSwitchRightTab('right-feedback', this)">导出反馈</button>
+            </div>
+            <div id="right-current" class="right-tab-panel active">
+                <div id="responseBox"><pre class="resp-json">加载环境信息中…</pre></div>
+            </div>
+            <div id="right-log" class="right-tab-panel">
+                <p class="api-desc">本次页面会话内的调用记录，可点「查看」回看 JSON。</p>
+                <table class="chk-table">
+                    <thead>
+                        <tr><th>#</th><th>时间</th><th>接口</th><th>结果</th><th>code/message</th><th></th></tr>
+                    </thead>
+                    <tbody id="testLogBody"></tbody>
+                </table>
+            </div>
+            <div id="right-feedback" class="right-tab-panel">
+                <p class="api-desc">填写左侧「测试人」后点击生成，再「复制反馈」发给项目组。</p>
+                <div class="tool-row">
+                    <button type="button" class="btn-call" onclick="zqExportFeedback()">生成反馈文本</button>
+                    <button type="button" class="btn-call secondary" onclick="zqCopyFeedback()">复制到剪贴板</button>
+                </div>
+                <textarea id="feedbackExport" readonly placeholder="点击「生成反馈文本」后显示…"></textarea>
             </div>
         </div>
     </div>
 
     <script src="/js/common.js"></script>
+    <script src="/js/zaoqiang-msun-param-schema.js"></script>
     <script src="/js/zaoqiang-msun-probe.js"></script>
 </body>
 </html>
