@@ -3,7 +3,6 @@ package com.scminterface.customer.msun.mirror.service;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
-import com.scminterface.customer.msun.mirror.mapper.MsunHisMirrorMapper;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorRowSupport;
 import com.scminterface.framework.util.ZsUuid7;
 import java.util.Date;
@@ -17,12 +16,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class MsunHisPushLogService
 {
-    private final MsunHisMirrorMapper mirrorMapper;
+    private final MsunHisMirrorSchemaService schemaService;
     private final MsunHisPushLogExecutor pushLogExecutor;
 
-    public MsunHisPushLogService(MsunHisMirrorMapper mirrorMapper, MsunHisPushLogExecutor pushLogExecutor)
+    public MsunHisPushLogService(MsunHisMirrorSchemaService schemaService, MsunHisPushLogExecutor pushLogExecutor)
     {
-        this.mirrorMapper = mirrorMapper;
+        this.schemaService = schemaService;
         this.pushLogExecutor = pushLogExecutor;
     }
 
@@ -69,6 +68,7 @@ public class MsunHisPushLogService
             row.put("push_msg", "HIS响应无法解析");
         }
 
+        schemaService.ensureTable("m_his_push_log");
         pushLogExecutor.insert(row);
     }
 

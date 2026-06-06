@@ -6,23 +6,27 @@
 - **【非标准对象】众阳云健康（msun）专用**，表注释含「众阳云健康HIS镜像表」，与其他 HIS 厂家镜像表区分；**不纳入**新客户标准库自动初始化。
 - **新客户**：标准库初始化完成后，若不需要接口镜像，可执行 `99_drop_mirror_tables_optional.sql` 删除全部 `m_*` 表；需要时由实施人员按接口手工执行建表脚本。
 
-## 手工执行顺序（按需）
+## 手工执行顺序（可选，推荐用应用自动建表）
+
+自 v1.5 起，scminterface 在**首次调用/探针/查询**对应接口时，会按接口**按需**检测并创建缺失的 `m_*` 表及增量字段（`scminterface.vendor.msun.mirror.auto-schema=true`，默认开启）。存在**表联动**时（如 `m_dept`↔`m_dept_category_rel`、`m_yk_instock`↔`m_yk_instock_detail`、各落库表↔`m_sync_batch`）会**一并**建表与补列。实施人员**通常无需**再手工执行 `01_table.sql`。
+
+仍保留 `database/msun_his_mirror/` 脚本供审计、离线环境或关闭 `auto-schema` 时使用：
 
 | 顺序 | 脚本 | 说明 |
 |------|------|------|
 | — | `00_create_database.sql` | 仅说明，**勿建独立库** |
-| 1 | `01_table.sql` | 建表（可按需只执行部分 `CREATE TABLE`） |
-| 2 | `02_column.sql` | 增量字段存储过程 |
-| 3 | `04_table_drug_batch_stock.sql` | 2.5.43 批次库存（可选） |
+| 1 | `01_table.sql` | 建表（应用内已集成至 `classpath:sql/mysql/msun_his_mirror/`） |
+| 2 | `02_column.sql` | 增量字段（应用自动补列时解析 CALL 定义） |
+| 3 | `04_table_drug_batch_stock.sql` | 已合并入 `01_table.sql` |
 | 4 | `03_seed_probe_sample.sql` | 样本数据（可选，手工） |
-| 5 | `05_spd_master_sync_columns.sql` | SPD 主数据表补列与组合唯一键（镜像→fd_* 同步前置） |
+| 5 | `05_spd_master_sync_columns.sql` | SPD 主数据表补列（**非**镜像表，仍须按需执行） |
 | — | `99_drop_mirror_tables_optional.sql` | 新客户清理全部镜像表（可选） |
 
 执行前在客户端中 `USE aspt;`（或实际 SPD 库名）。
 
 ## 应用自动落库
 
-镜像表已手工创建，且配置满足时，**探针页**与**正式 API** 调用均写入 SPD 库 `m_*` 表：
+配置满足时，**探针页**与**正式 API** 调用均写入 SPD 库 `m_*` 表（缺失表自动创建）：
 
 ```yaml
 spring.datasource.druid.spd.enabled: true
@@ -45,7 +49,7 @@ scminterface.vendor.msun.spd-master-sync.enabled: true
 
 同步按本批次 `sync_batch_no` 读取镜像行；`tenant_id` 写入各 SPD 表（`sys_user` 使用 `customer_id`）。
 
-表不存在时落库失败仅记日志，不影响接口返回。
+`auto-schema=false` 且表不存在时，落库失败仅记日志，不影响接口返回。
 
 探针页每个查询接口提供 **「查看镜像数据」**，调用 `GET .../mirror/data/{probeKey}` 读取 SPD 库 `m_*` 表（按 `tenant_id` + `active_env` 隔离，每表最多 200 条/页）。
 

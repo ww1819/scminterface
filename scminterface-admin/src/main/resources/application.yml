@@ -55,9 +55,12 @@ scminterface:
   # 众阳 HIS 厂家 — 各医院客户独立配置（凭证见各医院 *MsunEnvProfile.java）
   vendor:
     msun:
-      # 查询接口回参落 SPD 库 m_* 镜像表（探针与正式 API 共用）；须 spd.enabled=true 且实施人员已手工建表
+      # 查询接口回参落 SPD 库 m_* 镜像表（探针与正式 API 共用）；须 spd.enabled=true
       mirror:
         enabled: true
+        # 调用/探针/查询前按需自动建缺失镜像表及补列（仅创建实际用到的表，DDL 见 sql/mysql/msun_his_mirror/）
+        auto-schema: true
+        schema-fail-on-error: false
       # 镜像 m_* 落库后 upsert 至 SPD 主数据（fd_department/fd_supplier/...）；须执行 database/msun_his_mirror/05_spd_master_sync_columns.sql
       spd-master-sync:
         enabled: true

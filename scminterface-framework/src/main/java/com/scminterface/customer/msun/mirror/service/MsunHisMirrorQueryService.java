@@ -20,15 +20,18 @@ public class MsunHisMirrorQueryService
 
     private final MsunHisMirrorProperties mirrorProperties;
     private final DataSourceAvailability dataSourceAvailability;
+    private final MsunHisMirrorSchemaService schemaService;
     private final MsunHisMirrorQueryExecutor queryExecutor;
 
     public MsunHisMirrorQueryService(
             MsunHisMirrorProperties mirrorProperties,
             DataSourceAvailability dataSourceAvailability,
+            MsunHisMirrorSchemaService schemaService,
             MsunHisMirrorQueryExecutor queryExecutor)
     {
         this.mirrorProperties = mirrorProperties;
         this.dataSourceAvailability = dataSourceAvailability;
+        this.schemaService = schemaService;
         this.queryExecutor = queryExecutor;
     }
 
@@ -52,6 +55,7 @@ public class MsunHisMirrorQueryService
         }
         try
         {
+            schemaService.ensureTablesForProbe(probeKey);
             return queryExecutor.queryByProbeKey(runtime, probeKey, limit, offset);
         }
         catch (Exception ex)
@@ -78,6 +82,7 @@ public class MsunHisMirrorQueryService
         {
             throw new IllegalStateException("SPD 数据源未启用");
         }
+        schemaService.ensureTable("m_drug_batch_stock");
         return queryExecutor.queryEntryHis(runtime, pharmacyStockId, deptId, drugId, drugSpecPackingId, batchNumber);
     }
 
@@ -91,6 +96,7 @@ public class MsunHisMirrorQueryService
         {
             throw new IllegalStateException("SPD 数据源未启用");
         }
+        schemaService.ensureTable("m_his_push_log");
         return queryExecutor.queryBillHis(runtime, billId, billType);
     }
 }

@@ -25,17 +25,20 @@ public class MsunHisMirrorSyncService
 
     private final MsunHisMirrorProperties mirrorProperties;
     private final DataSourceAvailability dataSourceAvailability;
+    private final MsunHisMirrorSchemaService schemaService;
     private final MsunHisMirrorSyncExecutor syncExecutor;
     private final MsunSpdMasterSyncService spdMasterSyncService;
 
     public MsunHisMirrorSyncService(
             MsunHisMirrorProperties mirrorProperties,
             DataSourceAvailability dataSourceAvailability,
+            MsunHisMirrorSchemaService schemaService,
             MsunHisMirrorSyncExecutor syncExecutor,
             MsunSpdMasterSyncService spdMasterSyncService)
     {
         this.mirrorProperties = mirrorProperties;
         this.dataSourceAvailability = dataSourceAvailability;
+        this.schemaService = schemaService;
         this.syncExecutor = syncExecutor;
         this.spdMasterSyncService = spdMasterSyncService;
     }
@@ -60,6 +63,7 @@ public class MsunHisMirrorSyncService
         }
         try
         {
+            schemaService.ensureTablesForApi(apiCode);
             String batchNo = buildBatchNo();
             int rows = syncExecutor.execute(runtime, apiCode, batchNo, wrappedResponse);
             if (rows > 0)
