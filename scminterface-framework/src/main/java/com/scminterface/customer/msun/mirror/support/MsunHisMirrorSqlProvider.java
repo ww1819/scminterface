@@ -119,11 +119,22 @@ public final class MsunHisMirrorSqlProvider
         {
             sql.append(" AND api_code = #{apiCode}");
         }
+        if (params.get("syncBatchNo") != null)
+        {
+            sql.append(" AND sync_batch_no = #{syncBatchNo}");
+        }
         if (!countOnly)
         {
             sql.append(" ORDER BY update_time DESC LIMIT #{limit} OFFSET #{offset}");
         }
         return sql.toString();
+    }
+
+    public static String selectLatestSyncBatchNo(Map<String, Object> params)
+    {
+        return "SELECT sync_batch_no FROM `" + MsunHisMirrorTableNames.SYNC_BATCH
+                + "` WHERE hospital_key = #{hospitalKey} AND tenant_id = #{tenantId} AND active_env = #{activeEnv} "
+                + "AND api_code = #{apiCode} ORDER BY update_time DESC LIMIT 1";
     }
 
     @SuppressWarnings("unchecked")

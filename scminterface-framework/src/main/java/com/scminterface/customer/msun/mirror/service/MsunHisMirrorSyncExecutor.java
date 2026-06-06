@@ -245,6 +245,42 @@ public class MsunHisMirrorSyncExecutor
         upsertRow(MsunHisMirrorTableNames.SYNC_BATCH, batch);
     }
 
+    @DataSource(DataSourceType.SPD)
+    public String resolveLatestBatchNo(MsunHospitalRuntime runtime, String apiCode)
+    {
+        if (runtime == null || StringUtils.isEmpty(apiCode))
+        {
+            return null;
+        }
+        Map<String, Object> params = new HashMap<>(4);
+        params.put("hospitalKey", runtime.getHospitalKey());
+        params.put("tenantId", runtime.getTenantId());
+        params.put("activeEnv", runtime.getActiveEnv());
+        params.put("apiCode", apiCode);
+        return mirrorMapper.selectLatestSyncBatchNo(params);
+    }
+
+    @DataSource(DataSourceType.SPD)
+    public long countBatchMirrorRows(
+            MsunHospitalRuntime runtime,
+            String table,
+            String apiCode,
+            String batchNo)
+    {
+        if (runtime == null || StringUtils.isEmpty(table) || StringUtils.isEmpty(batchNo))
+        {
+            return 0L;
+        }
+        Map<String, Object> params = new HashMap<>(8);
+        params.put("table", table);
+        params.put("hospitalKey", runtime.getHospitalKey());
+        params.put("tenantId", runtime.getTenantId());
+        params.put("activeEnv", runtime.getActiveEnv());
+        params.put("apiCode", apiCode);
+        params.put("syncBatchNo", batchNo);
+        return mirrorMapper.countMirrorRows(params);
+    }
+
     private void upsertRow(String table, Map<String, Object> row)
     {
         MsunHisMirrorRowSupport.ensurePrimaryKey(table, row);

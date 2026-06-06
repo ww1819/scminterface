@@ -70,6 +70,22 @@ function zqEscapeHtml(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function zqSpdSyncSummary(result) {
+    const ms = result && result.mirrorSync;
+    if (!ms) return '';
+    let s = '镜像落库=' + (ms.mirrorRows != null ? ms.mirrorRows : 0) + '行';
+    s += ', SPD主数据=' + (ms.spdRows != null ? ms.spdRows : 0) + '行';
+    if (ms.syncBatchNo) s += ', batch=' + ms.syncBatchNo;
+    if (ms.mirrorEnabled === false) s += ', [mirror未启用]';
+    if (ms.spdSyncEnabled === false) s += ', [spd-master-sync未启用]';
+    if (ms.spdDataSourceAvailable === false) s += ', [SPD数据源未启用]';
+    if (ms.mirrorSkippedReason) s += ', ' + ms.mirrorSkippedReason;
+    if (ms.mirrorError) s += ', 镜像ERR=' + ms.mirrorError;
+    if (ms.spdSyncError) s += ', SPD ERR=' + ms.spdSyncError;
+    if (ms.spdNote) s += ', ' + ms.spdNote;
+    return s;
+}
+
 function zqHisSummary(result) {
     const hisBody = result && result.data && result.data.hisBody;
     if (hisBody && typeof hisBody === 'object') {
@@ -87,10 +103,17 @@ function zqHisSummary(result) {
             s += ', cascadeBatch=' + (cb.success || 0) + '/' + (cb.requested || 0)
                 + ', batchRows=' + (cb.batchRows || 0);
         }
+        const spd = zqSpdSyncSummary(result);
+        if (spd) s += ' | ' + spd;
         return { text: s, ok: result.code === 200 && hisBody.success === true, hisCode: hisBody.code || '', message: hisBody.message || '' };
     }
     if (result && result.data && result.data.baseUrl) {
         return { text: '环境 activeEnv=' + (result.data.activeEnv || ''), ok: result.code === 200, hisCode: '', message: result.msg || '' };
+    }
+    const spdOnly = zqSpdSyncSummary(result);
+    if (spdOnly) {
+        const ok = result && result.code === 200 && !(result.mirrorSync && result.mirrorSync.spdSyncError);
+        return { text: spdOnly, ok: ok, hisCode: '', message: (result.mirrorSync && result.mirrorSync.spdSyncError) || (result && result.msg) || '' };
     }
     return { text: 'scminterface code=' + (result && result.code) + ', msg=' + ((result && result.msg) || ''), ok: result && result.code === 200, hisCode: '', message: (result && result.msg) || '' };
 }
@@ -760,6 +783,10 @@ function zqRenderApiForm(apiKey, schema) {
         actions += '<button type="button" class="btn-call warn" onclick="zqCallApiAllRoleTypes(\'' + apiKey + '\')" title="'
             + zqEscapeHtml(schema.roleTypeSweep.hint || '') + '">获取全部用户</button>';
     }
+    if (schema.spdMasterSync) {
+        actions += '<button type="button" class="btn-call warn" onclick="zqSyncSpdMaster(\'' + apiKey + '\')" '
+            + 'title="将镜像库最新批次（或上次调用批次）upsert 至 SPD 主数据表">同步至 SPD 主数据</button>';
+    }
     actions += '<button type="button" class="btn-call secondary" onclick="zqViewMirrorData(\'' + apiKey + '\')">查看镜像数据</button>' +
         '<button type="button" class="btn-call secondary" onclick="zqResetApi(\'' + apiKey + '\')">重置</button>' +
         '<button type="button" class="btn-call secondary" onclick="zqSyncJsonFromForm(\'' + apiKey + '\')">表单→JSON</button>';
@@ -1223,6 +1250,35 @@ async function zqFetchAllData() {
         if (btn) btn.disabled = false;
         if (btnRun) btnRun.disabled = false;
     }
+}
+
+async function zqSyncSpdMaster(apiKey) {
+    if (!zqCheckLogin()) return null;
+    const schema = MSUN_PARAM_SCHEMA[apiKey];
+    if (!schema || !schema.spdMasterSync) {
+        alert('该接口不支持 SPD 主数据同步');
+        return null;
+    }
+    let batchNo = '';
+    if (zqLastApiKey === apiKey && zqLastResult && zqLastResult.mirrorSync && zqLastResult.mirrorSync.syncBatchNo) {
+        batchNo = zqLastResult.mirrorSync.syncBatchNo;
+    }
+    const qs = batchNo ? '?batchNo=' + encodeURIComponent(batchNo) : '';
+    const path = '/mirror/spd-sync/' + apiKey + qs;
+    const url = msunHospitalApi() + path;
+    zqSetMeta('SPD 主数据同步: ' + schema.title + '…');
+    const t0 = Date.now();
+    let result;
+    try {
+        result = await post(url, {});
+    } catch (e) {
+        result = { code: 500, msg: e.message };
+    }
+    const elapsed = Date.now() - t0;
+    const title = '[SPD同步] ' + schema.logTitle;
+    zqShowResult(apiKey, title, 'POST ' + url, result, elapsed);
+    zqSetMeta('完成: ' + title);
+    return result;
 }
 
 async function zqViewMirrorData(apiKey) {

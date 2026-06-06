@@ -7,6 +7,8 @@ var MSUN_PARAM_SCHEMA = {
         method: 'GET',
         path: '/depts',
         logTitle: '2.1.9 科室',
+        spdMasterSync: true,
+        hint: '调用成功后自动落镜像并 upsert SPD 表 fd_department；可用「同步至 SPD 主数据」按最新批次重放',
         fields: [
             { key: 'invalidFlag', label: 'invalidFlag', hint: '0启用 1作废 -1全量', defaultValue: '-1', options: ['-1', '0', '1'] },
             { key: 'hospitalAreaId', label: 'hospitalAreaId', hint: '院区ID，取自2.1.18' },
@@ -20,7 +22,8 @@ var MSUN_PARAM_SCHEMA = {
         method: 'GET',
         path: '/identities',
         logTitle: '2.1.12 人员身份',
-        hint: 'roleType / deptId / identityId / userId 至少填一项',
+        spdMasterSync: true,
+        hint: 'roleType / deptId / identityId / userId 至少填一项。调用后 upsert sys_user、sys_user_department',
         fields: [
             { key: 'roleType', label: 'roleType', hint: '0管理员 1门诊收款…8医技', defaultValue: '0',
               options: ['0', '1', '2', '3', '4', '5', '6', '7', '8'] },
@@ -39,11 +42,13 @@ var MSUN_PARAM_SCHEMA = {
         method: 'GET',
         path: '/spd/query/drug-dict-infos',
         logTitle: '2.5.44 药品材料字典',
+        spdMasterSync: true,
+        hint: '写入 SPD 产品档案 fd_material 须 materialOrDrug=1（材料）且行含 drugSpecPackingId',
         fields: [
             { key: 'drugCode', label: 'drugCode', hint: '药品编码' },
             { key: 'drugId', label: 'drugId', hint: '药品/材料字典ID' },
             { key: 'drugName', label: 'drugName', hint: '名称或拼音模糊' },
-            { key: 'materialOrDrug', label: 'materialOrDrug', hint: '0药品 1材料', defaultValue: '0', options: ['0', '1'] },
+            { key: 'materialOrDrug', label: 'materialOrDrug', hint: '0药品 1材料（同步 fd_material 请选 1）', defaultValue: '1', options: ['0', '1'] },
             { key: 'limitCount', label: 'limitCount', hint: '查询条数', defaultValue: '10' },
             { key: 'invalidFlag', label: 'invalidFlag', hint: '0否 1是', defaultValue: '0', options: ['0', '1'] },
             { key: 'specialFlag', label: 'specialFlag', hint: '是否特殊药品 0否 1是', options: ['', '0', '1'] },
@@ -68,6 +73,8 @@ var MSUN_PARAM_SCHEMA = {
         method: 'GET',
         path: '/spd/query/dict-category',
         logTitle: '2.5.58 分类字典',
+        spdMasterSync: true,
+        hint: '调用后 upsert SPD 表 fd_warehouse_category（耗材分类）',
         fields: [
             { key: 'keyWord', label: 'keyWord', hint: '分类名称模糊', defaultValue: '西药' },
             { key: 'limitCount', label: 'limitCount', hint: '查询条数', defaultValue: '20' }
@@ -87,6 +94,8 @@ var MSUN_PARAM_SCHEMA = {
         method: 'GET',
         path: '/spd/query/drug-suppliers',
         logTitle: '2.5.62 供应商',
+        spdMasterSync: true,
+        hint: '调用后 upsert SPD 表 fd_supplier',
         fields: [
             { key: 'keyWord', label: 'keyWord', hint: '名称/简拼模糊' },
             { key: 'limitCount', label: 'limitCount', hint: '≥1', defaultValue: '20' },
@@ -109,6 +118,8 @@ var MSUN_PARAM_SCHEMA = {
         method: 'GET',
         path: '/spd/query/drug-producers',
         logTitle: '2.5.63 生产厂商',
+        spdMasterSync: true,
+        hint: '调用后 upsert SPD 表 fd_factory（生产厂家）',
         fields: [
             { key: 'keyWord', label: 'keyWord', hint: '名称/简拼模糊' },
             { key: 'limitCount', label: 'limitCount', hint: '≥1', defaultValue: '20' },

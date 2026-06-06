@@ -62,6 +62,31 @@ public final class MsunHisMirrorProbeRegistry
         return tables;
     }
 
+    /** 主数据 SPD 同步所用的主镜像表（filterByApiCode=true 的首表）。 */
+    public static String primaryTableForProbe(String probeKey)
+    {
+        ProbeMirrorSpec spec = specOf(probeKey);
+        if (spec == null)
+        {
+            return null;
+        }
+        for (MirrorTableSpec t : spec.getTables())
+        {
+            if (t.isFilterByApiCode())
+            {
+                return t.getTable();
+            }
+        }
+        return spec.getTables().isEmpty() ? null : spec.getTables().get(0).getTable();
+    }
+
+    public static boolean supportsSpdMasterSync(String probeKey)
+    {
+        ProbeMirrorSpec spec = specOf(probeKey);
+        return spec != null && com.scminterface.customer.msun.spd.sync.support.MsunSpdMasterSyncSupport
+                .isMasterDataApi(spec.getApiCode());
+    }
+
     private static void register(String probeKey, String apiCode, String title, MirrorTableSpec... tables)
     {
         SPECS.put(probeKey, new ProbeMirrorSpec(probeKey, apiCode, title, Arrays.asList(tables)));

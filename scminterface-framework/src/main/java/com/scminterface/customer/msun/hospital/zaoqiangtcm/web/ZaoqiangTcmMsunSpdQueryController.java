@@ -3,6 +3,7 @@ package com.scminterface.customer.msun.hospital.zaoqiangtcm.web;
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.common.core.domain.AjaxResult;
 import com.scminterface.customer.msun.mirror.service.MsunHisMirrorSyncService;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorSyncOutcome;
 import com.scminterface.customer.msun.MsunVendorConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.ZaoqiangTcmHospitalConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.config.ZaoqiangTcmMsunProperties;
@@ -122,12 +123,12 @@ public class ZaoqiangTcmMsunSpdQueryController
         {
             JSONObject data = spdQueryService.queryMergeStockInfos(
                     msunProperties, deptId, categoryIdList, drugCode, drugId, drugName, drugSpecPackingId, zeroFlag, maxId);
-            mirrorSyncService.syncQueryResult(msunProperties, "2.5.82", data);
+            MsunHisMirrorSyncOutcome syncOutcome = mirrorSyncService.syncQueryResult(msunProperties, "2.5.82", data);
             if (cascadeBatch)
             {
                 data.put("cascadeBatch", stockCascadeService.cascadeBatchStocks(msunProperties, data, cascadeMax));
             }
-            return enrichEnv(AjaxResult.success(data));
+            return enrichEnv(AjaxResult.success(data), syncOutcome);
         }
         catch (IllegalArgumentException ex)
         {
@@ -167,8 +168,8 @@ public class ZaoqiangTcmMsunSpdQueryController
         try
         {
             JSONObject data = call.run();
-            mirrorSyncService.syncQueryResult(msunProperties, apiCode, data);
-            return enrichEnv(AjaxResult.success(data));
+            MsunHisMirrorSyncOutcome syncOutcome = mirrorSyncService.syncQueryResult(msunProperties, apiCode, data);
+            return enrichEnv(AjaxResult.success(data), syncOutcome);
         }
         catch (IllegalArgumentException ex)
         {
@@ -182,7 +183,12 @@ public class ZaoqiangTcmMsunSpdQueryController
 
     private AjaxResult enrichEnv(AjaxResult result)
     {
-        return result
+        return enrichEnv(result, null);
+    }
+
+    private AjaxResult enrichEnv(AjaxResult result, MsunHisMirrorSyncOutcome syncOutcome)
+    {
+        AjaxResult enriched = result
                 .put("vendorCode", MsunVendorConstants.VENDOR_CODE)
                 .put("vendorName", MsunVendorConstants.VENDOR_NAME)
                 .put("hospitalKey", msunProperties.getHospitalKey())
@@ -190,6 +196,11 @@ public class ZaoqiangTcmMsunSpdQueryController
                 .put("tenantId", ZaoqiangTcmHospitalConstants.TENANT_ID)
                 .put("activeEnv", msunProperties.getActiveEnv())
                 .put("msunBaseUrl", msunProperties.getBaseUrl());
+        if (syncOutcome != null)
+        {
+            enriched.put("mirrorSync", syncOutcome.toMap());
+        }
+        return enriched;
     }
 
     private static Long parseLong(Object value)

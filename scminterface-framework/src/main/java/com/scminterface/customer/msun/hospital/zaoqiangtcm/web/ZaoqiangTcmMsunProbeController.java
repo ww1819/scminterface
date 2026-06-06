@@ -6,6 +6,7 @@ import com.scminterface.customer.msun.hospital.zaoqiangtcm.ZaoqiangTcmHospitalCo
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.config.ZaoqiangTcmMsunProperties;
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.customer.msun.mirror.service.MsunHisMirrorSyncService;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorSyncOutcome;
 import com.scminterface.customer.msun.service.MsunProbeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -76,8 +77,8 @@ public class ZaoqiangTcmMsunProbeController
         try
         {
             JSONObject data = probeService.fetchDepts(msunProperties, hospitalAreaId, invalidFlag, deptId, deptName);
-            mirrorSyncService.syncQueryResult(msunProperties, "2.1.9", data);
-            return enrichEnv(AjaxResult.success(data));
+            MsunHisMirrorSyncOutcome syncOutcome = mirrorSyncService.syncQueryResult(msunProperties, "2.1.9", data);
+            return enrichEnv(AjaxResult.success(data), syncOutcome);
         }
         catch (Exception ex)
         {
@@ -96,8 +97,8 @@ public class ZaoqiangTcmMsunProbeController
         try
         {
             JSONObject data = probeService.fetchIdentities(msunProperties, roleType, deptId, identityId, userId);
-            mirrorSyncService.syncQueryResult(msunProperties, "2.1.12", data);
-            return enrichEnv(AjaxResult.success(data));
+            MsunHisMirrorSyncOutcome syncOutcome = mirrorSyncService.syncQueryResult(msunProperties, "2.1.12", data);
+            return enrichEnv(AjaxResult.success(data), syncOutcome);
         }
         catch (IllegalArgumentException ex)
         {
@@ -116,8 +117,8 @@ public class ZaoqiangTcmMsunProbeController
         try
         {
             JSONObject data = probeService.fetchIdentitiesAllRoleTypes(msunProperties);
-            mirrorSyncService.syncQueryResult(msunProperties, "2.1.12", data);
-            return enrichEnv(AjaxResult.success(data));
+            MsunHisMirrorSyncOutcome syncOutcome = mirrorSyncService.syncQueryResult(msunProperties, "2.1.12", data);
+            return enrichEnv(AjaxResult.success(data), syncOutcome);
         }
         catch (Exception ex)
         {
@@ -133,8 +134,8 @@ public class ZaoqiangTcmMsunProbeController
         try
         {
             JSONObject data = probeService.fetchIdentitiesByFirstDept(msunProperties, roleType);
-            mirrorSyncService.syncQueryResult(msunProperties, "2.1.12", data);
-            return enrichEnv(AjaxResult.success(data));
+            MsunHisMirrorSyncOutcome syncOutcome = mirrorSyncService.syncQueryResult(msunProperties, "2.1.12", data);
+            return enrichEnv(AjaxResult.success(data), syncOutcome);
         }
         catch (Exception ex)
         {
@@ -144,7 +145,12 @@ public class ZaoqiangTcmMsunProbeController
 
     private AjaxResult enrichEnv(AjaxResult result)
     {
-        return result
+        return enrichEnv(result, null);
+    }
+
+    private AjaxResult enrichEnv(AjaxResult result, MsunHisMirrorSyncOutcome syncOutcome)
+    {
+        AjaxResult enriched = result
                 .put("vendorCode", MsunVendorConstants.VENDOR_CODE)
                 .put("vendorName", MsunVendorConstants.VENDOR_NAME)
                 .put("hospitalKey", msunProperties.getHospitalKey())
@@ -152,5 +158,10 @@ public class ZaoqiangTcmMsunProbeController
                 .put("tenantId", ZaoqiangTcmHospitalConstants.TENANT_ID)
                 .put("activeEnv", msunProperties.getActiveEnv())
                 .put("msunBaseUrl", msunProperties.getBaseUrl());
+        if (syncOutcome != null)
+        {
+            enriched.put("mirrorSync", syncOutcome.toMap());
+        }
+        return enriched;
     }
 }

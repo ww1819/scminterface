@@ -5,6 +5,8 @@ import com.scminterface.customer.msun.MsunVendorConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.ZaoqiangTcmHospitalConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.config.ZaoqiangTcmMsunProperties;
 import com.scminterface.customer.msun.mirror.service.MsunHisMirrorQueryService;
+import com.scminterface.customer.msun.mirror.service.MsunHisMirrorSyncService;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorSyncOutcome;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -12,6 +14,7 @@ import java.util.Map;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,13 +29,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class ZaoqiangTcmMsunMirrorQueryController
 {
     private final MsunHisMirrorQueryService mirrorQueryService;
+    private final MsunHisMirrorSyncService mirrorSyncService;
     private final ZaoqiangTcmMsunProperties msunProperties;
 
     public ZaoqiangTcmMsunMirrorQueryController(
             MsunHisMirrorQueryService mirrorQueryService,
+            MsunHisMirrorSyncService mirrorSyncService,
             ZaoqiangTcmMsunProperties msunProperties)
     {
         this.mirrorQueryService = mirrorQueryService;
+        this.mirrorSyncService = mirrorSyncService;
         this.msunProperties = msunProperties;
     }
 
@@ -60,6 +66,34 @@ public class ZaoqiangTcmMsunMirrorQueryController
         catch (Exception ex)
         {
             return AjaxResult.error("镜像数据查询失败: " + ex.getMessage());
+        }
+    }
+
+    @ApiOperation("将镜像库批次 upsert 至 SPD 主数据表（科室/人员/分类/厂商/供应商/产品档案）")
+    @PostMapping("/spd-sync/{probeKey}")
+    public AjaxResult syncSpdMasterData(
+            @ApiParam(value = "探针 apiKey：depts/identities/drugDict/dictCategory/suppliers/producers", required = true)
+            @PathVariable String probeKey,
+            @ApiParam("批次号，留空则取该接口最新批次") @RequestParam(required = false) String batchNo)
+    {
+        try
+        {
+            MsunHisMirrorSyncOutcome outcome = mirrorSyncService.syncSpdFromProbe(msunProperties, probeKey, batchNo);
+            AjaxResult result = enrichEnv(AjaxResult.success(outcome.toMap()));
+            result.put("mirrorSync", outcome.toMap());
+            return result;
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return AjaxResult.error(ex.getMessage());
+        }
+        catch (IllegalStateException ex)
+        {
+            return AjaxResult.error(ex.getMessage());
+        }
+        catch (Exception ex)
+        {
+            return AjaxResult.error("SPD 主数据同步失败: " + ex.getMessage());
         }
     }
 

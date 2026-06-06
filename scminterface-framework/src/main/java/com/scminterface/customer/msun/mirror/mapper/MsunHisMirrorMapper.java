@@ -27,6 +27,9 @@ public interface MsunHisMirrorMapper
     @SelectProvider(type = MsunHisMirrorSqlProvider.class, method = "countMirrorRows")
     long countMirrorRows(Map<String, Object> params);
 
+    @SelectProvider(type = MsunHisMirrorSqlProvider.class, method = "selectLatestSyncBatchNo")
+    String selectLatestSyncBatchNo(Map<String, Object> params);
+
     @SelectProvider(type = MsunHisMirrorSqlProvider.class, method = "listMirrorRows")
     List<Map<String, Object>> listMirrorRows(Map<String, Object> params);
 
