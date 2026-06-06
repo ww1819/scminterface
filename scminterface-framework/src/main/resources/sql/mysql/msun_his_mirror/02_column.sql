@@ -74,3 +74,33 @@ CALL add_mirror_column('m_msun_drug_batch_stock', 'stock_amount', 'decimal(18,4)
 /
 CALL add_mirror_column('m_msun_drug_batch_stock', 'yc_stock_query_id', 'varchar(64)', '2.5.43 ycStockQueryId', 'stock_amount');
 /
+
+-- ========== 2.5.43 镜像列与 API 全字段对齐 ==========
+CALL add_mirror_column('m_msun_drug_batch_stock', 'yc_dept_id', 'varchar(64)', '2.5.43 ycDeptId', 'dept_id');
+/
+CALL add_mirror_column('m_msun_drug_batch_stock', 'yc_dept_name', 'varchar(200)', '2.5.43 ycDeptName', 'yc_dept_id');
+/
+CALL add_mirror_column('m_msun_drug_batch_stock', 'drug_code', 'varchar(128)', '2.5.43 drugCode', 'drug_spec_packing_id');
+/
+CALL add_mirror_column('m_msun_drug_batch_stock', 'drug_name', 'varchar(500)', '2.5.43 drugName', 'drug_code');
+/
+CALL add_mirror_column('m_msun_drug_batch_stock', 'spec', 'varchar(500)', '2.5.43 spec', 'drug_name');
+/
+CALL add_mirror_column('m_msun_drug_batch_stock', 'yc_batch_no', 'varchar(128)', '2.5.43 ycBatchNo', 'batch_number');
+/
+CALL add_mirror_column('m_msun_drug_batch_stock', 'effective_date', 'varchar(32)', '2.5.43 effectiveDate', 'produce_date');
+/
+CALL add_mirror_column('m_msun_drug_batch_stock', 'drug_catagory_id', 'varchar(64)', '2.5.43 drugCatagoryId', 'effective_date');
+/
+CALL add_mirror_column('m_msun_drug_batch_stock', 'catagory_name', 'varchar(200)', '2.5.43 catagoryName', 'drug_catagory_id');
+/
+CALL add_mirror_column('m_msun_drug_batch_stock', 'producer_cnname', 'varchar(500)', '2.5.43 producerCnname', 'producer_name');
+/
+CALL add_mirror_column('m_msun_drug_batch_stock', 'min_packing_name', 'varchar(64)', '2.5.43 minPackingName', 'packing_name');
+/
+
+-- ========== 2.5.82 合并库存：回参含 hospitalId / orgId ==========
+CALL add_mirror_column('m_msun_merge_stock', 'hospital_id', 'varchar(64)', '2.5.82 回参 hospitalId', 'occupy_quantity');
+/
+CALL add_mirror_column('m_msun_merge_stock', 'org_id', 'varchar(64)', '2.5.82 回参 orgId', 'hospital_id');
+/

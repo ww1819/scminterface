@@ -182,6 +182,10 @@ public class MsunHisMirrorSyncExecutor
             {
                 MsunHisMirrorRowSupport.enrichDrugDictRow(row, requestJson);
             }
+            else if (MsunHisMirrorTableNames.DRUG_BATCH_STOCK.equals(table))
+            {
+                MsunHisMirrorRowSupport.enrichDrugBatchStockRow(row);
+            }
             upsertRow(table, row);
             count++;
         }

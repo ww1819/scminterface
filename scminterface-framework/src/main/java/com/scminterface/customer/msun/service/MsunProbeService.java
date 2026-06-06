@@ -4,7 +4,9 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
+import com.scminterface.customer.msun.support.MsunHisInvokeDebugSupport;
 import com.scminterface.customer.msun.support.MsunOpenApiSupport;
+import com.scminterface.customer.msun.support.MsunSignedHttpResult;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,13 +42,16 @@ public class MsunProbeService
         putIfPresent(params, "deptId", deptId);
         putIfPresent(params, "deptName", deptName);
 
-        String raw = MsunOpenApiSupport.createClient(runtime).get(runtime.deptsUrl(), params);
+        MsunSignedHttpResult http = MsunOpenApiSupport.createClient(runtime).getWithDebug(runtime.deptsUrl(), params);
         log.info("众阳HIS 医院 {} 科室探针 [{}] env={} url={}",
                 runtime.getHospitalKey(),
                 runtime.getActiveEnvLabel(),
                 runtime.getActiveEnv(),
                 runtime.deptsUrl());
-        return MsunOpenApiSupport.wrapRawResponse(raw, params);
+        JSONObject wrapped = MsunOpenApiSupport.wrapRawResponse(http.getResponseBody(), params);
+        MsunHisInvokeDebugSupport.attachInvokeDebug(wrapped,
+                MsunHisInvokeDebugSupport.buildDebug(runtime, "2.1.9", "/msun-middle-base-common/v1/depts", http, wrapped));
+        return wrapped;
     }
 
     public JSONObject fetchIdentities(
@@ -64,13 +69,16 @@ public class MsunProbeService
         putIfPresent(params, "identityId", identityId);
         putIfPresent(params, "userId", userId);
 
-        String raw = MsunOpenApiSupport.createClient(runtime).get(runtime.identitiesUrl(), params);
+        MsunSignedHttpResult http = MsunOpenApiSupport.createClient(runtime).getWithDebug(runtime.identitiesUrl(), params);
         log.info("众阳HIS 医院 {} 人员身份探针 [{}] env={} url={}",
                 runtime.getHospitalKey(),
                 runtime.getActiveEnvLabel(),
                 runtime.getActiveEnv(),
                 runtime.identitiesUrl());
-        return MsunOpenApiSupport.wrapRawResponse(raw, params);
+        JSONObject wrapped = MsunOpenApiSupport.wrapRawResponse(http.getResponseBody(), params);
+        MsunHisInvokeDebugSupport.attachInvokeDebug(wrapped,
+                MsunHisInvokeDebugSupport.buildDebug(runtime, "2.1.12", "/msun-middle-base-common/v1/identities", http, wrapped));
+        return wrapped;
     }
 
     /**

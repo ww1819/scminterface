@@ -129,13 +129,23 @@ scminterface:
 | 2.5.42 | 退库推送 | POST | `.../push/drug-stocks-return` |
 | 2.5.43 | 退库审核实时校验 | GET | `.../query/drug-batch-stocks` |
 
-**SPD 推送对照键（2.5.41 明细）**
+**SPD 推送对照键（2.5.41 出库明细）**
 
 | 字段 | 规则 | 落库 |
 |------|------|------|
 | `spdDetailId` | `{出库主表id}:{明细id}`，连接符 `:`；预留条码 `{主表id}:{明细id}:{条码明细id}` | `stk_io_bill_entry.his_spd_detail_id` |
 | `memo` | `ZQ-{tenantId}-{entryId}` | `his_memo` |
 | 解析 | `MsunHisConstants.parseSpdDetailId` | 代码注释与评估文档 §6.2 |
+
+**SPD 推送对照键（2.5.42 退库明细）**
+
+| 接口字段 | 枣强现场取值 | SPD 来源 |
+|----------|--------------|----------|
+| `outStockDetailDTOList[].pharmacyStockId` | **传 `his_stock_query_id`**（2.5.41 回参 `stockQueryId`） | 明细 / `stk_dep_inventory.his_stock_query_id`；无则 2.5.43 按批号解析 |
+| `quantity` | 退库数量 | `stk_io_bill_entry.qty` |
+| `memo` | `ZQ-{tenantId}-{entryId}` | `his_memo`（退库明细自身，非原出库 memo） |
+
+> 众阳文档写 `pharmacyStockId` 可取 2.5.41 的 `storageStockId` 或 `pharmacyStockId`；枣强 **药房出库** 现场以 **`stockQueryId`** 作为 2.5.42 入参值（见 §3.1 出库回参样本 `8837866950089530760`）。
 
 **推送后即时校验（SPD 审核编排内自动执行，无需手工）**
 
@@ -174,6 +184,16 @@ Controller 还会在顶层附加（`enrichEnv`）：
 `vendorCode`、`vendorName`、`hospitalKey`、`hospitalName`、`tenantId`（= `zaoqiang-tcm-001`）、`activeEnv`、`msunBaseUrl`
 
 联调页与人工判断以 **`data.hisBody.success`**、**`data.hisBody.code`**、**`data.hisBody.message`** 为准。
+
+各接口调用成功后，表单下方展示三块排错区（与单据推送页一致）：
+
+| 区块 | 内容 |
+|------|------|
+| **Headers** | 众阳 HIS 签名头（`sign`/`license`/`appId` 已脱敏）；环境/镜像查询为前置机 JWT |
+| **入参** | GET 为 Query（`requestParams`）；POST 为 JSON Body |
+| **回参** | `hisBody` 或完整 `AjaxResult`；含 `mirrorSync` / `cascadeBatch` 时另附块 |
+
+完整调试对象在 `data.hisInvoke`（服务端 `MsunHisInvokeDebugSupport` 生成）。
 
 `GET .../env` 的 `data` 为环境摘要：`activeEnv`、`label`、`baseUrl`、`appId`、`hospitalId`、`orgId`、`signType`、`documentUrl`、`deptsUrl`、`identitiesUrl`（**不含 appSecret**）。
 

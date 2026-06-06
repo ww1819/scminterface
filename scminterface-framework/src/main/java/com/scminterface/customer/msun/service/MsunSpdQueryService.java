@@ -4,7 +4,9 @@ import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.spd.MsunSpdApiPaths;
+import com.scminterface.customer.msun.support.MsunHisInvokeDebugSupport;
 import com.scminterface.customer.msun.support.MsunOpenApiSupport;
+import com.scminterface.customer.msun.support.MsunSignedHttpResult;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -167,11 +169,14 @@ public class MsunSpdQueryService
             Map<String, Object> params) throws Exception
     {
         String url = MsunOpenApiSupport.buildUrl(runtime, path);
-        String raw = MsunOpenApiSupport.createClient(runtime).get(url, params);
+        MsunSignedHttpResult http = MsunOpenApiSupport.createClient(runtime).getWithDebug(url, params);
         log.info("众阳HIS 医院 {} SPD查询 {} [{}] env={} url={}",
                 runtime.getHospitalKey(), apiNo,
                 runtime.getActiveEnvLabel(), runtime.getActiveEnv(), url);
-        return MsunOpenApiSupport.wrapRawResponse(raw, params);
+        JSONObject wrapped = MsunOpenApiSupport.wrapRawResponse(http.getResponseBody(), params);
+        MsunHisInvokeDebugSupport.attachInvokeDebug(wrapped,
+                MsunHisInvokeDebugSupport.buildDebug(runtime, apiNo, path, http, wrapped));
+        return wrapped;
     }
 
     private JSONObject invokePost(
@@ -181,11 +186,14 @@ public class MsunSpdQueryService
             Map<String, Object> body) throws Exception
     {
         String url = MsunOpenApiSupport.buildUrl(runtime, path);
-        String raw = MsunOpenApiSupport.createClient(runtime).post(url, body);
+        MsunSignedHttpResult http = MsunOpenApiSupport.createClient(runtime).postWithDebug(url, body);
         log.info("众阳HIS 医院 {} SPD查询 {} [{}] env={} url={}",
                 runtime.getHospitalKey(), apiNo,
                 runtime.getActiveEnvLabel(), runtime.getActiveEnv(), url);
-        return MsunOpenApiSupport.wrapRawResponse(raw, body);
+        JSONObject wrapped = MsunOpenApiSupport.wrapRawResponse(http.getResponseBody(), body);
+        MsunHisInvokeDebugSupport.attachInvokeDebug(wrapped,
+                MsunHisInvokeDebugSupport.buildDebug(runtime, apiNo, path, http, wrapped));
+        return wrapped;
     }
 
     private static void putIfPresent(Map<String, Object> params, String key, Object value)

@@ -72,6 +72,131 @@ function zqEscapeHtml(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function zqCopyDebugBlock(preId, btn) {
+    var el = document.getElementById(preId);
+    if (!el) return;
+    var text = el.textContent || '';
+    var done = function () {
+        var old = btn.textContent;
+        btn.textContent = '已复制';
+        setTimeout(function () { btn.textContent = old; }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () {
+            zqCopyFallbackText(text);
+            done();
+        });
+    } else {
+        zqCopyFallbackText(text);
+        done();
+    }
+}
+
+function zqCopyFallbackText(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+    document.body.removeChild(ta);
+}
+
+function zqRenderDebugBlock(title, content, blockId) {
+    var empty = content === null || content === undefined || !String(content).trim();
+    var preClass = 'push-debug-pre' + (empty ? ' empty' : '');
+    var body = empty ? '（无数据）' : zqEscapeHtml(content);
+    return '<div class="push-debug-block">' +
+        '<div class="push-debug-head"><span>' + zqEscapeHtml(title) + '</span>' +
+        '<button type="button" class="btn-copy" onclick="zqCopyDebugBlock(\'' + blockId + '\', this)">复制</button></div>' +
+        '<pre class="' + preClass + '" id="' + blockId + '">' + body + '</pre></div>';
+}
+
+function zqParseRequestLine(requestLine) {
+    var line = String(requestLine || '').trim();
+    if (!line) return { method: '', url: '' };
+    var firstNl = line.indexOf('\n');
+    var head = firstNl >= 0 ? line.substring(0, firstNl) : line;
+    var parts = head.trim().split(/\s+/);
+    return { method: parts[0] || '', url: parts[1] || '' };
+}
+
+function zqResolveInvokeDebug(result, requestLine) {
+    var data = result && result.data;
+    if (data && data.hisInvoke) {
+        return data.hisInvoke;
+    }
+    if (data && (data.hisBody || data.requestParams)) {
+        return {
+            requestBody: data.requestParams || null,
+            hisBody: data.hisBody,
+            responseRaw: data.hisBody
+        };
+    }
+    var parsed = zqParseRequestLine(requestLine);
+    return {
+        note: '本段为浏览器 → scminterface 前置机（JWT Bearer），非众阳 HIS 签名头',
+        method: parsed.method,
+        url: parsed.url,
+        requestHeaders: { Authorization: 'Bearer <登录Token>' },
+        requestBody: data,
+        responseRaw: result
+    };
+}
+
+function zqBuildDebugPanelsHtml(apiKey, result, requestLine) {
+    var inv = zqResolveInvokeDebug(result, requestLine);
+    var prefix = 'zqDbg' + apiKey.replace(/[^a-zA-Z0-9_]/g, '_');
+    var html = [];
+
+    if (inv && inv.note) {
+        html.push('<p class="hint">' + zqEscapeHtml(inv.note) + '</p>');
+    }
+    if (inv && (inv.apiCode || inv.url)) {
+        var title = (inv.apiCode || 'HIS') + (inv.method ? ' · ' + inv.method : '');
+        if (inv.url) title += ' · ' + inv.url;
+        if (inv.httpStatus != null) title += ' · HTTP ' + inv.httpStatus;
+        html.push('<div class="push-inv-title">' + zqEscapeHtml(title) + '</div>');
+    }
+
+    var headers = inv && inv.requestHeaders;
+    if (!headers && inv && inv.note) {
+        headers = inv.requestHeaders;
+    }
+    html.push(zqRenderDebugBlock(
+        '请求头 Headers（众阳 sign/license 已脱敏）',
+        zqFmtJson(headers || {}),
+        prefix + 'Hdr'));
+
+    var reqBody = inv && (inv.requestBody != null ? inv.requestBody : inv.requestParams);
+    if (reqBody == null && result && result.data && result.data.requestParams) {
+        reqBody = result.data.requestParams;
+    }
+    html.push(zqRenderDebugBlock(
+        '入参 Request' + (inv && inv.method === 'GET' ? '（Query / Body）' : ' Body'),
+        zqFmtJson(reqBody),
+        prefix + 'Req'));
+
+    var resp = inv && (inv.hisBody != null ? inv.hisBody : inv.responseRaw);
+    if (resp == null && result && result.data && result.data.hisBody) {
+        resp = result.data.hisBody;
+    }
+    if (resp == null) {
+        resp = result;
+    }
+    html.push(zqRenderDebugBlock('回参 Response（HIS hisBody 或完整 JSON）', zqFmtJson(resp), prefix + 'Resp'));
+
+    if (result && result.mirrorSync) {
+        html.push(zqRenderDebugBlock('镜像落库 mirrorSync', zqFmtJson(result.mirrorSync), prefix + 'Mir'));
+    }
+    if (result && result.data && result.data.cascadeBatch) {
+        html.push(zqRenderDebugBlock('链式批次 cascadeBatch', zqFmtJson(result.data.cascadeBatch), prefix + 'Cas'));
+    }
+
+    return html.join('');
+}
+
 function zqSpdSyncSummary(result) {
     const ms = result && result.mirrorSync;
     if (!ms) return '';
@@ -376,7 +501,7 @@ function zqEmptyRespCardHtml(apiKey, label) {
 
 function zqRenderInlineRespSlotContent(ownerKey) {
     const hisLabel = ZQ_API_RESP_LABELS[ownerKey] || ownerKey;
-    let html = '<div class="inline-resp-label">HIS 回参</div>' + zqEmptyRespCardHtml(ownerKey, hisLabel);
+    let html = '<div class="inline-resp-label">排错：Headers / 入参 / 回参</div>' + zqEmptyRespCardHtml(ownerKey, hisLabel);
     if (ownerKey !== 'env') {
         html += '<div class="inline-resp-label mirror">镜像库数据</div>' +
             zqEmptyRespCardHtml(zqMirrorRespKey(ownerKey), '[镜像] ' + hisLabel);
@@ -492,8 +617,8 @@ function zqShowResult(apiKey, title, requestLine, result, elapsedMs) {
     if (!card) return;
     const sum = zqHisSummary(result);
     const mirrorSum = zqMirrorSummary(result);
-    const body = zqRenderResponseBody(result);
-    zqResponseStore[apiKey] = { text: body.text, format: body.format };
+    const fullText = zqResultToText(result);
+    zqResponseStore[apiKey] = { text: fullText, format: 'json' };
     const headBody =
         '<strong>' + zqEscapeHtml(title) + '</strong> · ' + elapsedMs + 'ms<br>' +
         '<code class="req-line">' + zqEscapeHtml(requestLine) + '</code><br>' +
@@ -504,15 +629,15 @@ function zqShowResult(apiKey, title, requestLine, result, elapsedMs) {
     card.innerHTML =
         '<div class="resp-head ' + (sum.ok ? 'ok' : 'err') + '">' +
         '<div class="resp-head-row"><div class="resp-head-body">' + headBody + '</div>' +
-        zqResponseActionsHtml(apiKey, body.format) + '</div></div>' +
-        '<div class="api-resp-body"></div>';
+        zqResponseActionsHtml(apiKey, 'json') + '</div></div>' +
+        '<div class="api-resp-body probe-debug-body"></div>';
     const bodyEl = card.querySelector('.api-resp-body');
-    bodyEl.innerHTML = body.html;
+    bodyEl.innerHTML = zqBuildDebugPanelsHtml(apiKey, result, requestLine);
     const rawTa = document.createElement('textarea');
     rawTa.className = 'resp-raw-store';
     rawTa.id = 'resp-raw-' + apiKey;
     rawTa.readOnly = true;
-    rawTa.value = body.text;
+    rawTa.value = fullText;
     bodyEl.appendChild(rawTa);
     zqSwitchTabForApiKey(apiKey);
     zqFocusResponseCard(apiKey);

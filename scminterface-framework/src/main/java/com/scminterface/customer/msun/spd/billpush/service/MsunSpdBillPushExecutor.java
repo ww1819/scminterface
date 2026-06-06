@@ -87,6 +87,12 @@ public class MsunSpdBillPushExecutor
     }
 
     @DataSource(DataSourceType.SPD)
+    public int updateEntryHisStockIds(Map<String, Object> row)
+    {
+        return billPushMapper.updateEntryHisStockIds(row);
+    }
+
+    @DataSource(DataSourceType.SPD)
     public int updateEntryHisPushResult(Map<String, Object> row)
     {
         return billPushMapper.updateEntryHisPushResult(row);

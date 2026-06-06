@@ -46,6 +46,11 @@ public class MsunSignedHttpClient
 
     public String get(String url, Map<String, Object> params) throws Exception
     {
+        return getWithDebug(url, params).getResponseBody();
+    }
+
+    public MsunSignedHttpResult getWithDebug(String url, Map<String, Object> params) throws Exception
+    {
         Map<String, Object> sorted = new TreeMap<>(Comparator.naturalOrder());
         if (CollectionUtil.isNotEmpty(params))
         {
@@ -59,15 +64,22 @@ public class MsunSignedHttpClient
         String sign = signPayload(signatureStr, keyType);
 
         Map<String, String> headers = buildHeaders(sign, timestamp, keyType);
+        String finalUrl = url;
         if (StringUtils.isNotBlank(sortedParamsStr))
         {
-            url = url + "?" + sortedParamsStr;
+            finalUrl = url + "?" + sortedParamsStr;
         }
 
-        HttpRequest request = HttpUtil.createGet(url);
+        HttpRequest request = HttpUtil.createGet(finalUrl);
         request.addHeaders(headers);
         HttpResponse response = request.execute();
-        return response.body();
+        return new MsunSignedHttpResult(
+                "GET",
+                finalUrl,
+                headers,
+                null,
+                response.body(),
+                response.getStatus());
     }
 
     public String post(String url, Map<String, Object> body) throws Exception

@@ -159,6 +159,15 @@
         WHERE id = #{entryId} AND tenant_id = #{tenantId}
     </update>
 
+    <update id="updateEntryHisStockIds">
+        UPDATE stk_io_bill_entry SET
+            his_pharmacy_stock_id = #{hisPharmacyStockId},
+            his_storage_stock_id = #{hisStorageStockId},
+            his_stock_query_id = #{hisStockQueryId},
+            update_time = NOW()
+        WHERE id = #{entryId} AND tenant_id = #{tenantId}
+    </update>
+
     <update id="updateEntryHisPushResult">
         UPDATE stk_io_bill_entry SET
             his_pharmacy_stock_id = #{hisPharmacyStockId},

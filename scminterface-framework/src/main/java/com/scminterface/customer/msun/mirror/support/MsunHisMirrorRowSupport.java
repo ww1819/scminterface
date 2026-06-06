@@ -104,6 +104,35 @@ public final class MsunHisMirrorRowSupport
     /**
      * 2.5.44 字典行：HIS data 项常不带 materialOrDrug，从请求参数补全至 material_or_drug 列。
      */
+    /**
+     * 2.5.43 批次库存：API 字段名与历史镜像列不一致时，补全唯一键与查询用列。
+     */
+    public static void enrichDrugBatchStockRow(Map<String, Object> row)
+    {
+        if (row == null)
+        {
+            return;
+        }
+        copyIfEmpty(row, "dept_id", row.get("yc_dept_id"));
+        copyIfEmpty(row, "batch_number", row.get("yc_batch_no"));
+        copyIfEmpty(row, "quantity", row.get("stock_amount"));
+        copyIfEmpty(row, "effective", row.get("effective_date"));
+        copyIfEmpty(row, "producer_name", row.get("producer_cnname"));
+    }
+
+    private static void copyIfEmpty(Map<String, Object> row, String targetKey, Object sourceVal)
+    {
+        if (row == null || sourceVal == null)
+        {
+            return;
+        }
+        Object existing = row.get(targetKey);
+        if (existing == null || String.valueOf(existing).trim().isEmpty())
+        {
+            row.put(targetKey, normalizeValue(sourceVal));
+        }
+    }
+
     public static void enrichDrugDictRow(Map<String, Object> row, String requestParamsJson)
     {
         if (row == null || row.get("material_or_drug") != null)
