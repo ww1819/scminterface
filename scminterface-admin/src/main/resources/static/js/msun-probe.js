@@ -159,7 +159,7 @@ function zqTabIdForApiKey(apiKey) {
 
 function zqSwitchTabForApiKey(apiKey) {
     const tabId = zqTabIdForApiKey(apiKey);
-    const idx = { 'tab-guide': 0, 'tab-base': 1, 'tab-spd': 2 }[tabId];
+    const idx = { 'tab-guide': 0, 'tab-base': 1, 'tab-spd': 2, 'tab-bill-push': 3 }[tabId];
     const btn = document.querySelectorAll('.tabs .tab-btn')[idx];
     zqSwitchTab(tabId, btn);
 }
@@ -743,6 +743,9 @@ function zqSwitchTab(tabId, btn) {
     document.querySelectorAll('.tabs .tab-btn').forEach(function (b) { b.classList.remove('active'); });
     document.getElementById(tabId).classList.add('active');
     if (btn) btn.classList.add('active');
+    if (tabId === 'tab-bill-push' && typeof bpInitBillPushTab === 'function') {
+        bpInitBillPushTab();
+    }
 }
 
 function zqFormatDt(d) {
@@ -1626,4 +1629,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     await msunLoadHospitals();
     zqLoadAllParams();
     zqLoadEnv();
+    if (location.hash === '#bill-push') {
+        var billTabBtn = document.querySelector('.tabs .tab-btn[data-tab="tab-bill-push"]');
+        if (billTabBtn) zqSwitchTab('tab-bill-push', billTabBtn);
+    }
 });

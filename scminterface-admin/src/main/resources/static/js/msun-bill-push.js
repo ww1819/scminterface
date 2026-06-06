@@ -1,8 +1,16 @@
 /**
  * 众阳 HIS 单据推送页：出库(201) / 退库(401) 分 Tab 测试
  */
-const BP_API = '/api/vendor/msun/hospitals/zaoqiang-tcm-001/spd/bill-push';
 const BP_PAGE_SIZE = 20;
+var bpProbeInited = false;
+var bpStandalonePage = false;
+
+function bpApiBase() {
+    if (typeof msunHospitalApi === 'function') {
+        return msunHospitalApi() + '/spd/bill-push';
+    }
+    return '/api/vendor/msun/hospitals/zaoqiang-tcm-001/spd/bill-push';
+}
 
 var BP_PUSH_LABELS = { '0': '未推送', '1': '推送中', '2': '成功', '3': '失败' };
 
@@ -156,7 +164,7 @@ async function bpSearch(tab, page) {
     if (page) st.pageNum = page;
     bpSetMeta(tab, '查询中…');
     var qs = bpBuildQuery(bpQueryParams(tab));
-    var res = await get(BP_API + '/entries' + qs);
+    var res = await get(bpApiBase() + '/entries' + qs);
     if (!res || res.code !== 200) {
         bpSetMeta(tab, '查询失败：' + (res && res.msg ? res.msg : '未知错误'));
         return;
@@ -210,7 +218,7 @@ async function bpPushOne(tab, billId) {
     var typeLabel = tab === '401' ? '退库单' : '出库单';
     if (!confirm('确认推送' + typeLabel + ' id=' + billId + ' 至 HIS？')) return;
     bpSetMeta(tab, '推送中 billId=' + billId + '…');
-    var res = await post(BP_API + '/push/' + billId, {});
+    var res = await post(bpApiBase() + '/push/' + billId, {});
     bpShowPushResult(tab, res);
     if (res && res.code === 200) {
         bpSetMeta(tab, typeLabel + '推送完成');
@@ -228,7 +236,7 @@ async function bpBatchPush(tab) {
     var typeLabel = tab === '401' ? '退库单' : '出库单';
     if (!confirm('确认推送选中的 ' + ids.length + ' 张' + typeLabel + '？')) return;
     bpSetMeta(tab, '批量推送中…');
-    var res = await post(BP_API + '/push', { billIds: ids });
+    var res = await post(bpApiBase() + '/push', { billIds: ids });
     bpShowPushResult(tab, res);
     if (res && res.code === 200) {
         st.selected.clear();
@@ -240,7 +248,20 @@ async function bpBatchPush(tab) {
     }
 }
 
+/** 探针页「出退库推送」主 Tab 首次打开时加载 */
+function bpInitBillPushTab() {
+    if (bpProbeInited) return;
+    bpProbeInited = true;
+    if (bpCheckLogin()) {
+        bpSearch('201', 1);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+    bpStandalonePage = !!document.querySelector('.layout > .panel > .bill-tabs');
+    if (!bpStandalonePage && document.getElementById('tab-bill-push')) {
+        return;
+    }
     if (bpCheckLogin()) {
         bpSearch('201', 1);
     }

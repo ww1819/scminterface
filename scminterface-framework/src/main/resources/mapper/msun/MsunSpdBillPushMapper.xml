@@ -84,8 +84,6 @@
             m.his_spec_packing_id AS material_his_spec_packing_id
         <include refid="billEntryFromWhere"/>
         ORDER BY b.bill_status ASC, b.create_time DESC, b.id DESC, e.id ASC
-        <if test="limit != null">LIMIT #{limit}</if>
-        <if test="offset != null">OFFSET #{offset}</if>
     </select>
 
     <select id="countBillEntryRows" resultType="long">
@@ -150,6 +148,13 @@
             his_drug_id = #{hisDrugId},
             his_drug_spec_packing_id = #{hisDrugSpecPackingId},
             his_push_status = #{hisPushStatus},
+            update_time = NOW()
+        WHERE id = #{entryId} AND tenant_id = #{tenantId}
+    </update>
+
+    <update id="updateEntryHisPharmacyStock">
+        UPDATE stk_io_bill_entry SET
+            his_pharmacy_stock_id = #{hisPharmacyStockId},
             update_time = NOW()
         WHERE id = #{entryId} AND tenant_id = #{tenantId}
     </update>

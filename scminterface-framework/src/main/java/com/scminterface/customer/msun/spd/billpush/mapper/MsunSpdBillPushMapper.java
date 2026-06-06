@@ -31,6 +31,8 @@ public interface MsunSpdBillPushMapper
 
     int updateEntryHisPrepare(Map<String, Object> row);
 
+    int updateEntryHisPharmacyStock(Map<String, Object> row);
+
     int updateEntryHisPushResult(Map<String, Object> row);
 
     int updateEntryHisPushStatus(Map<String, Object> row);
