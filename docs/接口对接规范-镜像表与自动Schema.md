@@ -159,15 +159,17 @@ scminterface.vendor.{vendorCode}.mirror.*
 
 ### 5.5 DDL 管理
 
-每个厂商一套脚本，**双份保持一致**：
+每个厂商镜像 DDL **仅维护一份**（classpath，供 auto-schema 加载）：
 
 | 位置 | 用途 |
 |------|------|
-| `scminterface/database/{vendor}_mirror/` | 实施手工执行、审计、离线环境 |
-| `scminterface-framework/.../resources/sql/mysql/{vendor}_mirror/` | 应用 **auto-schema** 加载 |
+| `scminterface-framework/.../resources/sql/mysql/{vendor}_mirror/` | 应用 **auto-schema** 加载（`01_table.sql`、`02_column.sql`） |
+| `scminterface/database/{vendor}_mirror/README.md` | 索引说明（**不含**重复 DDL） |
+| `spd/.../sql/mysql/material/column.sql` | SPD **业务表**对照列/推送字段（**非**镜像表） |
 
 - `01_table.sql`：按 `/` 分段的多段 `CREATE TABLE IF NOT EXISTS`；
-- `02_column.sql`：`CALL add_mirror_column(...)` 增量字段，供自动补列解析。
+- `02_column.sql`：`CALL add_mirror_column(...)` 增量字段，供自动补列解析；
+- `99_drop_mirror_tables_optional.sql`：可选清理（手工执行，不参与 auto-schema）。
 
 ---
 
@@ -221,7 +223,7 @@ scminterface.vendor.{vendor}.mirror.auto-schema: true   # 默认 true
 
 ### 6.5 关闭自动建表时
 
-`auto-schema=false` 时，实施人员须手工执行 `database/{vendor}_mirror/01_table.sql` 与 `02_column.sql`；表不存在则落库失败（通常仅记日志）。
+`auto-schema=false` 时，实施人员须从 classpath 导出并手工执行 `sql/mysql/{vendor}_mirror/01_table.sql` 与 `02_column.sql`；表不存在则落库失败（通常仅记日志）。
 
 ### 6.6 镜像落库失败策略
 
@@ -535,7 +537,7 @@ SPD 使用 `MsunHisTenantRegistry` + `MsunHisTenantSupport` **一处**维护 `te
 
 ### 9.2 数据库
 
-- [ ] 编写 `database/{vendor}_mirror/01_table.sql`、`02_column.sql`
+- [ ] 编写 `resources/sql/mysql/{vendor}_mirror/01_table.sql`、`02_column.sql`
 - [ ] 复制到 `classpath:sql/mysql/{vendor}_mirror/`
 - [ ] 编写 `99_drop_mirror_tables_optional.sql`（新客户清理用）
 - [ ] 编写 `README.md` 说明表清单与接口映射

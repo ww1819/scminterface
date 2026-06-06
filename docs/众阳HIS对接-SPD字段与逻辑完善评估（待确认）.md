@@ -435,7 +435,8 @@ sequenceDiagram
 | scminterface | `ZaoqiangTcmMsunSpdPushController` | 2.5.41 / 2.5.42 / 2.5.43 |
 | scminterface | `ZaoqiangTcmMsunMasterSyncController` | `.../sync/{type}` |
 | scminterface | `ZaoqiangTcmMsunMirrorQueryController` | `entry-his` / `bill-his` |
-| scminterface | `01_table.sql` / `02_column.sql` | 附录 B + `m_msun_push_log` |
+| scminterface | `resources/sql/mysql/msun_his_mirror/01_table.sql`、`02_column.sql` | 镜像 auto-schema；索引见 `database/msun_his_mirror/README.md` |
+| spd-admin | `sql/mysql/material/column.sql` §众阳 HIS | 业务表对照列、推送字段、UPSERT 唯一键 |
 | spd-ui | 出库/退库/仓库页 | `MsunHisViewButton`、补退、行级状态 |
 
 **不宜**新建平行审核接口，避免与库存、流水、收货确认逻辑脱节。
