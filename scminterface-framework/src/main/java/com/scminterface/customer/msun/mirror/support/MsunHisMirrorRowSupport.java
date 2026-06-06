@@ -199,4 +199,14 @@ public final class MsunHisMirrorRowSupport
     {
         return col != null && COLUMN_NAME.matcher(col).matches();
     }
+
+    /** 镜像表 VARCHAR 列写入前截断，避免 Data truncation。 */
+    public static String clampVarchar(String value, int maxLen)
+    {
+        if (value == null || maxLen <= 0)
+        {
+            return value;
+        }
+        return value.length() <= maxLen ? value : value.substring(0, maxLen);
+    }
 }

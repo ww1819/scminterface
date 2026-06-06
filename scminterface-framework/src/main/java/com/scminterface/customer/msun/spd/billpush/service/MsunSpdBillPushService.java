@@ -86,9 +86,10 @@ public class MsunSpdBillPushService
             }
             catch (Exception ex)
             {
-                log.warn("单据推送失败 billId={} err={}", billId, ex.getMessage());
+                String brief = summarizePushError(ex);
+                log.warn("单据推送失败 billId={} err={}", billId, brief, ex);
                 one.put("success", false);
-                one.put("message", ex.getMessage());
+                one.put("message", brief);
                 fail++;
             }
             results.add(one);
@@ -161,9 +162,10 @@ public class MsunSpdBillPushService
         }
         catch (Exception ex)
         {
-            markBillFailed(tenantId, billId, toPush, ex.getMessage());
+            String brief = summarizePushError(ex);
+            markBillFailed(tenantId, billId, toPush, brief);
             throw ex instanceof IllegalArgumentException ? (IllegalArgumentException) ex
-                    : new IllegalStateException(ex.getMessage(), ex);
+                    : new IllegalStateException(brief, ex);
         }
     }
 
@@ -896,6 +898,47 @@ public class MsunSpdBillPushService
             return null;
         }
         return s.length() <= max ? s : s.substring(0, max);
+    }
+
+    /** 推送失败回显：去掉 MyBatis 堆栈，优先取根因。 */
+    private static String summarizePushError(Throwable ex)
+    {
+        if (ex == null)
+        {
+            return "未知错误";
+        }
+        Throwable root = ex;
+        while (root.getCause() != null && root.getCause() != root)
+        {
+            root = root.getCause();
+        }
+        String msg = root.getMessage();
+        if (StringUtils.isEmpty(msg))
+        {
+            msg = ex.getMessage();
+        }
+        if (StringUtils.isEmpty(msg))
+        {
+            return root.getClass().getSimpleName();
+        }
+        if (msg.contains("### Error"))
+        {
+            int causeIdx = msg.indexOf("Cause:");
+            if (causeIdx >= 0)
+            {
+                String cause = msg.substring(causeIdx + 6).trim();
+                int next = cause.indexOf("###");
+                if (next > 0)
+                {
+                    cause = cause.substring(0, next).trim();
+                }
+                if (StringUtils.isNotEmpty(cause))
+                {
+                    msg = cause;
+                }
+            }
+        }
+        return truncate(msg, 480);
     }
 
     private static String trim(Object o)

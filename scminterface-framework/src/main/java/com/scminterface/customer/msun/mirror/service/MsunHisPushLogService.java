@@ -17,6 +17,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class MsunHisPushLogService
 {
+    private static final int PUSH_MSG_MAX_LEN = 480;
+    private static final int HIS_TRACE_ID_MAX_LEN = 64;
+    private static final int PUSH_STATUS_MAX_LEN = 16;
+
     private final MsunHisMirrorSchemaService schemaService;
     private final MsunHisPushLogExecutor pushLogExecutor;
 
@@ -55,12 +59,12 @@ public class MsunHisPushLogService
         if (hisBodyObj instanceof JSONObject)
         {
             JSONObject hisBody = (JSONObject) hisBodyObj;
-            row.put("his_trace_id", hisBody.getString("traceId"));
+            row.put("his_trace_id", MsunHisMirrorRowSupport.clampVarchar(hisBody.getString("traceId"), HIS_TRACE_ID_MAX_LEN));
             boolean ok = Boolean.TRUE.equals(hisBody.getBoolean("success"));
-            row.put("push_status", ok ? "成功" : "失败");
+            row.put("push_status", MsunHisMirrorRowSupport.clampVarchar(ok ? "成功" : "失败", PUSH_STATUS_MAX_LEN));
             if (!ok)
             {
-                row.put("push_msg", hisBody.getString("message"));
+                row.put("push_msg", MsunHisMirrorRowSupport.clampVarchar(hisBody.getString("message"), PUSH_MSG_MAX_LEN));
             }
         }
         else
