@@ -5,16 +5,15 @@ import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
+import com.scminterface.customer.msun.support.MsunHisDateTimeSupport;
 import com.scminterface.customer.msun.service.MsunSpdQueryService;
 import com.scminterface.customer.msun.spd.billpush.MsunSpdBillPushConstants;
 import com.scminterface.customer.msun.spd.service.MsunSpdPushInvokeResult;
 import com.scminterface.customer.msun.spd.service.MsunSpdPushService;
 import com.scminterface.framework.datasource.DataSourceAvailability;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -316,8 +315,8 @@ public class MsunSpdBillPushService
             line.put("buyPrice", entry.get("unit_price"));
             line.put("retailPrice", entry.get("unit_price"));
             line.put("invoiceCode", bill.get("bill_no"));
-            line.put("produceDate", formatHisDateTime(entry.get("begin_time")));
-            line.put("effectiveDate", formatHisDateTime(entry.get("end_time")));
+            line.put("produceDate", MsunHisDateTimeSupport.formatOrNow(entry.get("begin_time")));
+            line.put("effectiveDate", formatHisEffectiveDate(entry.get("end_time")));
             line.put("ycBatchNo", entry.get("batch_number"));
             line.put("spdDetailId", spdDetailId);
             line.put("memo", memo);
@@ -906,17 +905,16 @@ public class MsunSpdBillPushService
         }
     }
 
-    private static String formatHisDateTime(Object dateObj)
+    /** 有效期：必填语义，无法解析时抛错便于排错。 */
+    private static String formatHisEffectiveDate(Object endTime)
     {
-        if (dateObj == null)
+        String formatted = MsunHisDateTimeSupport.format(endTime);
+        if (formatted != null)
         {
-            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+            return formatted;
         }
-        if (dateObj instanceof Date)
-        {
-            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((Date) dateObj);
-        }
-        return String.valueOf(dateObj);
+        throw new IllegalArgumentException("明细有效期(end_time)格式无效，要求 yyyy-MM-dd HH:mm:ss，实际="
+                + (endTime == null ? "null" : endTime));
     }
 
     private static String firstNonEmpty(String a, String b)
