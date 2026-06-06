@@ -89,7 +89,7 @@ public class ZaoqiangTcmMsunSpdBillPushController
         {
             List<Long> billIds = parseBillIds(body);
             Map<String, Object> data = billPushService.pushBills(msunProperties, billIds);
-            return enrichEnv(AjaxResult.success("推送完成", data));
+            return enrichEnv(AjaxResult.success(resolvePushMessage(data), data));
         }
         catch (IllegalArgumentException | IllegalStateException ex)
         {
@@ -111,7 +111,7 @@ public class ZaoqiangTcmMsunSpdBillPushController
             List<Long> ids = new ArrayList<>(1);
             ids.add(billId);
             Map<String, Object> data = billPushService.pushBills(msunProperties, ids);
-            return enrichEnv(AjaxResult.success("推送完成", data));
+            return enrichEnv(AjaxResult.success(resolvePushMessage(data), data));
         }
         catch (IllegalArgumentException | IllegalStateException ex)
         {
@@ -152,6 +152,18 @@ public class ZaoqiangTcmMsunSpdBillPushController
             }
         }
         return ids;
+    }
+
+    private static String resolvePushMessage(Map<String, Object> data)
+    {
+        if (data == null)
+        {
+            return "推送完成";
+        }
+        Object msg = data.get("message");
+        return msg != null && String.valueOf(msg).trim().length() > 0
+                ? String.valueOf(msg)
+                : "推送完成";
     }
 
     private AjaxResult enrichEnv(AjaxResult result)

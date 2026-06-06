@@ -73,7 +73,8 @@ public class MsunSpdBillPushService
             throw new IllegalArgumentException("请指定要推送的单据");
         }
         List<Map<String, Object>> results = new ArrayList<>();
-        int ok = 0;
+        int pushed = 0;
+        int skipped = 0;
         int fail = 0;
         for (Long billId : billIds)
         {
@@ -85,16 +86,23 @@ public class MsunSpdBillPushService
             {
                 fail++;
             }
+            else if (Boolean.TRUE.equals(detail.get("skipped")))
+            {
+                skipped++;
+            }
             else
             {
-                ok++;
+                pushed++;
             }
             results.add(one);
         }
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("total", billIds.size());
-        summary.put("successCount", ok);
+        summary.put("pushedCount", pushed);
+        summary.put("skipCount", skipped);
         summary.put("failCount", fail);
+        summary.put("successCount", pushed);
+        summary.put("message", buildPushSummaryMessage(pushed, skipped, fail));
         summary.put("results", results);
         return summary;
     }
@@ -123,9 +131,14 @@ public class MsunSpdBillPushService
         {
             Map<String, Object> skip = new LinkedHashMap<>();
             skip.put("success", true);
+            skip.put("status", "skipped");
             skip.put("billNo", bill.get("bill_no"));
+            skip.put("billType", billType);
             skip.put("skipped", true);
-            skip.put("message", "无待推送明细（均已成功）");
+            skip.put("entryTotal", entries.size());
+            skip.put("alreadyPushedEntryCount", countAlreadyPushedEntries(entries));
+            skip.put("pushedEntryCount", 0);
+            skip.put("message", "无待推送明细（均已成功），未调用 HIS");
             return skip;
         }
 
@@ -159,8 +172,11 @@ public class MsunSpdBillPushService
             markBillSuccess(tenantId, billId, traceId);
             Map<String, Object> ok = new LinkedHashMap<>();
             ok.put("success", true);
+            ok.put("status", "pushed");
             ok.put("billNo", bill.get("bill_no"));
             ok.put("billType", billType);
+            ok.put("skipped", false);
+            ok.put("entryTotal", entries.size());
             ok.put("pushedEntryCount", toPush.size());
             ok.put("traceId", traceId);
             ok.put("hisInvoke", hisInvoke);
@@ -173,6 +189,8 @@ public class MsunSpdBillPushService
             markBillFailed(tenantId, billId, toPush, brief);
             Map<String, Object> fail = new LinkedHashMap<>();
             fail.put("success", false);
+            fail.put("status", "failed");
+            fail.put("skipped", false);
             fail.put("billNo", bill.get("bill_no"));
             fail.put("billType", billType);
             fail.put("message", brief);
@@ -248,6 +266,54 @@ public class MsunSpdBillPushService
         copy.remove("limit");
         copy.remove("offset");
         return copy;
+    }
+
+    private static String buildPushSummaryMessage(int pushed, int skipped, int fail)
+    {
+        if (fail > 0 && pushed == 0 && skipped == 0)
+        {
+            return "推送失败：" + fail + " 张单据";
+        }
+        if (pushed == 0 && skipped > 0 && fail == 0)
+        {
+            return "已跳过：" + skipped + " 张单据明细均已推送成功，未重复调用 HIS";
+        }
+        StringBuilder sb = new StringBuilder("推送完成");
+        if (pushed > 0)
+        {
+            sb.append("：成功 ").append(pushed);
+        }
+        if (skipped > 0)
+        {
+            sb.append(pushed > 0 ? "，跳过 " : "：跳过 ").append(skipped);
+        }
+        if (fail > 0)
+        {
+            sb.append("，失败 ").append(fail);
+        }
+        return sb.toString();
+    }
+
+    private static int countAlreadyPushedEntries(List<Map<String, Object>> entries)
+    {
+        if (entries == null || entries.isEmpty())
+        {
+            return 0;
+        }
+        int count = 0;
+        for (Map<String, Object> e : entries)
+        {
+            if (e == null)
+            {
+                continue;
+            }
+            String st = str(e.get("his_push_status"));
+            if (MsunSpdBillPushConstants.PUSH_SUCCESS.equals(st))
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     private List<Map<String, Object>> filterEntriesForPush(List<Map<String, Object>> entries)

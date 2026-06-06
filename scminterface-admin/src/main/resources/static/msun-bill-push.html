@@ -21,17 +21,8 @@
         .panel { background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.08); margin-bottom: 16px; overflow: hidden; }
         .panel-title { padding: 14px 18px; font-weight: 600; border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
         .panel-body { padding: 16px 18px; }
-        .bill-tabs { display: flex; gap: 8px; padding: 12px 18px 0; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
-        .bill-tab-btn {
-            border: none; background: transparent; padding: 10px 18px; border-radius: 8px 8px 0 0;
-            cursor: pointer; font-size: 14px; color: #4b5563; border: 1px solid transparent; margin-bottom: -1px;
-        }
-        .bill-tab-btn.active {
-            background: #fff; color: #0f766e; font-weight: 600;
-            border-color: #e5e7eb; border-bottom-color: #fff;
-        }
-        .bill-tab-panel { display: none; }
-        .bill-tab-panel.active { display: block; }
+        .bill-section { border-bottom: 1px solid #e5e7eb; }
+        .bill-section:last-child { border-bottom: none; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px; margin-bottom: 14px; }
         .field label { display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px; }
         .field input, .field select { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; }
@@ -57,6 +48,7 @@
         .meta-bar { padding: 10px 18px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; background: #fafafa; }
         .pager { display: flex; gap: 8px; align-items: center; font-size: 13px; }
         .push-result-panel { display: none; margin-top: 8px; }
+        .inline-resp-label { font-size: 11px; font-weight: 600; color: #0f766e; margin: 10px 0 8px; }
         .push-inv-title {
             font-size: 12px; font-weight: 600; color: #0f766e; margin: 14px 0 8px; padding-bottom: 4px;
             border-bottom: 1px dashed #99f6e4;
@@ -84,7 +76,7 @@
     <div class="header">
         <div>
             <h1>众阳 HIS 单据推送</h1>
-            <div class="header-sub">出库单与退库单分开测试；查询 SPD 明细后推送 HIS，由接口端回写 SPD 主表/明细标志</div>
+            <div class="header-sub">出库单在上、退库单在下；推送结果分段展示 Headers / 入参 / HIS回参 / SPD落库</div>
         </div>
         <div>
             <a class="btn-link" href="/msun-probe.html">接口探针</a>
@@ -93,15 +85,10 @@
     </div>
 
     <div class="layout">
-        <div class="panel">
-            <div class="bill-tabs">
-                <button type="button" class="bill-tab-btn active" data-tab="201" onclick="bpSwitchTab('201')">出库单推送 (201)</button>
-                <button type="button" class="bill-tab-btn" data-tab="401" onclick="bpSwitchTab('401')">退库单推送 (401)</button>
-            </div>
-
+        <div class="panel" id="bill-push-standalone">
             <!-- 出库单 201 -->
-            <div id="tab-201" class="bill-tab-panel active">
-                <div class="panel-title">出库单查询 <span class="api-badge">2.5.41 drug-stocks-new</span></div>
+            <div class="bill-section" id="block-bill-outbound">
+                <div class="panel-title">出库单推送 <span class="api-badge">201 · 2.5.41</span></div>
                 <div class="panel-body">
                     <p class="hint">仅查已审核出库单（bill_type=201）。推送药库→药房入库。</p>
                     <div class="form-grid">
@@ -148,16 +135,15 @@
                 </div>
                 <div class="meta-bar" id="metaInfo201">就绪</div>
                 <div class="panel-body" style="border-top:1px solid #e5e7eb;">
-                    <div class="panel-title" style="padding:0 0 8px;border:none;background:transparent;">出库推送结果</div>
                     <div class="push-result-panel" id="pushResult201"></div>
                 </div>
             </div>
 
             <!-- 退库单 401 -->
-            <div id="tab-401" class="bill-tab-panel">
-                <div class="panel-title">退库单查询 <span class="api-badge return">2.5.42 drug-stocks-return</span></div>
+            <div class="bill-section" id="block-bill-return">
+                <div class="panel-title">退库单推送 <span class="api-badge return">401 · 2.5.42</span></div>
                 <div class="panel-body">
-                    <p class="hint">仅查已审核退库单（bill_type=401）。须明细含 pharmacyStockId（出库推送回写或科室库存）。</p>
+                    <p class="hint">仅查已审核退库单（bill_type=401）。pharmacyStockId 传 his_stock_query_id。</p>
                     <div class="form-grid">
                         <div class="field"><label>退库单号</label><input id="q401_billNo" placeholder="模糊匹配"></div>
                         <div class="field"><label>产品名称</label><input id="q401_materialName" placeholder="模糊匹配"></div>
@@ -196,13 +182,12 @@
                             </tr>
                         </thead>
                         <tbody id="dataBody401">
-                            <tr><td colspan="11" style="text-align:center;color:#9ca3af;">请切换至此页后查询</td></tr>
+                            <tr><td colspan="11" style="text-align:center;color:#9ca3af;">加载中…</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="meta-bar" id="metaInfo401">就绪</div>
                 <div class="panel-body" style="border-top:1px solid #e5e7eb;">
-                    <div class="panel-title" style="padding:0 0 8px;border:none;background:transparent;">退库推送结果</div>
                     <div class="push-result-panel" id="pushResult401"></div>
                 </div>
             </div>

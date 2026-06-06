@@ -14,8 +14,6 @@ function bpApiBase() {
 
 var BP_PUSH_LABELS = { '0': '未推送', '1': '推送中', '2': '成功', '3': '失败' };
 
-var bpActiveTab = '201';
-
 /** @type {Record<string, {pageNum:number,total:number,rows:Array,selected:Set}>} */
 var bpState = {
     '201': { pageNum: 1, total: 0, rows: [], selected: new Set() },
@@ -144,20 +142,6 @@ function bpToggleAll(tab, el) {
     });
 }
 
-function bpSwitchTab(tab) {
-    bpActiveTab = tab;
-    document.querySelectorAll('.bill-tab-btn').forEach(function (btn) {
-        btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
-    });
-    document.querySelectorAll('.bill-tab-panel').forEach(function (panel) {
-        panel.classList.toggle('active', panel.id === 'tab-' + tab);
-    });
-    var st = bpTabState(tab);
-    if (!st.rows.length && st.total === 0) {
-        bpSearch(tab, 1);
-    }
-}
-
 async function bpSearch(tab, page) {
     if (!bpCheckLogin()) return;
     var st = bpTabState(tab);
@@ -253,12 +237,36 @@ function bpRenderDebugBlock(title, content, blockId) {
         '<pre class="' + preClass + '" id="' + blockId + '">' + body + '</pre></div>';
 }
 
+function bpBuildSpdWriteback(r) {
+    if (!r) return null;
+    return {
+        status: r.status,
+        success: r.success,
+        skipped: r.skipped,
+        billId: r.billId,
+        billNo: r.billNo,
+        billType: r.billType,
+        pushedEntryCount: r.pushedEntryCount,
+        entryTotal: r.entryTotal,
+        alreadyPushedEntryCount: r.alreadyPushedEntryCount,
+        traceId: r.traceId,
+        message: r.message,
+        spdTables: r.skipped
+            ? '未回写（明细 his_push_status 已为成功）'
+            : (r.success
+                ? 'stk_io_bill.his_push_status / stk_io_bill_entry.his_push_status（出库另回写 stk_dep_inventory HIS 键）'
+                : '推送失败，已标记 his_push_status=失败')
+    };
+}
+
 function bpBuildPushResultHtml(tab, res) {
     var html = [];
     if (!res) {
         html.push('<p class="hint">无响应</p>');
         return html.join('');
     }
+
+    html.push('<div class="inline-resp-label">排错：Headers / 入参 / HIS回参 / SPD落库</div>');
 
     var summary = {
         code: res.code,
@@ -270,53 +278,65 @@ function bpBuildPushResultHtml(tab, res) {
     if (res.data) {
         summary.data = {
             total: res.data.total,
+            pushedCount: res.data.pushedCount,
+            skipCount: res.data.skipCount,
             successCount: res.data.successCount,
             failCount: res.data.failCount,
-            results: (res.data.results || []).map(function (r) {
-                if (!r) return r;
-                var copy = {};
-                Object.keys(r).forEach(function (k) {
-                    if (k !== 'hisInvoke') copy[k] = r[k];
-                });
-                return copy;
-            })
+            message: res.data.message
         };
     }
-    html.push(bpRenderDebugBlock('推送接口摘要', bpJsonPretty(summary), 'bpSum' + tab));
+    html.push(bpRenderDebugBlock('推送汇总', bpJsonPretty(summary), 'bpSum' + tab));
 
     var results = res.data && res.data.results;
-    var hasInvoke = false;
-    if (results && results.length) {
-        results.forEach(function (r, idx) {
-            if (!r || !r.hisInvoke) return;
-            hasInvoke = true;
-            var inv = r.hisInvoke;
-            var prefix = 'bp' + tab + 'i' + idx;
-            var titleCls = r.success === false ? 'push-inv-title fail' : 'push-inv-title';
-            var title = (inv.apiCode || 'HIS') + ' · billId=' + (r.billId != null ? r.billId : '—')
-                + ' · ' + (r.billNo || '—');
-            if (inv.url) title += ' · ' + inv.url;
-            if (inv.httpStatus != null) title += ' · HTTP ' + inv.httpStatus;
-            html.push('<div class="' + titleCls + '">' + bpEscape(title) + '</div>');
+    if (!results || !results.length) {
+        html.push(bpRenderDebugBlock('完整外层回参', bpJsonPretty(res), 'bpFull' + tab));
+        return html.join('');
+    }
 
+    results.forEach(function (r, idx) {
+        if (!r) return;
+        var prefix = 'bp' + tab + 'r' + idx;
+        var apiCode = (r.billType === 401 ? '2.5.42' : '2.5.41');
+        var titleCls = r.success === false ? 'push-inv-title fail' : 'push-inv-title';
+        var title = apiCode + ' · billId=' + (r.billId != null ? r.billId : '—')
+            + ' · ' + (r.billNo || '—');
+        if (r.status) title += ' · ' + r.status;
+        html.push('<div class="' + titleCls + '">' + bpEscape(title) + '</div>');
+
+        var inv = r.hisInvoke;
+        if (inv) {
+            if (inv.url || inv.method) {
+                html.push('<p class="hint">' + bpEscape((inv.method || 'POST') + ' ' + (inv.url || '')
+                    + (inv.httpStatus != null ? ' · HTTP ' + inv.httpStatus : '')) + '</p>');
+            }
+            if (inv.note) {
+                html.push('<p class="hint">' + bpEscape(inv.note) + '</p>');
+            }
             html.push(bpRenderDebugBlock(
-                '请求头 Headers',
+                '请求头 Headers（众阳 sign/license 已脱敏）',
                 bpJsonPretty(inv.requestHeaders || {}),
-                prefix + 'hdr'));
+                prefix + 'Hdr'));
             html.push(bpRenderDebugBlock(
                 '入参 Request Body',
                 bpJsonPretty(inv.requestBody),
-                prefix + 'req'));
+                prefix + 'Req'));
             var resp = inv.hisBody != null ? inv.hisBody : inv.responseRaw;
             html.push(bpRenderDebugBlock(
-                '回参 Response',
+                '回参 Response（HIS hisBody）',
                 bpJsonPretty(resp),
-                prefix + 'resp'));
-        });
-    }
-    if (!hasInvoke) {
-        html.push('<p class="hint" style="margin:8px 0 0">未产生 HIS 调用明细（可能推送未执行到调 HIS 步骤）</p>');
-    }
+                prefix + 'Resp'));
+        } else if (r.skipped) {
+            html.push('<p class="hint">未调用 HIS：' + bpEscape(r.message || '明细均已推送成功') + '</p>');
+        } else if (r.success === false) {
+            html.push('<p class="hint">HIS 未返回或调用前失败，请查看 SPD 落库块中的 message</p>');
+        }
+
+        html.push(bpRenderDebugBlock(
+            'SPD 落库回写（stk_io_bill / entry his_push_status）',
+            bpJsonPretty(bpBuildSpdWriteback(r)),
+            prefix + 'Spd'));
+    });
+
     return html.join('');
 }
 
@@ -335,7 +355,7 @@ async function bpPushOne(tab, billId) {
     var res = await post(bpApiBase() + '/push/' + billId, {});
     bpShowPushResult(tab, res);
     if (res && res.code === 200) {
-        bpSetMeta(tab, typeLabel + '推送完成');
+        bpSetMeta(tab, res.msg || (typeLabel + '推送完成'));
         bpSearch(tab, bpTabState(tab).pageNum);
     } else {
         bpSetMeta(tab, '推送失败：' + (res && res.msg ? res.msg : ''));
@@ -355,28 +375,30 @@ async function bpBatchPush(tab) {
     if (res && res.code === 200) {
         st.selected.clear();
         bpUpdateBatchBtn(tab);
-        bpSetMeta(tab, '批量推送完成');
+        bpSetMeta(tab, res.msg || '批量推送完成');
         bpSearch(tab, st.pageNum);
     } else {
         bpSetMeta(tab, '批量推送失败：' + (res && res.msg ? res.msg : ''));
     }
 }
 
-/** 探针页「出退库推送」主 Tab 首次打开时加载 */
+/** 探针页「出退库推送」主 Tab 首次打开时加载（出库在上、退库在下，同时初始化） */
 function bpInitBillPushTab() {
     if (bpProbeInited) return;
     bpProbeInited = true;
     if (bpCheckLogin()) {
         bpSearch('201', 1);
+        bpSearch('401', 1);
     }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    bpStandalonePage = !!document.querySelector('.layout > .panel > .bill-tabs');
+    bpStandalonePage = !!document.getElementById('bill-push-standalone');
     if (!bpStandalonePage && document.getElementById('tab-bill-push')) {
         return;
     }
     if (bpCheckLogin()) {
         bpSearch('201', 1);
+        bpSearch('401', 1);
     }
 });

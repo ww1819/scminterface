@@ -214,14 +214,8 @@
             min-width: 220px; padding: 6px 10px; border: 1px solid #5eead4;
             border-radius: 6px; font-size: 13px; background: #fff;
         }
-        .bill-tabs { display: flex; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid #e5e7eb; }
-        .bill-tab-btn {
-            border: none; background: transparent; padding: 8px 14px; border-radius: 6px 6px 0 0;
-            cursor: pointer; font-size: 13px; color: #4b5563; margin-bottom: -1px;
-        }
-        .bill-tab-btn.active { background: #ccfbf1; color: #0f766e; font-weight: 600; }
-        .bill-tab-panel { display: none; }
-        .bill-tab-panel.active { display: block; }
+        .bill-section { margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
+        .bill-section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
         .api-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: #ccfbf1; color: #0f766e; margin-left: 6px; font-weight: normal; }
         .api-badge.return { background: #ede9fe; color: #5b21b6; }
         .btn-return { background: #7c3aed; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
@@ -264,7 +258,6 @@
             </div>
         </div>
         <div class="header-actions">
-            <a href="#bill-push" class="btn-link">出退库推送</a>
             <a href="/index.html" class="btn-link">返回主页</a>
             <a href="/login.html" class="btn-link">重新登录</a>
         </div>
@@ -380,20 +373,14 @@
                 <div id="form-mergeStocks"></div>
                 <div id="form-batchStocks"></div>
                 <div id="form-ykInstock"></div>
-                <p class="hint">出退库单据推送请切换到「出退库推送」页签（2.5.41 出库 / 2.5.42 退库，回写 SPD 标志）。</p>
+                <p class="hint">出退库单据推送请切换到「出退库推送」页签（出库在上、退库在下；2.5.41 / 2.5.42，回写 SPD 标志）。</p>
             </div>
 
             <div id="tab-bill-push" class="tab-panel">
-                <div class="api-block">
-                    <h3>SPD 出退库单推送</h3>
-                    <p class="api-desc">查询已审核出库/退库明细，推送众阳 HIS，由接口端回写 <code>stk_io_bill</code> / <code>stk_io_bill_entry</code> 的 <code>his_push_status</code>。</p>
-                    <div class="bill-tabs">
-                        <button type="button" class="bill-tab-btn active" data-tab="201" onclick="bpSwitchTab('201')">出库单 (201 · 2.5.41)</button>
-                        <button type="button" class="bill-tab-btn" data-tab="401" onclick="bpSwitchTab('401')">退库单 (401 · 2.5.42)</button>
-                    </div>
-
-                    <div id="tab-201" class="bill-tab-panel active">
-                        <p class="hint">仅查已审核出库单；推送药库→药房入库。</p>
+                <div class="api-block bill-section" id="block-bill-outbound">
+                    <h3>出库单推送 <span class="api-badge">201 · 2.5.41</span></h3>
+                    <p class="api-desc">查询已审核出库明细，推送众阳 HIS 药库→药房入库；成功后回写 <code>stk_io_bill</code> / <code>stk_io_bill_entry</code> 及科室库存 HIS 键。</p>
+                    <p class="hint">仅查已审核出库单（bill_type=201）。</p>
                         <div class="form-grid">
                             <div class="field"><label>出库单号</label><input id="q201_billNo" placeholder="模糊"></div>
                             <div class="field"><label>产品名称</label><input id="q201_materialName" placeholder="模糊"></div>
@@ -419,12 +406,14 @@
                             </tr></thead>
                             <tbody id="dataBody201"><tr><td colspan="10" style="text-align:center;color:#9ca3af;">切换至此页签后自动加载</td></tr></tbody>
                         </table>
-                        <p class="hint" id="metaInfo201">就绪</p>
-                        <div class="push-result-panel" id="pushResult201"></div>
-                    </div>
+                    <p class="hint" id="metaInfo201">就绪</p>
+                    <div class="api-inline-resp push-result-panel" id="pushResult201"></div>
+                </div>
 
-                    <div id="tab-401" class="bill-tab-panel">
-                        <p class="hint">仅查已审核退库单；明细须含 pharmacyStockId。</p>
+                <div class="api-block bill-section" id="block-bill-return">
+                    <h3>退库单推送 <span class="api-badge return">401 · 2.5.42</span></h3>
+                    <p class="api-desc">查询已审核退库明细，推送众阳 HIS 退库；<code>pharmacyStockId</code> 传 <code>his_stock_query_id</code>（见测试指南 §2.4）。</p>
+                    <p class="hint">仅查已审核退库单（bill_type=401）。</p>
                         <div class="form-grid">
                             <div class="field"><label>退库单号</label><input id="q401_billNo" placeholder="模糊"></div>
                             <div class="field"><label>产品名称</label><input id="q401_materialName" placeholder="模糊"></div>
@@ -448,11 +437,10 @@
                                 <th><input type="checkbox" id="chkAll401" onchange="bpToggleAll('401', this)"></th>
                                 <th>单号</th><th>科室</th><th>仓库</th><th>产品</th><th>规格</th><th>数量</th><th>行HIS</th><th>单HIS</th><th>pharmacyStockId</th><th>操作</th>
                             </tr></thead>
-                            <tbody id="dataBody401"><tr><td colspan="11" style="text-align:center;color:#9ca3af;">请查询</td></tr></tbody>
+                            <tbody id="dataBody401"><tr><td colspan="11" style="text-align:center;color:#9ca3af;">切换至此页签后自动加载</td></tr></tbody>
                         </table>
-                        <p class="hint" id="metaInfo401">就绪</p>
-                        <div class="push-result-panel" id="pushResult401"></div>
-                    </div>
+                    <p class="hint" id="metaInfo401">就绪</p>
+                    <div class="api-inline-resp push-result-panel" id="pushResult401"></div>
                 </div>
             </div>
             </div>

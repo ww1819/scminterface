@@ -425,6 +425,157 @@ WHERE id = <dep_inventory_id> AND tenant_id = 'zaoqiang-tcm-001';
 | 推送日志有、业务表无 | 确认 SPD 数据源已启用；scminterface 单据推送走 `MsunSpdBillPushService`，SPD 内推送走 `MsunHisBillPushServiceImpl` |
 | 对账「当时推了什么」 | `GET .../mirror/bill-his?billId=3` 或查 `m_msun_push_log` |
 
+### 3.2 单据推送接口回参（出退库推送页 / `spd/bill-push`）
+
+> **接口**：`POST .../spd/bill-push/push` 或 `POST .../spd/bill-push/push/{billId}`  
+> **用途**：联调页「出退库推送」Tab 推送后的外层 `AjaxResult` 排错；区分**本次真正调 HIS** 与**已跳过（明细均已成功）**。
+
+#### 3.2.1 外层包装（前置机 `ZaoqiangTcmMsunSpdBillPushController`）
+
+顶层字段：`code`、`msg`、`tenantId`、`activeEnv`、`hospitalName`、`data`。
+
+`data` 汇总：
+
+| 字段 | 含义 |
+|------|------|
+| `total` | 本次请求推送的单据数 |
+| `pushedCount` | **本次真正调用 HIS 且成功** 的单据数 |
+| `skipCount` | 跳过数（明细 `his_push_status=2`，未再调 HIS） |
+| `failCount` | 失败数 |
+| `successCount` | 与 `pushedCount` 相同（兼容旧字段，**不含**跳过） |
+| `message` | 汇总文案，与顶层 `msg` 一致 |
+| `results[]` | 每张单据一条 |
+
+单条 `results[]`：
+
+| 字段 | `status=pushed` | `status=skipped` | `status=failed` |
+|------|-----------------|------------------|-----------------|
+| `success` | `true` | `true` | `false` |
+| `status` | `pushed` | `skipped` | `failed` |
+| `skipped` | `false` | `true` | `false` |
+| `billId` / `billNo` | 有 | 有 | 有 |
+| `billType` | `201`/`401` | 有 | 有 |
+| `pushedEntryCount` | 本次推送明细数 | `0` | — |
+| `entryTotal` | 主单明细总数 | 有 | — |
+| `alreadyPushedEntryCount` | — | 已成功明细数 | — |
+| `traceId` | HIS `traceId` | 无 | 无 |
+| `hisInvoke` | Headers/入参/回参 | **无**（未调 HIS） | 可能有部分入参 |
+| `message` | — | 跳过原因 | 失败原因 |
+
+#### 3.2.2 退库单「已跳过」样本（2026-06-06）
+
+退库单 `TK2026060600001`（`billId=5`），明细 `his_push_status` 已为 `2`，再次点击推送时**不会重复调 2.5.42**：
+
+```json
+{
+  "code": 200,
+  "msg": "已跳过：1 张单据明细均已推送成功，未重复调用 HIS",
+  "tenantId": "zaoqiang-tcm-001",
+  "activeEnv": "prod",
+  "hospitalName": "枣强县中医院",
+  "data": {
+    "total": 1,
+    "pushedCount": 0,
+    "skipCount": 1,
+    "failCount": 0,
+    "successCount": 0,
+    "message": "已跳过：1 张单据明细均已推送成功，未重复调用 HIS",
+    "results": [
+      {
+        "billId": 5,
+        "success": true,
+        "status": "skipped",
+        "billNo": "TK2026060600001",
+        "billType": 401,
+        "skipped": true,
+        "entryTotal": 1,
+        "alreadyPushedEntryCount": 1,
+        "pushedEntryCount": 0,
+        "message": "无待推送明细（均已成功），未调用 HIS"
+      }
+    ]
+  }
+}
+```
+
+> **易错点**：旧版将跳过计入 `successCount=1` 且 `msg=推送完成`，易误判为「刚推成功」。修正后 `pushedCount=0`、`skipCount=1`，联调页无 `hisInvoke` 块属正常。
+
+若需**强制重推**，须先将明细 `his_push_status` 改为 `0` 或 `3`（并确认 HIS 侧允许），再重新推送。
+
+#### 3.2.3 2.5.42 退库推送成功样本（请求 + 回参）
+
+> **单据**：退库单号 `TK2026060600001`；主单 `stk_io_bill.id=5`，明细 `stk_io_bill_entry.id=4`  
+> **接口**：`POST /msun-middle-base-resource/v1/drug-stocks-new/d`（前置机 `.../push/drug-stocks-return`）
+
+**请求 Body**（`MsunSpdBillPushService.buildReturnBody`）：
+
+```json
+{
+  "storageDeptId": 8837823902808417000,
+  "pharmacyDeptId": 8837863243411958000,
+  "isReturnToSupplier": "1",
+  "outStockDetailDTOList": [
+    {
+      "pharmacyStockId": 8837866950089530760,
+      "quantity": 100,
+      "memo": "ZQ-zaoqiang-tcm-001-4"
+    }
+  ]
+}
+```
+
+| 字段 | 样本/规则 | SPD 来源 |
+|------|-----------|----------|
+| `storageDeptId` | 药库科室 HIS ID | `fd_warehouse` → `his_id` |
+| `pharmacyDeptId` | 退库科室 HIS ID | `fd_department` → `his_id` |
+| `isReturnToSupplier` | `"1"` | 退供应商 |
+| `pharmacyStockId` | `8837866950089530760` | **`his_stock_query_id`**（非 `his_pharmacy_stock_id`） |
+| `quantity` | 退库数量 | `stk_io_bill_entry.qty` |
+| `memo` | `ZQ-zaoqiang-tcm-001-4` | `ZQ-{tenantId}-{entryId}` |
+
+推送前会经 2.5.43 校验 `qty ≤ stockAmount`（字段 `ycStockQueryId` 参与匹配）。
+
+**hisBody 成功回参**（2.5.42 与 2.5.41 类似，成功时 `data` 常为空数组）：
+
+```json
+{
+  "success": true,
+  "code": "0000",
+  "message": "成功",
+  "data": [],
+  "traceId": "<HIS-traceId>"
+}
+```
+
+**本次真正推送成功时**，`results[0]` 额外包含：
+
+```json
+{
+  "status": "pushed",
+  "skipped": false,
+  "pushedEntryCount": 1,
+  "traceId": "<HIS-traceId>",
+  "hisInvoke": {
+    "apiCode": "2.5.42",
+    "requestHeaders": { },
+    "requestBody": { },
+    "hisBody": { }
+  }
+}
+```
+
+回写：`stk_io_bill_entry.his_push_status=2`；主单 `his_push_status=2`、`his_trace_id`；**不退写**新的 `pharmacyStockId`（退库回参通常无明细数组）。
+
+#### 3.2.4 退库推送排错清单
+
+| 现象 | 建议操作 |
+|------|----------|
+| `msg` 为「已跳过」、`pushedCount=0` | 查 `stk_io_bill_entry.his_push_status` 是否已为 `2`；属防重复，非失败 |
+| 无 `hisInvoke` 块 | 仅 `status=skipped` 时出现；`status=pushed` 时应有 Headers/入参/回参 |
+| 报「退库数量超过HIS可退量」 | 调 2.5.43 核对 `stockAmount`；匹配键用 `ycStockQueryId`（见 §2.4） |
+| `pharmacyStockId` 入参错误 | 枣强须传 `his_stock_query_id`，勿传 `his_pharmacy_stock_id` |
+| 认为未推过但显示已跳过 | 查是否手工改过 `his_push_status`；查 `m_msun_push_log` 是否有 2.5.42 记录 |
+
 ---
 
 ## 4. 环境与凭证
