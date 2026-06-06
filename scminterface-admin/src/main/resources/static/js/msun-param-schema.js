@@ -66,6 +66,11 @@ var MSUN_PARAM_SCHEMA = {
             cursorField: 'drugId',
             delayMs: 300,
             hint: 'limitCount 为每页条数；翻页时传入本页最大 drugId 作为游标'
+        },
+        fetchAll: {
+            materialOrDrug: '1',
+            pageSize: 50,
+            maxPages: 2000
         }
     },
     dictCategory: {

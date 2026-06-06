@@ -250,7 +250,7 @@
                     <h3>获取全部数据（按业务顺序）</h3>
                     <p class="api-desc">
                         顺序：<strong>科室 → 人员 → 分类 → 供应商 → 生产厂家 → 产品档案 → 出退库单据明细 → 汇总库存 → 明细库存</strong>。
-                        分类全量拉取（不传 keyWord）；人员按 roleType 0~8 合并；出退库使用下方时间范围。
+                        耗材字典固定 materialOrDrug=1、每页 50 条自动翻页直至拉完；分类不传 keyWord；人员 roleType 0~8 合并。
                     </p>
                     <div class="form-grid form-grid-fetch-all">
                         <div class="field">
