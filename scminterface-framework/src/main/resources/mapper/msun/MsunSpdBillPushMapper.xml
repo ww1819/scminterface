@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.customer.msun.spd.billpush.mapper.MsunSpdBillPushMapper">
+
+    <sql id="billEntryFromWhere">
+        FROM stk_io_bill b
+        INNER JOIN stk_io_bill_entry e ON e.paren_id = b.id AND (e.del_flag IS NULL OR e.del_flag != 1)
+        LEFT JOIN fd_department d ON b.department_id = d.id AND d.tenant_id = b.tenant_id
+        LEFT JOIN fd_warehouse w ON b.warehouse_id = w.id AND w.tenant_id = b.tenant_id
+        LEFT JOIN fd_material m ON e.material_id = m.id AND m.tenant_id = b.tenant_id
+        WHERE b.tenant_id = #{tenantId}
+          AND (b.del_flag IS NULL OR b.del_flag != 1)
+          <if test="billType != null">AND b.bill_type = #{billType}</if>
+          <if test="billTypes != null and billTypes.size() > 0">
+            AND b.bill_type IN
+            <foreach collection="billTypes" item="bt" open="(" separator="," close=")">#{bt}</foreach>
+          </if>
+          <if test="billStatus != null">AND b.bill_status = #{billStatus}</if>
+          <if test="billNo != null and billNo != ''">AND b.bill_no LIKE CONCAT('%', #{billNo}, '%')</if>
+          <if test="materialName != null and materialName != ''">
+            AND (
+              e.material_name LIKE CONCAT('%', #{materialName}, '%')
+              OR m.name LIKE CONCAT('%', #{materialName}, '%')
+            )
+          </if>
+          <if test="materialSpeci != null and materialSpeci != ''">
+            AND (
+              e.material_speci LIKE CONCAT('%', #{materialSpeci}, '%')
+              OR m.speci LIKE CONCAT('%', #{materialSpeci}, '%')
+            )
+          </if>
+          <if test="departmentName != null and departmentName != ''">
+            AND d.name LIKE CONCAT('%', #{departmentName}, '%')
+          </if>
+          <if test="warehouseName != null and warehouseName != ''">
+            AND w.name LIKE CONCAT('%', #{warehouseName}, '%')
+          </if>
+          <if test="hisPushStatus != null and hisPushStatus != ''">
+            AND IFNULL(e.his_push_status, '0') = #{hisPushStatus}
+          </if>
+    </sql>
+
+    <select id="selectBillEntryRows" resultType="java.util.HashMap">
+        SELECT
+            b.id AS bill_id,
+            b.bill_no,
+            b.bill_type,
+            b.bill_status,
+            b.audit_date,
+            b.suppler_id AS bill_supplier_id,
+            b.his_push_status AS bill_his_push_status,
+            b.his_push_msg AS bill_his_push_msg,
+            b.his_push_time AS bill_his_push_time,
+            b.department_id,
+            b.warehouse_id,
+            d.name AS department_name,
+            d.his_id AS department_his_id,
+            w.name AS warehouse_name,
+            w.his_id AS warehouse_his_id,
+            e.id AS entry_id,
+            e.material_id,
+            e.qty,
+            e.unit_price,
+            e.amt,
+            e.batch_no,
+            e.batch_number,
+            e.begin_time,
+            e.end_time,
+            e.suppler_id AS entry_supplier_id,
+            e.stk_inventory_id,
+            e.dep_inventory_id,
+            e.kc_no,
+            e.his_push_status,
+            e.his_push_msg,
+            e.his_memo,
+            e.his_spd_detail_id,
+            e.his_pharmacy_stock_id,
+            e.his_drug_id,
+            e.his_drug_spec_packing_id,
+            COALESCE(NULLIF(e.material_name, ''), m.name) AS material_name,
+            COALESCE(NULLIF(e.material_speci, ''), m.speci) AS material_speci,
+            m.code AS material_code,
+            m.his_id AS material_his_id,
+            m.his_spec_packing_id AS material_his_spec_packing_id
+        <include refid="billEntryFromWhere"/>
+        ORDER BY b.bill_status ASC, b.create_time DESC, b.id DESC, e.id ASC
+        <if test="limit != null">LIMIT #{limit}</if>
+        <if test="offset != null">OFFSET #{offset}</if>
+    </select>
+
+    <select id="countBillEntryRows" resultType="long">
+        SELECT COUNT(1)
+        <include refid="billEntryFromWhere"/>
+    </select>
+
+    <select id="selectBillById" resultType="java.util.HashMap">
+        SELECT id, bill_no, bill_type, bill_status, tenant_id, department_id, warehouse_id, suppler_id,
+               his_push_status, his_push_msg, audit_date
+        FROM stk_io_bill
+        WHERE tenant_id = #{tenantId} AND id = #{billId}
+          AND (del_flag IS NULL OR del_flag != 1)
+        LIMIT 1
+    </select>
+
+    <select id="selectEntriesByBillId" resultType="java.util.HashMap">
+        SELECT e.id AS entry_id, e.material_id, e.qty, e.unit_price, e.batch_no, e.batch_number,
+               e.begin_time, e.end_time, e.suppler_id AS entry_supplier_id,
+               e.stk_inventory_id, e.dep_inventory_id, e.kc_no,
+               e.his_push_status, e.his_push_msg, e.his_memo, e.his_spd_detail_id,
+               e.his_pharmacy_stock_id, e.his_drug_id, e.his_drug_spec_packing_id,
+               COALESCE(NULLIF(e.material_name, ''), m.name) AS material_name,
+               m.his_id AS material_his_id, m.his_spec_packing_id AS material_his_spec_packing_id
+        FROM stk_io_bill_entry e
+        LEFT JOIN fd_material m ON e.material_id = m.id AND m.tenant_id = #{tenantId}
+        WHERE e.paren_id = #{billId} AND e.tenant_id = #{tenantId}
+          AND (e.del_flag IS NULL OR e.del_flag != 1)
+        ORDER BY e.id ASC
+    </select>
+
+    <select id="selectWarehouseById" resultType="java.util.HashMap">
+        SELECT id, name, his_id FROM fd_warehouse
+        WHERE tenant_id = #{tenantId} AND id = #{id} AND del_flag = 0 LIMIT 1
+    </select>
+
+    <select id="selectDepartmentById" resultType="java.util.HashMap">
+        SELECT id, name, his_id FROM fd_department
+        WHERE tenant_id = #{tenantId} AND id = #{id} AND del_flag = 0 LIMIT 1
+    </select>
+
+    <select id="selectSupplierById" resultType="java.util.HashMap">
+        SELECT id, name, his_id FROM fd_supplier
+        WHERE tenant_id = #{tenantId} AND id = #{id} AND del_flag = 0 LIMIT 1
+    </select>
+
+    <select id="selectMaterialById" resultType="java.util.HashMap">
+        SELECT id, name, his_id, his_spec_packing_id FROM fd_material
+        WHERE tenant_id = #{tenantId} AND id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectDepInventoryById" resultType="java.util.HashMap">
+        SELECT id, his_pharmacy_stock_id, his_storage_stock_id, his_stock_query_id
+        FROM stk_dep_inventory
+        WHERE tenant_id = #{tenantId} AND id = #{id} LIMIT 1
+    </select>
+
+    <update id="updateEntryHisPrepare">
+        UPDATE stk_io_bill_entry SET
+            his_memo = #{hisMemo},
+            his_spd_detail_id = #{hisSpdDetailId},
+            his_drug_id = #{hisDrugId},
+            his_drug_spec_packing_id = #{hisDrugSpecPackingId},
+            his_push_status = #{hisPushStatus},
+            update_time = NOW()
+        WHERE id = #{entryId} AND tenant_id = #{tenantId}
+    </update>
+
+    <update id="updateEntryHisPushResult">
+        UPDATE stk_io_bill_entry SET
+            his_pharmacy_stock_id = #{hisPharmacyStockId},
+            his_storage_stock_id = #{hisStorageStockId},
+            his_stock_query_id = #{hisStockQueryId},
+            his_push_status = #{hisPushStatus},
+            <if test="hisPushMsg != null">his_push_msg = #{hisPushMsg},</if>
+            update_time = NOW()
+        WHERE id = #{entryId} AND tenant_id = #{tenantId}
+    </update>
+
+    <update id="updateEntryHisPushStatus">
+        UPDATE stk_io_bill_entry SET
+            his_push_status = #{hisPushStatus},
+            <if test="hisPushMsg != null">his_push_msg = #{hisPushMsg},</if>
+            update_time = NOW()
+        WHERE id = #{entryId} AND tenant_id = #{tenantId}
+    </update>
+
+    <update id="updateBillHisPushStatus">
+        UPDATE stk_io_bill SET
+            his_push_status = #{hisPushStatus},
+            his_push_time = NOW(),
+            <if test="hisPushMsg != null">his_push_msg = #{hisPushMsg},</if>
+            <if test="hisTraceId != null">his_trace_id = #{hisTraceId},</if>
+            update_time = NOW()
+        WHERE id = #{billId} AND tenant_id = #{tenantId}
+    </update>
+
+    <update id="updateDepInventoryHisStock">
+        UPDATE stk_dep_inventory SET
+            his_pharmacy_stock_id = #{hisPharmacyStockId},
+            his_storage_stock_id = #{hisStorageStockId},
+            his_stock_query_id = #{hisStockQueryId},
+            update_time = NOW()
+        WHERE id = #{depInventoryId} AND tenant_id = #{tenantId}
+    </update>
+</mapper>

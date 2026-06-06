@@ -1,0 +1,741 @@
+package com.scminterface.customer.msun.spd.billpush.service;
+
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
+import com.scminterface.common.enums.DataSourceType;
+import com.scminterface.common.utils.StringUtils;
+import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
+import com.scminterface.customer.msun.spd.billpush.MsunSpdBillPushConstants;
+import com.scminterface.customer.msun.spd.service.MsunSpdPushService;
+import com.scminterface.framework.datasource.DataSourceAvailability;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/**
+ * SPD 出库/退库单据查询与 HIS 推送编排（查询 SPD → 调众阳 → 回写 SPD 主从表标志）。
+ */
+@Service
+public class MsunSpdBillPushService
+{
+    private static final Logger log = LoggerFactory.getLogger(MsunSpdBillPushService.class);
+
+    private static final List<Integer> DEFAULT_BILL_TYPES = Arrays.asList(201, 401);
+
+    private final MsunSpdBillPushExecutor executor;
+    private final MsunSpdPushService pushService;
+    private final DataSourceAvailability dataSourceAvailability;
+
+    public MsunSpdBillPushService(
+            MsunSpdBillPushExecutor executor,
+            MsunSpdPushService pushService,
+            DataSourceAvailability dataSourceAvailability)
+    {
+        this.executor = executor;
+        this.pushService = pushService;
+        this.dataSourceAvailability = dataSourceAvailability;
+    }
+
+    public Map<String, Object> queryBillEntries(MsunHospitalRuntime runtime, Map<String, Object> params)
+    {
+        assertSpdEnabled();
+        Map<String, Object> query = buildQuery(runtime.getTenantId(), params);
+        long total = executor.countBillEntryRows(query);
+        List<Map<String, Object>> rows = executor.listBillEntryRows(query);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("total", total);
+        result.put("rows", rows);
+        result.put("pageNum", query.get("pageNum"));
+        result.put("pageSize", query.get("pageSize"));
+        return result;
+    }
+
+    public Map<String, Object> pushBills(MsunHospitalRuntime runtime, List<Long> billIds)
+    {
+        assertSpdEnabled();
+        if (billIds == null || billIds.isEmpty())
+        {
+            throw new IllegalArgumentException("请指定要推送的单据");
+        }
+        List<Map<String, Object>> results = new ArrayList<>();
+        int ok = 0;
+        int fail = 0;
+        for (Long billId : billIds)
+        {
+            Map<String, Object> one = new LinkedHashMap<>();
+            one.put("billId", billId);
+            try
+            {
+                Map<String, Object> detail = pushOneBill(runtime, billId);
+                one.put("success", true);
+                one.putAll(detail);
+                ok++;
+            }
+            catch (Exception ex)
+            {
+                log.warn("单据推送失败 billId={} err={}", billId, ex.getMessage());
+                one.put("success", false);
+                one.put("message", ex.getMessage());
+                fail++;
+            }
+            results.add(one);
+        }
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("total", billIds.size());
+        summary.put("successCount", ok);
+        summary.put("failCount", fail);
+        summary.put("results", results);
+        return summary;
+    }
+
+    private Map<String, Object> pushOneBill(MsunHospitalRuntime runtime, Long billId)
+    {
+        String tenantId = runtime.getTenantId();
+        Map<String, Object> bill = executor.selectBillById(tenantId, billId);
+        if (bill == null || bill.isEmpty())
+        {
+            throw new IllegalArgumentException("单据不存在 id=" + billId);
+        }
+        Integer billStatus = toInteger(bill.get("bill_status"));
+        if (billStatus == null || billStatus != 2)
+        {
+            throw new IllegalArgumentException("未审核单据不允许推送HIS，单号=" + str(bill.get("bill_no")));
+        }
+        Integer billType = toInteger(bill.get("bill_type"));
+        if (billType == null)
+        {
+            throw new IllegalArgumentException("单据类型未知");
+        }
+        List<Map<String, Object>> entries = executor.selectEntriesByBillId(tenantId, billId);
+        List<Map<String, Object>> toPush = filterEntriesForPush(entries);
+        if (toPush.isEmpty())
+        {
+            Map<String, Object> skip = new LinkedHashMap<>();
+            skip.put("billNo", bill.get("bill_no"));
+            skip.put("skipped", true);
+            skip.put("message", "无待推送明细（均已成功）");
+            return skip;
+        }
+
+        markBillPushing(tenantId, billId);
+        try
+        {
+            JSONObject response;
+            if (billType == 201)
+            {
+                Map<String, Object> body = buildOutboundBody(runtime, bill, toPush);
+                response = pushService.pushDrugStocksNew(runtime, body, extractLogMeta(bill));
+                applyOutboundResponse(tenantId, billId, toPush, response);
+            }
+            else if (billType == 401)
+            {
+                Map<String, Object> body = buildReturnBody(runtime, bill, toPush);
+                response = pushService.pushDrugStocksReturn(runtime, body, extractLogMeta(bill));
+                applyReturnResponse(tenantId, toPush, response);
+            }
+            else
+            {
+                throw new IllegalArgumentException("不支持推送的单据类型 billType=" + billType);
+            }
+            String traceId = extractTraceId(response);
+            markBillSuccess(tenantId, billId, traceId);
+            Map<String, Object> ok = new LinkedHashMap<>();
+            ok.put("billNo", bill.get("bill_no"));
+            ok.put("billType", billType);
+            ok.put("pushedEntryCount", toPush.size());
+            ok.put("traceId", traceId);
+            return ok;
+        }
+        catch (Exception ex)
+        {
+            markBillFailed(tenantId, billId, toPush, ex.getMessage());
+            throw ex instanceof IllegalArgumentException ? (IllegalArgumentException) ex
+                    : new IllegalStateException(ex.getMessage(), ex);
+        }
+    }
+
+    private void assertSpdEnabled()
+    {
+        if (!dataSourceAvailability.isAvailable(DataSourceType.SPD))
+        {
+            throw new IllegalStateException("spring.datasource.druid.spd.enabled=false，SPD 数据源未启用");
+        }
+    }
+
+    private Map<String, Object> buildQuery(String tenantId, Map<String, Object> params)
+    {
+        Map<String, Object> query = new HashMap<>(16);
+        query.put("tenantId", tenantId);
+        query.put("billNo", trim(params.get("billNo")));
+        query.put("materialName", trim(params.get("materialName")));
+        query.put("materialSpeci", trim(params.get("materialSpeci")));
+        query.put("departmentName", trim(params.get("departmentName")));
+        query.put("warehouseName", trim(params.get("warehouseName")));
+        query.put("hisPushStatus", trim(params.get("hisPushStatus")));
+        Integer billType = toInteger(params.get("billType"));
+        if (billType != null)
+        {
+            query.put("billType", billType);
+        }
+        else
+        {
+            query.put("billTypes", DEFAULT_BILL_TYPES);
+        }
+        Integer billStatus = toInteger(params.get("billStatus"));
+        query.put("billStatus", billStatus != null ? billStatus : 2);
+        int pageNum = toInt(params.get("pageNum"), 1);
+        int pageSize = Math.min(toInt(params.get("pageSize"), 20), 200);
+        query.put("pageNum", pageNum);
+        query.put("pageSize", pageSize);
+        query.put("limit", pageSize);
+        query.put("offset", (pageNum - 1) * pageSize);
+        return query;
+    }
+
+    private List<Map<String, Object>> filterEntriesForPush(List<Map<String, Object>> entries)
+    {
+        List<Map<String, Object>> list = new ArrayList<>();
+        if (entries == null)
+        {
+            return list;
+        }
+        for (Map<String, Object> e : entries)
+        {
+            if (e == null)
+            {
+                continue;
+            }
+            String st = str(e.get("his_push_status"));
+            if (st == null || st.isEmpty())
+            {
+                st = MsunSpdBillPushConstants.PUSH_NOT;
+            }
+            if (MsunSpdBillPushConstants.PUSH_SUCCESS.equals(st))
+            {
+                continue;
+            }
+            list.add(e);
+        }
+        return list;
+    }
+
+    private Map<String, Object> buildOutboundBody(
+            MsunHospitalRuntime runtime, Map<String, Object> bill, List<Map<String, Object>> entries)
+    {
+        String tenantId = runtime.getTenantId();
+        Long warehouseId = toLong(bill.get("warehouse_id"));
+        Long departmentId = toLong(bill.get("department_id"));
+        String storageHisId = resolveWarehouseHisId(tenantId, warehouseId);
+        String pharmacyHisId = resolveDepartmentHisId(tenantId, departmentId);
+        String supplierHisId = resolveSupplierHisId(tenantId, bill, entries);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("supplierId", parseLongRequired(supplierHisId, "供应商HIS对照"));
+        body.put("storageDeptId", parseLongRequired(storageHisId, "仓库HIS药库科室"));
+        body.put("pharmacyDeptId", parseLongRequired(pharmacyHisId, "科室HIS对照"));
+        body.put("invoiceCode", bill.get("bill_no"));
+        body.put("inStockStatus", MsunSpdBillPushConstants.IN_STOCK_STATUS_PHARMACY);
+        body.put("spdMainId", bill.get("bill_no"));
+        body.put("saveCorrelationFlag", MsunSpdBillPushConstants.SAVE_CORRELATION_FLAG);
+
+        Long billId = toLong(bill.get("id"));
+        List<Map<String, Object>> details = new ArrayList<>();
+        for (Map<String, Object> entry : entries)
+        {
+            Long entryId = toLong(entry.get("entry_id"));
+            Long materialId = toLong(entry.get("material_id"));
+            Map<String, Object> material = materialId != null
+                    ? executor.selectMaterialById(tenantId, materialId) : null;
+            if (material == null || material.isEmpty())
+            {
+                throw new IllegalArgumentException("耗材不存在 entryId=" + entryId);
+            }
+            String memo = MsunSpdBillPushConstants.buildEntryMemo(tenantId, entryId);
+            String spdDetailId = MsunSpdBillPushConstants.buildSpdDetailId(billId, entryId);
+            Map<String, Object> line = new LinkedHashMap<>();
+            line.put("drugId", parseLongRequired(str(material.get("his_id")), "耗材HIS drugId"));
+            line.put("drugSpecPackingId", parseLongRequired(str(material.get("his_spec_packing_id")), "耗材HIS规格"));
+            line.put("quantity", entry.get("qty"));
+            line.put("buyPrice", entry.get("unit_price"));
+            line.put("retailPrice", entry.get("unit_price"));
+            line.put("invoiceCode", bill.get("bill_no"));
+            line.put("produceDate", formatHisDateTime(entry.get("begin_time")));
+            line.put("effectiveDate", formatHisDateTime(entry.get("end_time")));
+            line.put("ycBatchNo", entry.get("batch_number"));
+            line.put("spdDetailId", spdDetailId);
+            line.put("memo", memo);
+            details.add(line);
+            markEntryPrepare(tenantId, entryId, memo, spdDetailId,
+                    str(material.get("his_id")), str(material.get("his_spec_packing_id")));
+        }
+        body.put("inStockDetailDTOList", details);
+        body.put("_spdLogMeta", extractLogMeta(bill));
+        return body;
+    }
+
+    private Map<String, Object> buildReturnBody(
+            MsunHospitalRuntime runtime, Map<String, Object> bill, List<Map<String, Object>> entries)
+    {
+        String tenantId = runtime.getTenantId();
+        Long billId = toLong(bill.get("id"));
+        String storageHisId = resolveWarehouseHisId(tenantId, toLong(bill.get("warehouse_id")));
+        String pharmacyHisId = resolveDepartmentHisId(tenantId, toLong(bill.get("department_id")));
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("storageDeptId", parseLongRequired(storageHisId, "仓库HIS药库科室"));
+        body.put("pharmacyDeptId", parseLongRequired(pharmacyHisId, "科室HIS对照"));
+        body.put("isReturnToSupplier", MsunSpdBillPushConstants.RETURN_TO_SUPPLIER_YES);
+
+        List<Map<String, Object>> details = new ArrayList<>();
+        for (Map<String, Object> entry : entries)
+        {
+            Long entryId = toLong(entry.get("entry_id"));
+            String pharmacyStockId = resolvePharmacyStockId(tenantId, entry);
+            String memo = StringUtils.isNotEmpty(str(entry.get("his_memo")))
+                    ? str(entry.get("his_memo"))
+                    : MsunSpdBillPushConstants.buildEntryMemo(tenantId, entryId);
+            String spdDetailId = StringUtils.isNotEmpty(str(entry.get("his_spd_detail_id")))
+                    ? str(entry.get("his_spd_detail_id"))
+                    : MsunSpdBillPushConstants.buildSpdDetailId(billId, entryId);
+            Map<String, Object> line = new LinkedHashMap<>();
+            line.put("pharmacyStockId", parseLongRequired(pharmacyStockId, "pharmacyStockId"));
+            line.put("quantity", entry.get("qty"));
+            line.put("memo", memo);
+            details.add(line);
+            String drugId = str(entry.get("his_drug_id"));
+            String specId = str(entry.get("his_drug_spec_packing_id"));
+            if (StringUtils.isEmpty(drugId) || StringUtils.isEmpty(specId))
+            {
+                Long materialId = toLong(entry.get("material_id"));
+                Map<String, Object> material = materialId != null
+                        ? executor.selectMaterialById(tenantId, materialId) : null;
+                if (material != null)
+                {
+                    if (StringUtils.isEmpty(drugId))
+                    {
+                        drugId = str(material.get("his_id"));
+                    }
+                    if (StringUtils.isEmpty(specId))
+                    {
+                        specId = str(material.get("his_spec_packing_id"));
+                    }
+                }
+            }
+            markEntryPrepare(tenantId, entryId, memo, spdDetailId, drugId, specId);
+        }
+        body.put("outStockDetailDTOList", details);
+        body.put("_spdLogMeta", extractLogMeta(bill));
+        return body;
+    }
+
+    private void applyOutboundResponse(
+            String tenantId, Long billId, List<Map<String, Object>> entries, JSONObject response)
+    {
+        assertHisSuccess(response);
+        JSONObject wrapped = response.getJSONObject("data");
+        if (wrapped == null)
+        {
+            throw new IllegalStateException("HIS推送响应无 data");
+        }
+        Object hisBodyObj = wrapped.get("hisBody");
+        if (!(hisBodyObj instanceof JSONObject))
+        {
+            throw new IllegalStateException("HIS推送响应格式异常");
+        }
+        JSONArray data = ((JSONObject) hisBodyObj).getJSONArray("data");
+        if (data == null)
+        {
+            throw new IllegalStateException("HIS未返回入库明细数据");
+        }
+        Map<String, JSONObject> byMemo = new HashMap<>();
+        Map<String, JSONObject> bySpdDetail = new HashMap<>();
+        for (int i = 0; i < data.size(); i++)
+        {
+            JSONObject row = data.getJSONObject(i);
+            if (row == null)
+            {
+                continue;
+            }
+            if (StringUtils.isNotEmpty(row.getString("memo")))
+            {
+                byMemo.put(row.getString("memo"), row);
+            }
+            if (StringUtils.isNotEmpty(row.getString("spdDetailId")))
+            {
+                bySpdDetail.put(row.getString("spdDetailId"), row);
+            }
+        }
+        for (Map<String, Object> entry : entries)
+        {
+            Long entryId = toLong(entry.get("entry_id"));
+            String memo = MsunSpdBillPushConstants.buildEntryMemo(tenantId, entryId);
+            String spdDetailId = MsunSpdBillPushConstants.buildSpdDetailId(billId, entryId);
+            JSONObject row = byMemo.get(memo);
+            if (row == null && StringUtils.isNotEmpty(spdDetailId))
+            {
+                row = bySpdDetail.get(spdDetailId);
+            }
+            if (row == null)
+            {
+                row = bySpdDetail.get(String.valueOf(entryId));
+            }
+            if (row == null)
+            {
+                throw new IllegalStateException("HIS回参未匹配明细 entryId=" + entryId);
+            }
+            String pharmacyStockId = firstNonEmpty(row.getString("pharmacyStockId"), row.getString("storageStockId"));
+            markEntryPushResult(tenantId, entryId, pharmacyStockId,
+                    row.getString("storageStockId"), row.getString("stockQueryId"), null);
+            Long depId = toLong(entry.get("dep_inventory_id"));
+            if (depId == null)
+            {
+                depId = toLong(entry.get("kc_no"));
+            }
+            if (depId != null && StringUtils.isNotEmpty(pharmacyStockId))
+            {
+                Map<String, Object> depRow = new HashMap<>(8);
+                depRow.put("tenantId", tenantId);
+                depRow.put("depInventoryId", depId);
+                depRow.put("hisPharmacyStockId", pharmacyStockId);
+                depRow.put("hisStorageStockId", row.getString("storageStockId"));
+                depRow.put("hisStockQueryId", row.getString("stockQueryId"));
+                executor.updateDepInventoryHisStock(depRow);
+            }
+        }
+    }
+
+    private void applyReturnResponse(String tenantId, List<Map<String, Object>> entries, JSONObject response)
+    {
+        assertHisSuccess(response);
+        for (Map<String, Object> entry : entries)
+        {
+            Long entryId = toLong(entry.get("entry_id"));
+            Map<String, Object> row = new HashMap<>(8);
+            row.put("tenantId", tenantId);
+            row.put("entryId", entryId);
+            row.put("hisPushStatus", MsunSpdBillPushConstants.PUSH_SUCCESS);
+            executor.updateEntryHisPushStatus(row);
+        }
+    }
+
+    private String resolvePharmacyStockId(String tenantId, Map<String, Object> entry)
+    {
+        String fromEntry = str(entry.get("his_pharmacy_stock_id"));
+        if (StringUtils.isNotEmpty(fromEntry))
+        {
+            return fromEntry;
+        }
+        Long depId = toLong(entry.get("dep_inventory_id"));
+        if (depId == null)
+        {
+            depId = toLong(entry.get("kc_no"));
+        }
+        if (depId != null)
+        {
+            Map<String, Object> dep = executor.selectDepInventoryById(tenantId, depId);
+            if (dep != null && StringUtils.isNotEmpty(str(dep.get("his_pharmacy_stock_id"))))
+            {
+                return str(dep.get("his_pharmacy_stock_id"));
+            }
+        }
+        throw new IllegalArgumentException("明细缺少 pharmacyStockId，entryId=" + entry.get("entry_id"));
+    }
+
+    private String resolveWarehouseHisId(String tenantId, Long warehouseId)
+    {
+        if (warehouseId == null)
+        {
+            throw new IllegalArgumentException("仓库不能为空");
+        }
+        Map<String, Object> wh = executor.selectWarehouseById(tenantId, warehouseId);
+        if (wh == null || StringUtils.isEmpty(str(wh.get("his_id"))))
+        {
+            throw new IllegalArgumentException("仓库未维护 HIS 药库科室对照(his_id)");
+        }
+        return str(wh.get("his_id"));
+    }
+
+    private String resolveDepartmentHisId(String tenantId, Long departmentId)
+    {
+        if (departmentId == null)
+        {
+            throw new IllegalArgumentException("科室不能为空");
+        }
+        Map<String, Object> dept = executor.selectDepartmentById(tenantId, departmentId);
+        if (dept == null || StringUtils.isEmpty(str(dept.get("his_id"))))
+        {
+            throw new IllegalArgumentException("科室未维护 HIS 对照(his_id)");
+        }
+        return str(dept.get("his_id"));
+    }
+
+    private String resolveSupplierHisId(String tenantId, Map<String, Object> bill, List<Map<String, Object>> entries)
+    {
+        Long supId = toLong(bill.get("suppler_id"));
+        if (supId == null && entries != null)
+        {
+            for (Map<String, Object> e : entries)
+            {
+                if (e != null && StringUtils.isNotEmpty(str(e.get("entry_supplier_id"))))
+                {
+                    supId = toLong(e.get("entry_supplier_id"));
+                    break;
+                }
+            }
+        }
+        if (supId == null)
+        {
+            throw new IllegalArgumentException("出库单未指定供应商，无法推送HIS");
+        }
+        Map<String, Object> supplier = executor.selectSupplierById(tenantId, supId);
+        if (supplier == null || StringUtils.isEmpty(str(supplier.get("his_id"))))
+        {
+            throw new IllegalArgumentException("供应商未维护 HIS 对照(his_id)");
+        }
+        return str(supplier.get("his_id"));
+    }
+
+    private void markBillPushing(String tenantId, Long billId)
+    {
+        Map<String, Object> row = baseBillRow(tenantId, billId);
+        row.put("hisPushStatus", MsunSpdBillPushConstants.PUSHING);
+        row.put("hisPushMsg", null);
+        executor.updateBillHisPushStatus(row);
+    }
+
+    private void markBillSuccess(String tenantId, Long billId, String traceId)
+    {
+        Map<String, Object> row = baseBillRow(tenantId, billId);
+        row.put("hisPushStatus", MsunSpdBillPushConstants.PUSH_SUCCESS);
+        row.put("hisPushMsg", null);
+        row.put("hisTraceId", traceId);
+        executor.updateBillHisPushStatus(row);
+    }
+
+    private void markBillFailed(String tenantId, Long billId, List<Map<String, Object>> entries, String message)
+    {
+        Map<String, Object> row = baseBillRow(tenantId, billId);
+        row.put("hisPushStatus", MsunSpdBillPushConstants.PUSH_FAILED);
+        row.put("hisPushMsg", truncate(message, 480));
+        executor.updateBillHisPushStatus(row);
+        if (entries != null)
+        {
+            for (Map<String, Object> entry : entries)
+            {
+                Long entryId = toLong(entry.get("entry_id"));
+                if (entryId == null)
+                {
+                    continue;
+                }
+                String st = str(entry.get("his_push_status"));
+                if (MsunSpdBillPushConstants.PUSH_SUCCESS.equals(st))
+                {
+                    continue;
+                }
+                Map<String, Object> er = new HashMap<>(8);
+                er.put("tenantId", tenantId);
+                er.put("entryId", entryId);
+                er.put("hisPushStatus", MsunSpdBillPushConstants.PUSH_FAILED);
+                er.put("hisPushMsg", truncate(message, 480));
+                executor.updateEntryHisPushStatus(er);
+            }
+        }
+    }
+
+    private void markEntryPrepare(
+            String tenantId, Long entryId, String memo, String spdDetailId, String drugId, String specId)
+    {
+        Map<String, Object> row = new HashMap<>(12);
+        row.put("tenantId", tenantId);
+        row.put("entryId", entryId);
+        row.put("hisMemo", memo);
+        row.put("hisSpdDetailId", spdDetailId);
+        row.put("hisDrugId", drugId);
+        row.put("hisDrugSpecPackingId", specId);
+        row.put("hisPushStatus", MsunSpdBillPushConstants.PUSHING);
+        executor.updateEntryHisPrepare(row);
+    }
+
+    private void markEntryPushResult(
+            String tenantId, Long entryId, String pharmacyStockId,
+            String storageStockId, String stockQueryId, String msg)
+    {
+        Map<String, Object> row = new HashMap<>(12);
+        row.put("tenantId", tenantId);
+        row.put("entryId", entryId);
+        row.put("hisPharmacyStockId", pharmacyStockId);
+        row.put("hisStorageStockId", storageStockId);
+        row.put("hisStockQueryId", stockQueryId);
+        row.put("hisPushStatus", MsunSpdBillPushConstants.PUSH_SUCCESS);
+        row.put("hisPushMsg", msg);
+        executor.updateEntryHisPushResult(row);
+    }
+
+    private static Map<String, Object> baseBillRow(String tenantId, Long billId)
+    {
+        Map<String, Object> row = new HashMap<>(8);
+        row.put("tenantId", tenantId);
+        row.put("billId", billId);
+        return row;
+    }
+
+    private static Map<String, Object> extractLogMeta(Map<String, Object> bill)
+    {
+        Map<String, Object> meta = new HashMap<>(4);
+        meta.put("spdBillId", bill.get("id"));
+        meta.put("billNo", bill.get("bill_no"));
+        meta.put("billType", bill.get("bill_type"));
+        return meta;
+    }
+
+    private static void assertHisSuccess(JSONObject json)
+    {
+        JSONObject data = json.getJSONObject("data");
+        if (data == null)
+        {
+            return;
+        }
+        Object hisBodyObj = data.get("hisBody");
+        if (hisBodyObj instanceof JSONObject)
+        {
+            JSONObject hisBody = (JSONObject) hisBodyObj;
+            if (!Boolean.TRUE.equals(hisBody.getBoolean("success")))
+            {
+                String msg = hisBody.getString("message");
+                throw new IllegalStateException(msg != null ? msg : "HIS推送失败");
+            }
+        }
+    }
+
+    private static String extractTraceId(JSONObject json)
+    {
+        if (json == null)
+        {
+            return null;
+        }
+        JSONObject data = json.getJSONObject("data");
+        if (data == null)
+        {
+            return null;
+        }
+        Object hisBodyObj = data.get("hisBody");
+        if (hisBodyObj instanceof JSONObject)
+        {
+            return ((JSONObject) hisBodyObj).getString("traceId");
+        }
+        return null;
+    }
+
+    private static long parseLongRequired(String val, String label)
+    {
+        if (StringUtils.isEmpty(val))
+        {
+            throw new IllegalArgumentException(label + " 不能为空");
+        }
+        try
+        {
+            return Long.parseLong(val.trim());
+        }
+        catch (NumberFormatException e)
+        {
+            throw new IllegalArgumentException(label + " 格式非法: " + val);
+        }
+    }
+
+    private static String formatHisDateTime(Object dateObj)
+    {
+        if (dateObj == null)
+        {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        }
+        if (dateObj instanceof Date)
+        {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((Date) dateObj);
+        }
+        return String.valueOf(dateObj);
+    }
+
+    private static String firstNonEmpty(String a, String b)
+    {
+        return StringUtils.isNotEmpty(a) ? a : b;
+    }
+
+    private static String truncate(String s, int max)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        return s.length() <= max ? s : s.substring(0, max);
+    }
+
+    private static String trim(Object o)
+    {
+        if (o == null)
+        {
+            return null;
+        }
+        String s = String.valueOf(o).trim();
+        return s.isEmpty() ? null : s;
+    }
+
+    private static String str(Object o)
+    {
+        return o == null ? null : String.valueOf(o);
+    }
+
+    private static Integer toInteger(Object o)
+    {
+        if (o == null)
+        {
+            return null;
+        }
+        if (o instanceof Number)
+        {
+            return ((Number) o).intValue();
+        }
+        try
+        {
+            return Integer.parseInt(String.valueOf(o));
+        }
+        catch (NumberFormatException e)
+        {
+            return null;
+        }
+    }
+
+    private static Long toLong(Object o)
+    {
+        if (o == null)
+        {
+            return null;
+        }
+        if (o instanceof Number)
+        {
+            return ((Number) o).longValue();
+        }
+        try
+        {
+            return Long.parseLong(String.valueOf(o));
+        }
+        catch (NumberFormatException e)
+        {
+            return null;
+        }
+    }
+
+    private static int toInt(Object o, int defaultVal)
+    {
+        Integer n = toInteger(o);
+        return n != null ? n : defaultVal;
+    }
+}

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>众阳HIS单据推送 - SCM接口服务</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f4f8; min-height: 100vh; }
+        .header {
+            background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
+            color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .header h1 { font-size: 20px; }
+        .header-sub { font-size: 12px; opacity: .85; margin-top: 4px; }
+        .btn-link {
+            color: #fff; text-decoration: none; padding: 6px 14px;
+            border: 1px solid rgba(255,255,255,.35); border-radius: 6px; font-size: 13px; margin-left: 8px;
+        }
+        .layout { max-width: 1280px; margin: 0 auto; padding: 16px; }
+        .panel { background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.08); margin-bottom: 16px; overflow: hidden; }
+        .panel-title { padding: 14px 18px; font-weight: 600; border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
+        .panel-body { padding: 16px 18px; }
+        .bill-tabs { display: flex; gap: 8px; padding: 12px 18px 0; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+        .bill-tab-btn {
+            border: none; background: transparent; padding: 10px 18px; border-radius: 8px 8px 0 0;
+            cursor: pointer; font-size: 14px; color: #4b5563; border: 1px solid transparent; margin-bottom: -1px;
+        }
+        .bill-tab-btn.active {
+            background: #fff; color: #0f766e; font-weight: 600;
+            border-color: #e5e7eb; border-bottom-color: #fff;
+        }
+        .bill-tab-panel { display: none; }
+        .bill-tab-panel.active { display: block; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px; margin-bottom: 14px; }
+        .field label { display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+        .field input, .field select { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; }
+        .tool-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+        .btn { border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .btn-primary { background: #0d9488; color: #fff; }
+        .btn-warn { background: #d97706; color: #fff; }
+        .btn-return { background: #7c3aed; color: #fff; }
+        .btn-secondary { background: #e5e7eb; color: #374151; }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .hint { font-size: 12px; color: #6b7280; line-height: 1.5; margin-bottom: 10px; }
+        .api-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: #ccfbf1; color: #0f766e; margin-left: 8px; font-weight: normal; }
+        .api-badge.return { background: #ede9fe; color: #5b21b6; }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        table.data-table th, table.data-table td { border: 1px solid #e5e7eb; padding: 8px 6px; text-align: left; vertical-align: top; }
+        table.data-table th { background: #f3f4f6; font-weight: 600; white-space: nowrap; }
+        table.data-table tr:hover td { background: #f0fdfa; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+        .tag-0 { background: #e5e7eb; color: #374151; }
+        .tag-1 { background: #fef3c7; color: #92400e; }
+        .tag-2 { background: #d1fae5; color: #065f46; }
+        .tag-3 { background: #fee2e2; color: #991b1b; }
+        .meta-bar { padding: 10px 18px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; background: #fafafa; }
+        .pager { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+        .push-result {
+            background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 12px;
+            max-height: 200px; overflow: auto; white-space: pre-wrap; display: none; margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>众阳 HIS 单据推送</h1>
+            <div class="header-sub">出库单与退库单分开测试；查询 SPD 明细后推送 HIS，由接口端回写 SPD 主表/明细标志</div>
+        </div>
+        <div>
+            <a class="btn-link" href="/msun-probe.html">接口探针</a>
+            <a class="btn-link" href="/index.html">主页</a>
+        </div>
+    </div>
+
+    <div class="layout">
+        <div class="panel">
+            <div class="bill-tabs">
+                <button type="button" class="bill-tab-btn active" data-tab="201" onclick="bpSwitchTab('201')">出库单推送 (201)</button>
+                <button type="button" class="bill-tab-btn" data-tab="401" onclick="bpSwitchTab('401')">退库单推送 (401)</button>
+            </div>
+
+            <!-- 出库单 201 -->
+            <div id="tab-201" class="bill-tab-panel active">
+                <div class="panel-title">出库单查询 <span class="api-badge">2.5.41 drug-stocks-new</span></div>
+                <div class="panel-body">
+                    <p class="hint">仅查已审核出库单（bill_type=201）。推送药库→药房入库。</p>
+                    <div class="form-grid">
+                        <div class="field"><label>出库单号</label><input id="q201_billNo" placeholder="模糊匹配"></div>
+                        <div class="field"><label>产品名称</label><input id="q201_materialName" placeholder="模糊匹配"></div>
+                        <div class="field"><label>规格</label><input id="q201_materialSpeci" placeholder="模糊匹配"></div>
+                        <div class="field"><label>科室</label><input id="q201_departmentName" placeholder="模糊匹配"></div>
+                        <div class="field"><label>仓库</label><input id="q201_warehouseName" placeholder="模糊匹配"></div>
+                        <div class="field">
+                            <label>HIS推送状态</label>
+                            <select id="q201_hisPushStatus">
+                                <option value="">全部</option>
+                                <option value="0">未推送</option>
+                                <option value="1">推送中</option>
+                                <option value="2">成功</option>
+                                <option value="3">失败</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="tool-row">
+                        <button type="button" class="btn btn-primary" onclick="bpSearch('201', 1)">查询出库单</button>
+                        <button type="button" class="btn btn-secondary" onclick="bpReset('201')">重置</button>
+                        <button type="button" class="btn btn-warn" id="btnBatchPush201" onclick="bpBatchPush('201')" disabled>推送选中出库单</button>
+                        <span class="pager">
+                            <button type="button" class="btn btn-secondary" onclick="bpPrevPage('201')">上一页</button>
+                            <span id="pagerInfo201">第 1 页</span>
+                            <button type="button" class="btn btn-secondary" onclick="bpNextPage('201')">下一页</button>
+                        </span>
+                    </div>
+                </div>
+                <div class="panel-body" style="padding-top:0; overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="chkAll201" onchange="bpToggleAll('201', this)"></th>
+                                <th>出库单号</th><th>科室</th><th>仓库</th><th>产品</th><th>规格</th><th>数量</th>
+                                <th>行HIS</th><th>单HIS</th><th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataBody201">
+                            <tr><td colspan="10" style="text-align:center;color:#9ca3af;">加载中…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="meta-bar" id="metaInfo201">就绪</div>
+                <div class="panel-body" style="border-top:1px solid #e5e7eb;">
+                    <div class="panel-title" style="padding:0 0 8px;border:none;background:transparent;">出库推送结果</div>
+                    <pre class="push-result" id="pushResult201"></pre>
+                </div>
+            </div>
+
+            <!-- 退库单 401 -->
+            <div id="tab-401" class="bill-tab-panel">
+                <div class="panel-title">退库单查询 <span class="api-badge return">2.5.42 drug-stocks-return</span></div>
+                <div class="panel-body">
+                    <p class="hint">仅查已审核退库单（bill_type=401）。须明细含 pharmacyStockId（出库推送回写或科室库存）。</p>
+                    <div class="form-grid">
+                        <div class="field"><label>退库单号</label><input id="q401_billNo" placeholder="模糊匹配"></div>
+                        <div class="field"><label>产品名称</label><input id="q401_materialName" placeholder="模糊匹配"></div>
+                        <div class="field"><label>规格</label><input id="q401_materialSpeci" placeholder="模糊匹配"></div>
+                        <div class="field"><label>科室</label><input id="q401_departmentName" placeholder="模糊匹配"></div>
+                        <div class="field"><label>仓库</label><input id="q401_warehouseName" placeholder="模糊匹配"></div>
+                        <div class="field">
+                            <label>HIS推送状态</label>
+                            <select id="q401_hisPushStatus">
+                                <option value="">全部</option>
+                                <option value="0">未推送</option>
+                                <option value="1">推送中</option>
+                                <option value="2">成功</option>
+                                <option value="3">失败</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="tool-row">
+                        <button type="button" class="btn btn-primary" onclick="bpSearch('401', 1)">查询退库单</button>
+                        <button type="button" class="btn btn-secondary" onclick="bpReset('401')">重置</button>
+                        <button type="button" class="btn btn-return" id="btnBatchPush401" onclick="bpBatchPush('401')" disabled>推送选中退库单</button>
+                        <span class="pager">
+                            <button type="button" class="btn btn-secondary" onclick="bpPrevPage('401')">上一页</button>
+                            <span id="pagerInfo401">第 1 页</span>
+                            <button type="button" class="btn btn-secondary" onclick="bpNextPage('401')">下一页</button>
+                        </span>
+                    </div>
+                </div>
+                <div class="panel-body" style="padding-top:0; overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="chkAll401" onchange="bpToggleAll('401', this)"></th>
+                                <th>退库单号</th><th>科室</th><th>仓库</th><th>产品</th><th>规格</th><th>数量</th>
+                                <th>行HIS</th><th>单HIS</th><th>pharmacyStockId</th><th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataBody401">
+                            <tr><td colspan="11" style="text-align:center;color:#9ca3af;">请切换至此页后查询</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="meta-bar" id="metaInfo401">就绪</div>
+                <div class="panel-body" style="border-top:1px solid #e5e7eb;">
+                    <div class="panel-title" style="padding:0 0 8px;border:none;background:transparent;">退库推送结果</div>
+                    <pre class="push-result" id="pushResult401"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/msun-bill-push.js"></script>
+</body>
+</html>
