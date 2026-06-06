@@ -6,6 +6,7 @@ import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.support.MsunHisDateTimeSupport;
+import com.scminterface.customer.msun.support.MsunHisResponseSupport;
 import com.scminterface.customer.msun.service.MsunSpdQueryService;
 import com.scminterface.customer.msun.spd.billpush.MsunSpdBillPushConstants;
 import com.scminterface.customer.msun.spd.service.MsunSpdPushInvokeResult;
@@ -153,7 +154,7 @@ public class MsunSpdBillPushService
             {
                 throw new IllegalArgumentException("不支持推送的单据类型 billType=" + billType);
             }
-            String traceId = extractTraceId(invoke.getWrappedResponse());
+            String traceId = MsunHisResponseSupport.extractTraceId(invoke.getWrappedResponse());
             markBillSuccess(tenantId, billId, traceId);
             Map<String, Object> ok = new LinkedHashMap<>();
             ok.put("success", true);
@@ -388,18 +389,13 @@ public class MsunSpdBillPushService
     private void applyOutboundResponse(
             String tenantId, Long billId, List<Map<String, Object>> entries, JSONObject response)
     {
-        assertHisSuccess(response);
-        JSONObject wrapped = response.getJSONObject("data");
-        if (wrapped == null)
-        {
-            throw new IllegalStateException("HIS推送响应无 data");
-        }
-        Object hisBodyObj = wrapped.get("hisBody");
-        if (!(hisBodyObj instanceof JSONObject))
+        MsunHisResponseSupport.assertHisSuccess(response);
+        JSONObject hisBody = MsunHisResponseSupport.resolveHisBody(response);
+        if (hisBody == null)
         {
             throw new IllegalStateException("HIS推送响应格式异常");
         }
-        JSONArray data = ((JSONObject) hisBodyObj).getJSONArray("data");
+        JSONArray data = hisBody.getJSONArray("data");
         if (data == null)
         {
             throw new IllegalStateException("HIS未返回入库明细数据");
@@ -463,7 +459,7 @@ public class MsunSpdBillPushService
 
     private void applyReturnResponse(String tenantId, List<Map<String, Object>> entries, JSONObject response)
     {
-        assertHisSuccess(response);
+        MsunHisResponseSupport.assertHisSuccess(response);
         for (Map<String, Object> entry : entries)
         {
             Long entryId = toLong(entry.get("entry_id"));
@@ -849,44 +845,6 @@ public class MsunSpdBillPushService
         meta.put("billNo", bill.get("bill_no"));
         meta.put("billType", bill.get("bill_type"));
         return meta;
-    }
-
-    private static void assertHisSuccess(JSONObject json)
-    {
-        JSONObject data = json.getJSONObject("data");
-        if (data == null)
-        {
-            return;
-        }
-        Object hisBodyObj = data.get("hisBody");
-        if (hisBodyObj instanceof JSONObject)
-        {
-            JSONObject hisBody = (JSONObject) hisBodyObj;
-            if (!Boolean.TRUE.equals(hisBody.getBoolean("success")))
-            {
-                String msg = hisBody.getString("message");
-                throw new IllegalStateException(msg != null ? msg : "HIS推送失败");
-            }
-        }
-    }
-
-    private static String extractTraceId(JSONObject json)
-    {
-        if (json == null)
-        {
-            return null;
-        }
-        JSONObject data = json.getJSONObject("data");
-        if (data == null)
-        {
-            return null;
-        }
-        Object hisBodyObj = data.get("hisBody");
-        if (hisBodyObj instanceof JSONObject)
-        {
-            return ((JSONObject) hisBodyObj).getString("traceId");
-        }
-        return null;
     }
 
     private static long parseLongRequired(String val, String label)

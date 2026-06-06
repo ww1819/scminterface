@@ -165,7 +165,7 @@
             his_storage_stock_id = #{hisStorageStockId},
             his_stock_query_id = #{hisStockQueryId},
             his_push_status = #{hisPushStatus},
-            <if test="hisPushMsg != null">his_push_msg = #{hisPushMsg},</if>
+            his_push_msg = #{hisPushMsg},
             update_time = NOW()
         WHERE id = #{entryId} AND tenant_id = #{tenantId}
     </update>
@@ -173,7 +173,7 @@
     <update id="updateEntryHisPushStatus">
         UPDATE stk_io_bill_entry SET
             his_push_status = #{hisPushStatus},
-            <if test="hisPushMsg != null">his_push_msg = #{hisPushMsg},</if>
+            his_push_msg = #{hisPushMsg},
             update_time = NOW()
         WHERE id = #{entryId} AND tenant_id = #{tenantId}
     </update>
@@ -182,7 +182,7 @@
         UPDATE stk_io_bill SET
             his_push_status = #{hisPushStatus},
             his_push_time = NOW(),
-            <if test="hisPushMsg != null">his_push_msg = #{hisPushMsg},</if>
+            his_push_msg = #{hisPushMsg},
             <if test="hisTraceId != null">his_trace_id = #{hisTraceId},</if>
             update_time = NOW()
         WHERE id = #{billId} AND tenant_id = #{tenantId}

@@ -177,6 +177,234 @@ Controller 还会在顶层附加（`enrichEnv`）：
 
 `GET .../env` 的 `data` 为环境摘要：`activeEnv`、`label`、`baseUrl`、`appId`、`hospitalId`、`orgId`、`signType`、`documentUrl`、`deptsUrl`、`identitiesUrl`（**不含 appSecret**）。
 
+### 3.1 2.5.41 出库推送成功样本（请求 + 回参）
+
+> **记录时间**：2026-06-06  
+> **环境**：`prod` / `zaoqiang-tcm-001`  
+> **单据**：出库单号 `CK2026060600002`；主单 `stk_io_bill.id=3`，明细 `stk_io_bill_entry.id=3`  
+> **接口**：`POST /msun-middle-base-resource/v1/drug-stocks-new`（前置机 `.../push/drug-stocks-new`）  
+> **用途**：维护人员核对组包逻辑、对照联调页 Headers/Body、推送成功但 SPD 未回写时排错。
+
+#### 3.1.1 请求 Header（众阳 SM2 签名，敏感字段已脱敏）
+
+由 `MsunSignedHttpClient.buildHeaders` 写入 HTTP Header（**非** JSON Body）。`license`、`sign` 随请求时间与 Body 动态生成，下文仅保留结构样本；**勿将完整 `license`/`sign` 写入文档或提交版本库**。
+
+```json
+{
+  "license": "MEUCIQD****...****fnCU=",
+  "hospitalId": "11273002",
+  "appId": "app1779****7837",
+  "sign": "MEUCIGl/Z5****...****xJp5U=",
+  "signType": "SM2",
+  "orgId": "11273",
+  "timestamp": "1780755841283"
+}
+```
+
+| Header | 样本/说明 | 代码来源 |
+|--------|-----------|----------|
+| `appId` | prod：`app1779776749809786837`（文档脱敏展示） | `ZaoqiangTcmMsunEnvProfile` / `MsunHospitalRuntime` |
+| `signType` | `SM2` | 同上；`appSecret` 为 SM2 私钥时固定 SM2 |
+| `hospitalId` | `11273002` | 环境凭证 |
+| `orgId` | `11273` | 环境凭证 |
+| `timestamp` | 毫秒时间戳字符串 | `System.currentTimeMillis()` |
+| `sign` | **脱敏** | `SM2.sign( MD5(bodyJson + timestamp) )`，见 `MsunSignedHttpClient.postWithDebug` |
+| `license` | **脱敏** | `OpenapiUtil.getLicense(appId, appSecret, signType, timestamp)` |
+| `loginUser` | 可选 | 配置非空时追加 |
+
+联调页 **Headers** 区块展示的是上述 Map；复制排错时可与 `m_msun_push_log` 或 `hisInvoke.requestHeaders` 对照（日志中 `sign`/`license` 亦为当时有效值，勿外泄）。
+
+#### 3.1.2 请求 Body（2.5.41 入参）
+
+由 `MsunSpdBillPushService.buildOutboundBody` / SPD 侧 `MsunHisBillPushServiceImpl.buildOutboundBody` 组装。联调页 **Request Body** 已剔除内部字段 `_spdLogMeta`；发往众阳的 JSON 以推送日志 `request_json` 为准（结构与本节一致）。
+
+```json
+{
+  "supplierId": 41,
+  "storageDeptId": 8837823902808417000,
+  "pharmacyDeptId": 8837863243411958000,
+  "invoiceCode": "CK2026060600002",
+  "inStockStatus": "",
+  "spdMainId": "CK2026060600002",
+  "saveCorrelationFlag": "1",
+  "inStockDetailDTOList": [
+    {
+      "drugId": 1565,
+      "drugSpecPackingId": 6102,
+      "quantity": 100,
+      "buyPrice": 0.19,
+      "retailPrice": 0.19,
+      "invoiceCode": "CK2026060600002",
+      "produceDate": "2026-06-06 22:24:00",
+      "effectiveDate": "2027-05-12 00:00:00",
+      "ycBatchNo": "25041824-1",
+      "spdDetailId": "3:3",
+      "memo": "ZQ-zaoqiang-tcm-001-3"
+    }
+  ]
+}
+```
+
+| 字段 | 样本值 | SPD / 代码来源 |
+|------|--------|----------------|
+| `supplierId` | `41` | `fd_supplier.his_id`（`resolveSupplierHisId`） |
+| `storageDeptId` | 药库科室 HIS ID | `fd_warehouse` 关联科室 `his_id`（`resolveWarehouseHisId`） |
+| `pharmacyDeptId` | 领用科室 HIS ID | `fd_department.his_id`（`resolveDepartmentHisId`） |
+| `invoiceCode` / `spdMainId` | `CK2026060600002` | `stk_io_bill.bill_no` |
+| `inStockStatus` | `""`（空串） | `MsunSpdBillPushConstants.IN_STOCK_STATUS_PHARMACY` → 入库到**药房** |
+| `saveCorrelationFlag` | `"1"` | 常量 `SAVE_CORRELATION_FLAG` |
+| `inStockDetailDTOList[].drugId` | `1565` | `fd_material.his_id` |
+| `inStockDetailDTOList[].drugSpecPackingId` | `6102` | `fd_material.his_spec_packing_id` |
+| `inStockDetailDTOList[].quantity` | `100` | `stk_io_bill_entry.qty` |
+| `buyPrice` / `retailPrice` | `0.19` | `stk_io_bill_entry.unit_price` |
+| `produceDate` | `yyyy-MM-dd HH:mm:ss` | `begin_time`，空则当前时间（`MsunHisDateTimeSupport`） |
+| `effectiveDate` | `yyyy-MM-dd HH:mm:ss` | `end_time`（`formatHisEffectiveDate`，禁止 `T` 分隔符） |
+| `ycBatchNo` | `25041824-1` | `stk_io_bill_entry.batch_number` |
+| `spdDetailId` | `3:3` | `{billId}:{entryId}` → `his_spd_detail_id` |
+| `memo` | `ZQ-zaoqiang-tcm-001-3` | `ZQ-{tenantId}-{entryId}` → `his_memo` |
+
+> **雪花 ID 注意**：`storageDeptId`、`pharmacyDeptId` 为 19 位长整型。浏览器/部分 JSON 预览可能四舍五入末位，排错请以 Java 日志、`m_msun_push_log.request_json` 或数据库 `his_id` 字符串为准。
+
+#### 3.1.3 hisBody 本体（众阳 HTTP 原始回参）
+
+以下为 `wrapRawResponse` 解析后的 **`hisBody`** 内容（`success=true`、`code=0000` 表示 HIS 写库成功）：
+
+```json
+{
+  "success": true,
+  "decorate": true,
+  "code": "0000",
+  "message": "成功",
+  "data": [
+    {
+      "pharmacyStockId": "8837866950092152196",
+      "pharmacyDeptId": "8837863243411957635",
+      "ycId": "1565",
+      "ycBatch": null,
+      "ycBatchNo": "25041824-1",
+      "expireDate": "2027-05-12 00:00:00",
+      "quantity": 100,
+      "originalQuantity": 100,
+      "stockPackId": "50",
+      "packageSpec": "1.000000个/个",
+      "retailPrice": 0.19,
+      "stockType": "1         ",
+      "ycName": "三伏贴皮",
+      "ycCode": "02000201",
+      "ycSpec": "6*6",
+      "producerId": "-1",
+      "producerName": null,
+      "discount": 100,
+      "flagInvalid": "0",
+      "tradePrice": 0.19,
+      "supplierId": "41",
+      "supplierName": null,
+      "approvalNo": null,
+      "catagoryId": "1",
+      "catagoryName": "卫生材料",
+      "stockQueryId": "8837866950089530760",
+      "instockTime": "2026-06-06 22:24:04",
+      "buyPrice": 0.19,
+      "hospitalId": "11273002",
+      "produceDate": "2026-06-06 22:24:00",
+      "storageOutstockDetailId": "8837866949759753608",
+      "drugSpecPackingId": "6102",
+      "storageStockId": "8837866949707849090",
+      "changePackageRena": null,
+      "dictProvinceId": null,
+      "stopQuantity": 0,
+      "ycShelvesId": null,
+      "pharmacyInstockDetailId": null,
+      "pharmacyOutstockDetailId": null,
+      "inventoryUpdateTime": "2026-06-06 22:24:04",
+      "memo": "ZQ-zaoqiang-tcm-001-3",
+      "spdDetailId": "3:3",
+      "orgId": "11273"
+    }
+  ],
+  "traceId": "19af9a57-3e76-4712-80ad-4ccd47813f04",
+  "exceptionName": null,
+  "qualityMonitor": null,
+  "ignoreQualityMonitor": false,
+  "level": "info",
+  "service": "msun-middle-base-resource",
+  "businessException": false
+}
+```
+
+#### 3.1.4 外层包装（前置机 / scminterface）
+
+同一笔推送在不同调用链上的 JSON 层级不同，回写代码须能解析到 **`hisBody`**（见 `MsunHisResponseSupport.resolveHisBody`）：
+
+| 调用链 | 结构 | `hisBody` 位置 |
+|--------|------|----------------|
+| scminterface 直连众阳（`MsunSpdPushService`） | `{ requestParams, hisBody }` | 根级 `hisBody` |
+| 前置机 `ZaoqiangTcmMsunSpdPushController` 返回 SPD | `{ code, msg, data: { data: { hisBody, requestParams }, hisInvoke } }` | `data.data.hisBody` |
+| 仅内层包装 | `{ data: { hisBody, requestParams } }` | `data.hisBody` |
+
+**scminterface 联调页**（`msun-bill-push.html`）展示的 Response 为 `hisInvoke.responseRaw`，即上表 **hisBody 本体** 或含 `hisBody` 的包装，以页面实际 JSON 为准。
+
+**判断推送成功**：`hisBody.success === true` 且 `hisBody.code === "0000"`；明细数组在 `hisBody.data[]`。
+
+#### 3.1.5 明细匹配键（回写 SPD 前）
+
+| HIS 字段 | 样本值 | 含义 |
+|----------|--------|------|
+| `memo` | `ZQ-zaoqiang-tcm-001-3` | `ZQ-{tenantId}-{entryId}` → 本例 **entryId=3** |
+| `spdDetailId` | `3:3` | `{billId}:{entryId}` → 本例 **billId=3, entryId=3** |
+
+回写时优先按 `memo` 匹配，其次 `spdDetailId`，最后按 `entryId` 字符串兜底（见 `MsunSpdBillPushService.applyOutboundResponse` / `MsunHisBillPushServiceImpl.applyOutboundResponse`）。
+
+#### 3.1.6 HIS 回参 → SPD 落库字段
+
+| HIS 回参字段 | SPD 表.字段 | 样本值 | 说明 |
+|--------------|-------------|--------|------|
+| `pharmacyStockId` | `stk_io_bill_entry.his_pharmacy_stock_id` | `8837866950092152196` | 药房批次库存 ID；**2.5.42 退库必填** |
+| `storageStockId` | `stk_io_bill_entry.his_storage_stock_id` | `8837866949707849090` | 药库批次库存 ID |
+| `stockQueryId` | `stk_io_bill_entry.his_stock_query_id` | `8837866950089530760` | 库存查询 ID |
+| 同上三字段 | `stk_dep_inventory.his_pharmacy_stock_id` 等 | 同上 | 按明细 `dep_inventory_id`（或 `kc_no`）回写科室库存 |
+| `traceId`（hisBody 根级） | `stk_io_bill.his_trace_id` | `19af9a57-3e76-4712-80ad-4ccd47813f04` | 主单追溯 |
+| — | `stk_io_bill.his_push_status` | `2` | `0` 未推 / `1` 推送中 / `2` 成功 / `3` 失败 |
+| — | `stk_io_bill_entry.his_push_status` | `2` | 明细推送状态 |
+| — | `stk_io_bill.his_push_msg` | `NULL` | 成功时清空；校验异常另写文案但不改 `his_push_status` |
+
+**手工补标 SQL 模板**（将 `<dep_inventory_id>` 换为明细上的 `dep_inventory_id`）：
+
+```sql
+UPDATE stk_io_bill_entry SET
+  his_pharmacy_stock_id = '8837866950092152196',
+  his_storage_stock_id  = '8837866949707849090',
+  his_stock_query_id    = '8837866950089530760',
+  his_push_status = '2', his_push_msg = NULL, update_time = NOW()
+WHERE id = 3 AND tenant_id = 'zaoqiang-tcm-001';
+
+UPDATE stk_io_bill SET
+  his_push_status = '2', his_push_time = NOW(),
+  his_trace_id = '19af9a57-3e76-4712-80ad-4ccd47813f04',
+  his_push_msg = NULL, update_time = NOW()
+WHERE id = 3 AND tenant_id = 'zaoqiang-tcm-001';
+
+UPDATE stk_dep_inventory SET
+  his_pharmacy_stock_id = '8837866950092152196',
+  his_storage_stock_id  = '8837866949707849090',
+  his_stock_query_id    = '8837866950089530760',
+  update_time = NOW()
+WHERE id = <dep_inventory_id> AND tenant_id = 'zaoqiang-tcm-001';
+```
+
+#### 3.1.7 排错检查清单
+
+| 现象 | 建议操作 |
+|------|----------|
+| 组包与代码不一致 | 对照 **§3.1.1 Header**、**§3.1.2 Body** 与 `MsunSpdBillPushService.buildOutboundBody`；联调页三块：Headers / Request Body / Response |
+| `sign` / `license` 校验失败 | 核对 `appId`/`orgId`/`hospitalId` 是否成套（§4 环境表）；`timestamp` 是否与 Body 同一次请求；**勿手工拼 sign** |
+| `effectiveDate` 格式错误 | 必须为 `yyyy-MM-dd HH:mm:ss`，见 §3.1.2 样本 |
+| HIS 成功、SPD 标志仍为 `0`/`1`/`3` | 查 `m_msun_push_log.response_json` 是否含 **§3.1.3** `hisBody`；确认回写代码是否从正确层级取 `hisBody`（勿只读 `response.data.hisBody` 而漏掉 `data.data.hisBody` 或根级 `hisBody`） |
+| 报「HIS回参未匹配明细」 | 核对 **§3.1.2** 入参与 **§3.1.3** 回参的 `memo` / `spdDetailId`；本例应为 `ZQ-zaoqiang-tcm-001-3` 与 `3:3` |
+| `his_pharmacy_stock_id` 为空 | 看回参 `pharmacyStockId`；入库到药房时取 `pharmacyStockId`，入药库时可能只有 `storageStockId`（代码 `firstNonEmpty` 兜底） |
+| 推送日志有、业务表无 | 确认 SPD 数据源已启用；scminterface 单据推送走 `MsunSpdBillPushService`，SPD 内推送走 `MsunHisBillPushServiceImpl` |
+| 对账「当时推了什么」 | `GET .../mirror/bill-his?billId=3` 或查 `m_msun_push_log` |
+
 ---
 
 ## 4. 环境与凭证
@@ -251,7 +479,9 @@ Invoke-RestMethod -Method Post -Headers $h -Uri "$base/api/vendor/msun/hospitals
 | 现象 | 处理 |
 |------|------|
 | `openapi@9984` | 联系众阳为对应 `appId` 开通接口权限 |
-| `hisBody.success=true`, `code=0000` | 正常 |
+| `hisBody.success=true`, `code=0000` | 正常；出库成功请求/回参样本见 **§3.1** |
+| HIS 成功但 SPD `his_push_status` 未变 `2` | 对照 **§3.1.4** 检查 `hisBody` 解析层级；查 `m_msun_push_log` |
+| Header `sign`/`license` 与众阳不一致 | 以 **§3.1.1** 核对字段是否齐全；凭证见 §4，禁止在文档中记录完整签名 |
 | 401 | 重新登录获取 token |
 | 404 | 确认 `zaoqiang-tcm-001.enabled=true` 且服务已重启 |
 | 2.5.43 失败 | 检查 `deptId` / `drugId` / `drugSpecPackingId` 是否来自有效 2.1.9 + 2.5.44 回参 |

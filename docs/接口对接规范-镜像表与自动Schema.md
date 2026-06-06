@@ -637,6 +637,7 @@ SPD 中部分场景（如衡水计费）使用 `his_charge_item_mirror`、`his_i
 | 残留非规范表名 | 手工 DROP 后由 auto-schema 按 `m_msun_*` 重建 |
 | 对方新增接口字段 | 在 `02_column.sql` 追加 `add_mirror_column`，重启后自动补列 |
 | 对账「当时推了什么」 | 查 `m_{vendor}_push_log` 的 `request_json` / `response_json` |
+| 2.5.41 出库推送成功请求/回参、如何回写 SPD | 见 `docs/众阳 HIS — 枣强县中医院接口现场测试指南.md` **§3.1**（含脱敏 Header、入参 Body、`hisBody` 回参、`memo`/`spdDetailId` 匹配、SPD 字段映射与补标 SQL） |
 | 对账「当时拉取的主数据长什么样」 | 查对应镜像表 `raw_item_json` + `sync_batch_no` |
 | 关闭落库仅调通接口 | `mirror.enabled=false` |
 
