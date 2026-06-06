@@ -202,72 +202,129 @@ function bpNextPage(tab) {
     if (st.pageNum < pages) bpSearch(tab, st.pageNum + 1);
 }
 
-function bpFormatHisInvoke(inv) {
-    if (!inv) return '';
-    var lines = [];
-    lines.push('API: ' + (inv.apiCode || '—') + '  ' + (inv.method || 'POST'));
-    if (inv.apiPath) lines.push('Path: ' + inv.apiPath);
-    if (inv.url) lines.push('URL: ' + inv.url);
-    if (inv.httpStatus != null) lines.push('HTTP状态: ' + inv.httpStatus);
-    if (inv.activeEnv) lines.push('环境: ' + inv.activeEnv);
-    if (inv.baseUrl) lines.push('BaseUrl: ' + inv.baseUrl);
-    if (inv.appId) lines.push('appId: ' + inv.appId);
-    if (inv.hospitalId) lines.push('hospitalId: ' + inv.hospitalId);
-    if (inv.orgId) lines.push('orgId: ' + inv.orgId);
-    if (inv.note) lines.push('说明: ' + inv.note);
-    lines.push('');
-    lines.push('【请求头 requestHeaders】');
+function bpJsonPretty(obj) {
+    if (obj === null || obj === undefined) return '';
+    if (typeof obj === 'string') return obj;
     try {
-        lines.push(JSON.stringify(inv.requestHeaders || {}, null, 2));
+        return JSON.stringify(obj, null, 2);
     } catch (e) {
-        lines.push(String(inv.requestHeaders));
+        return String(obj);
     }
-    lines.push('');
-    lines.push('【入参 requestBody】');
-    try {
-        lines.push(JSON.stringify(inv.requestBody != null ? inv.requestBody : {}, null, 2));
-    } catch (e2) {
-        lines.push(String(inv.requestBody));
-    }
-    lines.push('');
-    lines.push('【HIS回参 hisBody / responseRaw】');
-    var resp = inv.hisBody != null ? inv.hisBody : inv.responseRaw;
-    try {
-        lines.push(JSON.stringify(resp != null ? resp : {}, null, 2));
-    } catch (e3) {
-        lines.push(String(resp));
-    }
-    return lines.join('\n');
 }
 
-function bpFormatPushResult(res) {
-    var parts = [];
-    if (!res) return '';
-    parts.push('========== 推送接口回参 ==========');
-    try {
-        parts.push(JSON.stringify(res, null, 2));
-    } catch (e) {
-        parts.push(String(res));
+function bpCopyBlock(preId, btn) {
+    var el = document.getElementById(preId);
+    if (!el) return;
+    var text = el.textContent || '';
+    var done = function () {
+        var old = btn.textContent;
+        btn.textContent = '已复制';
+        setTimeout(function () { btn.textContent = old; }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () {
+            bpCopyFallback(text);
+            done();
+        });
+    } else {
+        bpCopyFallback(text);
+        done();
     }
-    var data = res.data;
-    var results = data && data.results;
+}
+
+function bpCopyFallback(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+    document.body.removeChild(ta);
+}
+
+function bpRenderDebugBlock(title, content, blockId) {
+    var empty = !content || !String(content).trim();
+    var preClass = 'push-debug-pre' + (empty ? ' empty' : '');
+    var body = empty ? '（无数据）' : bpEscape(content);
+    return '<div class="push-debug-block">' +
+        '<div class="push-debug-head"><span>' + bpEscape(title) + '</span>' +
+        '<button type="button" class="btn-copy" onclick="bpCopyBlock(\'' + blockId + '\', this)">复制</button></div>' +
+        '<pre class="' + preClass + '" id="' + blockId + '">' + body + '</pre></div>';
+}
+
+function bpBuildPushResultHtml(tab, res) {
+    var html = [];
+    if (!res) {
+        html.push('<p class="hint">无响应</p>');
+        return html.join('');
+    }
+
+    var summary = {
+        code: res.code,
+        msg: res.msg,
+        tenantId: res.tenantId,
+        activeEnv: res.activeEnv,
+        hospitalName: res.hospitalName
+    };
+    if (res.data) {
+        summary.data = {
+            total: res.data.total,
+            successCount: res.data.successCount,
+            failCount: res.data.failCount,
+            results: (res.data.results || []).map(function (r) {
+                if (!r) return r;
+                var copy = {};
+                Object.keys(r).forEach(function (k) {
+                    if (k !== 'hisInvoke') copy[k] = r[k];
+                });
+                return copy;
+            })
+        };
+    }
+    html.push(bpRenderDebugBlock('推送接口摘要', bpJsonPretty(summary), 'bpSum' + tab));
+
+    var results = res.data && res.data.results;
+    var hasInvoke = false;
     if (results && results.length) {
-        results.forEach(function (r) {
+        results.forEach(function (r, idx) {
             if (!r || !r.hisInvoke) return;
-            parts.push('');
-            parts.push('========== HIS调用明细 billId=' + (r.billId != null ? r.billId : '—')
-                + ' billNo=' + (r.billNo || '—') + ' ==========');
-            parts.push(bpFormatHisInvoke(r.hisInvoke));
+            hasInvoke = true;
+            var inv = r.hisInvoke;
+            var prefix = 'bp' + tab + 'i' + idx;
+            var titleCls = r.success === false ? 'push-inv-title fail' : 'push-inv-title';
+            var title = (inv.apiCode || 'HIS') + ' · billId=' + (r.billId != null ? r.billId : '—')
+                + ' · ' + (r.billNo || '—');
+            if (inv.url) title += ' · ' + inv.url;
+            if (inv.httpStatus != null) title += ' · HTTP ' + inv.httpStatus;
+            html.push('<div class="' + titleCls + '">' + bpEscape(title) + '</div>');
+
+            html.push(bpRenderDebugBlock(
+                '请求头 Headers',
+                bpJsonPretty(inv.requestHeaders || {}),
+                prefix + 'hdr'));
+            html.push(bpRenderDebugBlock(
+                '入参 Request Body',
+                bpJsonPretty(inv.requestBody),
+                prefix + 'req'));
+            var resp = inv.hisBody != null ? inv.hisBody : inv.responseRaw;
+            html.push(bpRenderDebugBlock(
+                '回参 Response',
+                bpJsonPretty(resp),
+                prefix + 'resp'));
         });
     }
-    return parts.join('\n');
+    if (!hasInvoke) {
+        html.push('<p class="hint" style="margin:8px 0 0">未产生 HIS 调用明细（可能推送未执行到调 HIS 步骤）</p>');
+    }
+    return html.join('');
 }
 
 function bpShowPushResult(tab, res) {
     var el = document.getElementById('pushResult' + tab);
     if (!el) return;
     el.style.display = 'block';
-    el.textContent = bpFormatPushResult(res);
+    el.innerHTML = bpBuildPushResultHtml(tab, res);
 }
 
 async function bpPushOne(tab, billId) {

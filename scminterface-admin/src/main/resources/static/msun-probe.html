@@ -216,11 +216,28 @@
         .api-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: #ccfbf1; color: #0f766e; margin-left: 6px; font-weight: normal; }
         .api-badge.return { background: #ede9fe; color: #5b21b6; }
         .btn-return { background: #7c3aed; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
-        .push-result {
-            background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 12px;
-            max-height: 420px; overflow: auto; white-space: pre-wrap; display: none; margin-top: 8px;
+        .push-result-panel { display: none; margin-top: 8px; }
+        .push-inv-title {
+            font-size: 12px; font-weight: 600; color: #0f766e; margin: 14px 0 8px; padding-bottom: 4px;
+            border-bottom: 1px dashed #99f6e4;
+        }
+        .push-inv-title.fail { color: #b45309; border-bottom-color: #fcd34d; }
+        .push-debug-block { margin-bottom: 10px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+        .push-debug-head {
+            display: flex; justify-content: space-between; align-items: center; padding: 6px 12px;
+            background: #f3f4f6; font-size: 12px; font-weight: 600; color: #374151;
+        }
+        .push-debug-head .btn-copy {
+            font-size: 11px; padding: 3px 10px; cursor: pointer; border: 1px solid #d1d5db;
+            background: #fff; border-radius: 4px; color: #4b5563;
+        }
+        .push-debug-head .btn-copy:hover { background: #ecfdf5; border-color: #0d9488; color: #0f766e; }
+        .push-debug-pre {
+            background: #1e293b; color: #e2e8f0; padding: 10px 12px; margin: 0; max-height: 200px;
+            overflow: auto; white-space: pre-wrap; font-size: 12px;
             font-family: Consolas, 'Courier New', monospace; line-height: 1.45;
         }
+        .push-debug-pre.empty { color: #94a3b8; font-style: italic; }
         .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
         .tag-0 { background: #e5e7eb; color: #374151; }
         .tag-1 { background: #fef3c7; color: #92400e; }
@@ -394,7 +411,7 @@
                             <tbody id="dataBody201"><tr><td colspan="10" style="text-align:center;color:#9ca3af;">切换至此页签后自动加载</td></tr></tbody>
                         </table>
                         <p class="hint" id="metaInfo201">就绪</p>
-                        <pre class="push-result" id="pushResult201"></pre>
+                        <div class="push-result-panel" id="pushResult201"></div>
                     </div>
 
                     <div id="tab-401" class="bill-tab-panel">
@@ -425,7 +442,7 @@
                             <tbody id="dataBody401"><tr><td colspan="11" style="text-align:center;color:#9ca3af;">请查询</td></tr></tbody>
                         </table>
                         <p class="hint" id="metaInfo401">就绪</p>
-                        <pre class="push-result" id="pushResult401"></pre>
+                        <div class="push-result-panel" id="pushResult401"></div>
                     </div>
                 </div>
             </div>
