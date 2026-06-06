@@ -27,7 +27,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "众阳HIS-枣强-单据推送")
 @RestController
 @ConditionalOnProperty(prefix = ZaoqiangTcmHospitalConstants.CONFIG_PREFIX, name = "enabled", havingValue = "true")
-@RequestMapping(ZaoqiangTcmHospitalConstants.API_PREFIX + "/spd/bill-push")
+@RequestMapping({
+        ZaoqiangTcmHospitalConstants.API_PREFIX + "/spd/bill-push",
+        ZaoqiangTcmHospitalConstants.SPD_API_PREFIX + "/bill-push"
+})
 public class ZaoqiangTcmMsunSpdBillPushController
 {
     private final MsunSpdBillPushService billPushService;

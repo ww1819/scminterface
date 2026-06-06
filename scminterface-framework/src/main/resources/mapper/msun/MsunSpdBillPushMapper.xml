@@ -105,7 +105,7 @@
                e.begin_time, e.end_time, e.suppler_id AS entry_supplier_id,
                e.stk_inventory_id, e.dep_inventory_id, e.kc_no,
                e.his_push_status, e.his_push_msg, e.his_memo, e.his_spd_detail_id,
-               e.his_pharmacy_stock_id, e.his_drug_id, e.his_drug_spec_packing_id,
+               e.his_pharmacy_stock_id, e.his_stock_query_id, e.his_drug_id, e.his_drug_spec_packing_id,
                COALESCE(NULLIF(e.material_name, ''), m.name) AS material_name,
                m.his_id AS material_his_id, m.his_spec_packing_id AS material_his_spec_packing_id
         FROM stk_io_bill_entry e

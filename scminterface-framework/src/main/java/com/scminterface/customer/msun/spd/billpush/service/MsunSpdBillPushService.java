@@ -37,17 +37,20 @@ public class MsunSpdBillPushService
     private final MsunSpdBillPushExecutor executor;
     private final MsunSpdPushService pushService;
     private final MsunSpdQueryService queryService;
+    private final MsunSpdBillPushVerifyService verifyService;
     private final DataSourceAvailability dataSourceAvailability;
 
     public MsunSpdBillPushService(
             MsunSpdBillPushExecutor executor,
             MsunSpdPushService pushService,
             MsunSpdQueryService queryService,
+            MsunSpdBillPushVerifyService verifyService,
             DataSourceAvailability dataSourceAvailability)
     {
         this.executor = executor;
         this.pushService = pushService;
         this.queryService = queryService;
+        this.verifyService = verifyService;
         this.dataSourceAvailability = dataSourceAvailability;
     }
 
@@ -170,6 +173,11 @@ public class MsunSpdBillPushService
             }
             String traceId = MsunHisResponseSupport.extractTraceId(invoke.getWrappedResponse());
             markBillSuccess(tenantId, billId, traceId);
+            String storageHisId = resolveWarehouseHisId(tenantId, toLong(bill.get("warehouse_id")));
+            String pharmacyHisId = resolveDepartmentHisId(tenantId, toLong(bill.get("department_id")));
+            verifyService.verifyAfterPush(
+                    runtime, tenantId, billId, str(bill.get("bill_no")), bill.get("audit_date"),
+                    toPush, storageHisId, pharmacyHisId, billType == 201);
             Map<String, Object> ok = new LinkedHashMap<>();
             ok.put("success", true);
             ok.put("status", "pushed");

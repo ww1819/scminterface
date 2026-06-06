@@ -18,6 +18,10 @@ public final class MsunSpdBillPushConstants
     public static final String SAVE_CORRELATION_FLAG = "1";
     public static final String RETURN_TO_SUPPLIER_YES = "1";
 
+    public static final String VERIFY_MSG_YK_DETAIL_MISSING = "HIS未生成出退库明细";
+    public static final String VERIFY_MSG_BATCH_STOCK_MISSING = "HIS未查到批次库存";
+    public static final String VERIFY_MSG_QUERY_FAILED = "推送后校验查询失败";
+
     public static final String SPD_DETAIL_ID_SEP = ":";
 
     public static String buildEntryMemo(String tenantId, Long entryId)

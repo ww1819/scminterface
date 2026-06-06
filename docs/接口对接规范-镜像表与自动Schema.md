@@ -508,9 +508,12 @@ SPD 使用 `MsunHisTenantRegistry` + `MsunHisTenantSupport` **一处**维护 `te
 | hospitalKey | `zaoqiang-tcm-001`（与 `customerId`、镜像 `tenant_id`/`hospital_key` 同值） |
 | 常量类 | `ZaoqiangTcmHospitalConstants`（含 `SPD_API_PREFIX`） |
 | 探针 API | `/api/vendor/msun/hospitals/zaoqiang-tcm-001/depts` 等 |
-| SPD 推送/同步 | `/api/spd/msun/hospitals/zaoqiang-tcm-001/push/*`、`.../sync/{type}` |
+| SPD 单据推送（推荐） | `/api/spd/msun/hospitals/zaoqiang-tcm-001/bill-push/push/{billId}` → `MsunSpdBillPushService` |
+| SPD 主数据同步 | `/api/spd/msun/hospitals/zaoqiang-tcm-001/sync/{type}` |
+| ~~SPD 裸推送~~ | ~~`/push/drug-stocks-new`、`/push/drug-stocks-return`~~（`ZaoqiangTcmMsunSpdPushController`，**已废弃**） |
+| 联调单据推送（JWT） | `/api/vendor/msun/hospitals/zaoqiang-tcm-001/spd/bill-push/*`（与 SPD 白名单路径共用同一 Service） |
 | 镜像 API | `.../mirror/data/{probeKey}`、`.../mirror/bill-his` |
-| 联调页 | `msun-probe.html`（多医院下拉） |
+| 联调页 | `msun-probe.html`（含「出退库推送」Tab，`msun-bill-push.js`） |
 
 ### 8.8 术语对照表
 
@@ -614,7 +617,9 @@ scminterface:
 | 2.5.102 | `m_msun_yk_instock` | `m_msun_yk_instock_detail`、`m_msun_sync_batch` | — |
 | 2.5.41 / 2.5.42 | `m_msun_push_log` | — | `stk_io_bill` / `stk_io_bill_entry`（`his_push_status`、`his_push_msg`；`his_spd_detail_id`=`{billId}:{entryId}`，见 `MsunHisConstants`） |
 
-**推送后校验（SPD，`MsunHisPushVerifyService`）**：HIS 写库 HTTP 成功后，SPD 即时调 `spd/query/yk-instock`；出库另调 `drug-batch-stocks`（2.5.43 批次库存，不查汇总库存）。未查到 HIS 明细或库存时写入行级 `his_push_msg`，不抛异常、不回滚已成功的推送状态。
+**推送后校验（scminterface，`MsunSpdBillPushVerifyService`）**：HIS 写库 HTTP 成功后，由 `MsunSpdBillPushService` 在推送流程末尾即时调 2.5.102（`instockCode`=单号）；出库另调 2.5.43 批次库存（不查汇总库存）。未查到 HIS 明细或库存时写入行级 `his_push_msg`，不抛异常、不回滚 `his_push_status=2`。SPD 侧 `MsunHisBillPushServiceImpl` **不再**执行该校验，仅 HTTP 委托 `.../bill-push/push/{billId}`。
+
+**2.5.43 与 `stk_dep_inventory.qty`**：`stockAmount` 为 HIS 可退量，用于退库推送前校验；`stk_dep_inventory.qty` 为 SPD 本地库存，推送成功仅回写 `his_*_id` 三字段，**不回写** `qty`。
 
 详细表结构见：`scminterface/database/msun_his_mirror/README.md`。
 
@@ -637,7 +642,9 @@ SPD 中部分场景（如衡水计费）使用 `his_charge_item_mirror`、`his_i
 | 残留非规范表名 | 手工 DROP 后由 auto-schema 按 `m_msun_*` 重建 |
 | 对方新增接口字段 | 在 `02_column.sql` 追加 `add_mirror_column`，重启后自动补列 |
 | 对账「当时推了什么」 | 查 `m_{vendor}_push_log` 的 `request_json` / `response_json` |
-| 2.5.41 出库推送成功请求/回参、如何回写 SPD | 见 `docs/众阳 HIS — 枣强县中医院接口现场测试指南.md` **§3.1**（含脱敏 Header、入参 Body、`hisBody` 回参、`memo`/`spdDetailId` 匹配、SPD 字段映射与补标 SQL） |
+| 2.5.41 出库推送成功请求/回参、如何回写 SPD | 见现场测试指南 **§3.1**（Header/Body/hisBody、SPD 字段映射） |
+| 单据推送 `skipped` / `pushedCount` / 2.5.42 退库样本 | 见现场测试指南 **§3.2** |
+| `stk_dep_inventory.qty` 与 2.5.43 `stockAmount` 不一致 | 属正常：本地 `qty` 与 HIS 可退量独立；详见 §11 说明 |
 | 对账「当时拉取的主数据长什么样」 | 查对应镜像表 `raw_item_json` + `sync_batch_no` |
 | 关闭落库仅调通接口 | `mirror.enabled=false` |
 
@@ -657,7 +664,11 @@ SPD 中部分场景（如衡水计费）使用 `his_charge_item_mirror`、`his_i
 | `MsunHisMirrorProbeRegistry` | 探针页表映射 |
 | `TenantEnum`（SPD） | SPD 侧客户租户枚举，与 scminterface 成对维护 |
 | `MsunHospitalRegistry` | scminterface 众阳已接入医院登记册，`hospitalKey` = SPD `customerId` |
-| `ZaoqiangTcmMsunSpdPushController` | 租户级 SPD 推送/2.5.43 |
+| `ZaoqiangTcmMsunSpdBillPushController` | 单据推送（`bill-push/push`、`bill-push/entries`） |
+| `MsunSpdBillPushService` | 组包 2.5.41/42、调 HIS、回写、推送后校验 |
+| `MsunSpdBillPushVerifyService` | 推送后 2.5.102 + 出库 2.5.43 即时校验 |
+| `MsunHisBatchStockSupport` | 2.5.43 `ycStockQueryId` / `stockAmount` 字段兼容 |
+| `ZaoqiangTcmMsunSpdPushController` | 裸推送/2.5.43 排错（**已废弃**） |
 | `ZaoqiangTcmMsunMasterSyncController` | 租户级主数据同步 |
 | `MsunHisTenantRegistry`（SPD） | SPD 侧对接客户登记 |
 | `MsunHisTenantSupport`（SPD） | URL 拼装与租户断言 |

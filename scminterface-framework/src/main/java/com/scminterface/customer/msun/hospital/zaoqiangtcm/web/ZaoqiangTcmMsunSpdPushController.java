@@ -42,6 +42,8 @@ public class ZaoqiangTcmMsunSpdPushController
         this.msunProperties = msunProperties;
     }
 
+    /** @deprecated 请使用 {@code /bill-push/push/{billId}}，由 {@code MsunSpdBillPushService} 统一组包与回写 */
+    @Deprecated
     @ApiOperation("2.5.41 药品材料入库（药库→药房）")
     @PostMapping("/push/drug-stocks-new")
     public AjaxResult pushDrugStocksNew(@RequestBody Map<String, Object> body)
@@ -49,6 +51,8 @@ public class ZaoqiangTcmMsunSpdPushController
         return invokePush(() -> pushService.pushDrugStocksNew(msunProperties, body, extractLogMeta(body)));
     }
 
+    /** @deprecated 请使用 {@code /bill-push/push/{billId}}，由 {@code MsunSpdBillPushService} 统一组包与回写 */
+    @Deprecated
     @ApiOperation("2.5.42 药品材料退库")
     @PostMapping("/push/drug-stocks-return")
     public AjaxResult pushDrugStocksReturn(@RequestBody Map<String, Object> body)

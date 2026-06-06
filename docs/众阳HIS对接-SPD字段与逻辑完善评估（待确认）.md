@@ -42,10 +42,10 @@
 | 2.5.82 落库后链式 2.5.43 | 已实现 |
 | 主数据镜像 → SPD | 已实现（`MsunSpdMasterSyncExecutor`） |
 | 镜像探针查询 `GET .../mirror/data/{probeKey}` | 已实现 |
-| 2.5.41 / 2.5.42 **写库推送** | **已开放**（`ZaoqiangTcmMsunSpdPushController`，按 `hospitalKey` 路径） |
+| 2.5.41 / 2.5.42 **写库推送** | **已开放**（`ZaoqiangTcmMsunSpdBillPushController` → `MsunSpdBillPushService`；裸 `/push/*` 已废弃） |
 | `m_msun_push_log` + `mirror/bill-his` / `entry-his` | 已实现 |
 | SPD 201/401 审核编排 + UI HIS 列 | 已实现（枣强租户） |
-| 推送后即时校验（2.5.102 + 出库 2.5.43） | 已实现（`MsunHisPushVerifyService`） |
+| 推送后即时校验（2.5.102 + 出库 2.5.43） | 已实现（`MsunSpdBillPushVerifyService`，前置机内执行） |
 | `spdDetailId` 主表+明细拼接（`:` 连接符） | 已实现（`MsunHisConstants`） |
 | 镜像表 `m_msun_*` + auto-schema | 已实现 |
 | 租户枚举登记 | `MsunHospitalRegistry` ↔ `MsunHisTenantRegistry` |
@@ -427,12 +427,13 @@ sequenceDiagram
 | 层级 | 位置 | 动作 |
 |------|------|------|
 | spd-biz | `StkIoBillServiceImpl.auditStkIoBill` | 枣强 + `bill_type` 201/401 分支 |
-| spd-biz | `MsunHisBillPushServiceImpl` | `/api/spd/msun/hospitals/{hospitalKey}/push/*` |
-| spd-biz | `MsunHisPushVerifyService` | 推送后 `spd/query/yk-instock`、出库 `drug-batch-stocks` |
+| spd-biz | `MsunHisBillPushServiceImpl` | HTTP 委托 `.../bill-push/push/{billId}`（租户门禁 + 退库本地 qty 校验） |
+| scminterface | `MsunSpdBillPushVerifyService` | 推送后 2.5.102、出库 2.5.43（不再在 spd-biz 重复） |
 | spd-biz | `MsunHisConstants` | `spdDetailId` 拼接 `:`、解析 `parseSpdDetailId` |
 | spd-biz | `MsunHisTenantRegistry` / `MsunHisTenantSupport` | 与 scminterface 枚举对齐 |
 | spd-biz | `MsunHisMirrorProxyController` | 按租户代理 `.../mirror/*` |
-| scminterface | `ZaoqiangTcmMsunSpdPushController` | 2.5.41 / 2.5.42 / 2.5.43 |
+| scminterface | `ZaoqiangTcmMsunSpdBillPushController` | 单据推送 `bill-push/*`（组包/回写统一入口） |
+| scminterface | `ZaoqiangTcmMsunSpdPushController` | 裸推送/2.5.43 排错（**已废弃**） |
 | scminterface | `ZaoqiangTcmMsunMasterSyncController` | `.../sync/{type}` |
 | scminterface | `ZaoqiangTcmMsunMirrorQueryController` | `entry-his` / `bill-his` |
 | scminterface | `resources/sql/mysql/msun_his_mirror/01_table.sql`、`02_column.sql` | 镜像 auto-schema；索引见 `database/msun_his_mirror/README.md` |
