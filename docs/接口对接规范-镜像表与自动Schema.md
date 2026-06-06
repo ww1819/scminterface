@@ -434,8 +434,9 @@ com.scminterface.customer.{vendor}.hospital.{hospitalPkg}/
   │     ├── {Hospital}MirrorQueryController.java     # 镜像数据查看
   │     ├── {Hospital}SpdQueryController.java        # SPD 侧查询探针
   │     └── {Hospital}SpdPushController.java         # 单据推送入口（推荐从公共类拆出）
-  └── test/                                          # 可选：现场命令行探针 Main
 ```
+
+> **禁止**在 `main` 或 `test/` 包内编写可执行的现场联调程序；统一使用 §8.4 联调页（如 `msun-probe.html`）。
 
 并在 `{Vendor}HospitalRegistry` 枚举中**登记一项**（与 SPD `TenantEnum` 同步，见 §8.2）。
 
@@ -466,6 +467,7 @@ scminterface:
 | 覆盖范围 | 环境信息、各查询探针、镜像查看、（可选）推送试调 |
 | 参数隔离 | localStorage key 带 `hospitalKey` 后缀，多客户并行联调互不覆盖 |
 | 不嵌入 SPD 业务页 | 测试页归属 scminterface-admin；SPD 审核页仅保留业务必需的「HIS 状态/查看」 |
+| 唯一联调入口 | **禁止**再新增 `ProbeMain` / 命令行直连众阳；科室、字典、SPD 查询、一键测试、获取全部数据均在联调页完成 |
 
 **参考**：`scminterface-admin/static/msun-probe.html` + `js/msun-probe.js`（医院列表 + `msunHospitalApi()` 动态前缀）。
 
@@ -608,7 +610,9 @@ scminterface:
 | 2.5.82 | `m_msun_merge_stock` | `m_msun_sync_batch` | — |
 | 2.5.43 | `m_msun_drug_batch_stock` | `m_msun_sync_batch` | — |
 | 2.5.102 | `m_msun_yk_instock` | `m_msun_yk_instock_detail`、`m_msun_sync_batch` | — |
-| 2.5.41 / 2.5.42 | `m_msun_push_log` | — | `stk_io_bill`（推送状态字段） |
+| 2.5.41 / 2.5.42 | `m_msun_push_log` | — | `stk_io_bill` / `stk_io_bill_entry`（`his_push_status`、`his_push_msg`；`his_spd_detail_id`=`{billId}:{entryId}`，见 `MsunHisConstants`） |
+
+**推送后校验（SPD，`MsunHisPushVerifyService`）**：HIS 写库 HTTP 成功后，SPD 即时调 `spd/query/yk-instock`；出库另调 `drug-batch-stocks`（2.5.43 批次库存，不查汇总库存）。未查到 HIS 明细或库存时写入行级 `his_push_msg`，不抛异常、不回滚已成功的推送状态。
 
 详细表结构见：`scminterface/database/msun_his_mirror/README.md`。
 

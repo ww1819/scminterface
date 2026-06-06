@@ -1,6 +1,6 @@
 # 众阳 HIS 对接 — SPD 字段与逻辑完善评估（待确认）
 
-> **文档版本**：v1.5  
+> **文档版本**：v1.6  
 > **编制日期**：2026-06-05  
 > **依据**：接口文档3（枣强县中医院）、当前 `spd` / `scminterface` 代码与 DDL 现状  
 > **状态**：**核心能力已编码**；院方确认项（§14）与部分优化仍待闭环  
@@ -45,6 +45,8 @@
 | 2.5.41 / 2.5.42 **写库推送** | **已开放**（`ZaoqiangTcmMsunSpdPushController`，按 `hospitalKey` 路径） |
 | `m_msun_push_log` + `mirror/bill-his` / `entry-his` | 已实现 |
 | SPD 201/401 审核编排 + UI HIS 列 | 已实现（枣强租户） |
+| 推送后即时校验（2.5.102 + 出库 2.5.43） | 已实现（`MsunHisPushVerifyService`） |
+| `spdDetailId` 主表+明细拼接（`:` 连接符） | 已实现（`MsunHisConstants`） |
 | 镜像表 `m_msun_*` + auto-schema | 已实现 |
 | 租户枚举登记 | `MsunHospitalRegistry` ↔ `MsunHisTenantRegistry` |
 
@@ -214,7 +216,7 @@ AND 仓库/科室 HIS 对照完整
 | 字段 | 类型 | 说明 | 优先级 |
 |------|------|------|--------|
 | `his_memo` | varchar(128) | 明细对照键，租户内唯一 | P0 |
-| `his_spd_detail_id` | varchar(64) | `spdDetailId`，建议 `id` 字符串 | P0 |
+| `his_spd_detail_id` | varchar(64) | `spdDetailId`：`{billMainId}:{entryDetailId}`，预留条码第三段 `{billMainId}:{entryDetailId}:{barcodeDetailId}`；规则见 `MsunHisConstants` | P0 |
 | `his_pharmacy_stock_id` | varchar(64) | 2.5.41 回写；2.5.42 **必填** | P0 |
 | `his_storage_stock_id` | varchar(64) | 药库批次 ID | P0 |
 | `his_stock_query_id` | varchar(64) | 合并库存 ID | P1 |
@@ -279,6 +281,8 @@ MsunHisTenantSupport.assertIntegrated（调用侧或 Service 内）
 → updateInventory（现有）
 → 2.5.41 推送未成功明细
 → 回写 pharmacyStockId 到 entry + dep_inventory
+→ 主表/明细 `his_push_status=成功`；推送后即时 2.5.102（±15min、`instockCode=billNo`）校验 HIS 是否落明细
+→ 出库另查 2.5.43 批次库存；异常写入 `his_push_msg`（不回滚推送）
 → 失败抛 ServiceException → @Transactional 回滚本地
 ```
 
@@ -424,6 +428,8 @@ sequenceDiagram
 |------|------|------|
 | spd-biz | `StkIoBillServiceImpl.auditStkIoBill` | 枣强 + `bill_type` 201/401 分支 |
 | spd-biz | `MsunHisBillPushServiceImpl` | `/api/spd/msun/hospitals/{hospitalKey}/push/*` |
+| spd-biz | `MsunHisPushVerifyService` | 推送后 `spd/query/yk-instock`、出库 `drug-batch-stocks` |
+| spd-biz | `MsunHisConstants` | `spdDetailId` 拼接 `:`、解析 `parseSpdDetailId` |
 | spd-biz | `MsunHisTenantRegistry` / `MsunHisTenantSupport` | 与 scminterface 枚举对齐 |
 | spd-biz | `MsunHisMirrorProxyController` | 按租户代理 `.../mirror/*` |
 | scminterface | `ZaoqiangTcmMsunSpdPushController` | 2.5.41 / 2.5.42 / 2.5.43 |
@@ -461,7 +467,7 @@ sequenceDiagram
 | 2 | 出库 `inStockStatus` | 院方确认 |
 | 3 | 101 入库是否一期 | 若药库对接 HIS 则纳入 |
 | 4 | `stk_inventory.his_id` | 新增 `his_storage_stock_id` 或复用 `his_id` |
-| 5 | `memo` / `spdDetailId` | 如 `ZQ-{tenant}-{entryId}`，租户唯一 |
+| 5 | `memo` / `spdDetailId` | `memo`=`ZQ-{tenant}-{entryId}`；`spdDetailId`=`{billId}:{entryId}`（`:` 连接，条码预留第三段）；解析见 `MsunHisConstants.parseSpdDetailId` |
 | 6 | `isReturnToSupplier` 默认 | 院方确认 |
 | 7 | HIS 推送成功、本地 commit 失败 | 补偿流程 + 禁止盲目重推 |
 | 8 | 镜像查看是否允许手动刷新 2.5.43 | 建议允许（仅枣强） |

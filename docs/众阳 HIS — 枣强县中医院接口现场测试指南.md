@@ -129,6 +129,23 @@ scminterface:
 | 2.5.42 | 退库推送 | POST | `.../push/drug-stocks-return` |
 | 2.5.43 | 退库审核实时校验 | GET | `.../query/drug-batch-stocks` |
 
+**SPD 推送对照键（2.5.41 明细）**
+
+| 字段 | 规则 | 落库 |
+|------|------|------|
+| `spdDetailId` | `{出库主表id}:{明细id}`，连接符 `:`；预留条码 `{主表id}:{明细id}:{条码明细id}` | `stk_io_bill_entry.his_spd_detail_id` |
+| `memo` | `ZQ-{tenantId}-{entryId}` | `his_memo` |
+| 解析 | `MsunHisConstants.parseSpdDetailId` | 代码注释与评估文档 §6.2 |
+
+**推送后即时校验（SPD 审核编排内自动执行，无需手工）**
+
+| 单据 | 校验接口 | 异常标注 |
+|------|----------|----------|
+| 出库/退库 | 2.5.102（`instockCode`=单号，审核时间 ±15min） | `his_push_msg`：未生成出退库明细 |
+| 出库 | 2.5.43 批次库存 | `his_push_msg`：未查到批次库存 |
+
+> HIS HTTP 已成功但本地校验未查到明细/库存时，`his_push_status` 仍为成功，便于与「推送失败」区分；主表 `his_push_msg` 汇总行级异常。
+
 ### 2.5 镜像查看 — `ZaoqiangTcmMsunMirrorQueryController`
 
 前缀：`.../mirror`
@@ -206,20 +223,15 @@ Invoke-RestMethod -Method Post -Headers $h -Uri "$base/api/vendor/msun/hospitals
 
 ---
 
-## 6. 本地 Java 联调（不启动 Spring）
+## 6. 联调测试（统一入口）
 
-| 用途 | VS Code / IDE 配置名 | 主类 |
-|------|----------------------|------|
-| 科室 + 人员 | 枣强众阳探针-正式库 | `com.scminterface.customer.msun.hospital.zaoqiangtcm.test.ZaoqiangTcmMsunProbeMain` |
-| 科室 + 人员（灰度） | 枣强众阳探针-测试库 | 同上（无参数，默认 `test`） |
-| SPD 查询 | 枣强SPD查询探针-正式库 | `com.scminterface.customer.msun.hospital.zaoqiangtcm.test.ZaoqiangTcmMsunSpdQueryProbeMain` |
+现场与开发联调**统一使用联调页**，不再维护 Java `main` 命令行探针（已移除 `...zaoqiangtcm.test` 包）。
 
-正式库传参：`prod`。直连众阳，不经过前置机 Controller。
+1. 启动 `scminterface-admin`（VS Code：**scminterfaceApplication**）
+2. 浏览器打开：`http://<IP>:8088/msun-probe.html`
+3. 登录后选择 **枣强县中医院**，使用各 Tab 调用接口，或 **一键顺序测试** / **获取全部数据**
 
-```powershell
-cd <scminterface 根目录>
-mvn install -pl scminterface-common,scminterface-framework -am -DskipTests
-```
+联调页经前置机 Controller 调用众阳，与生产 SPD 路径一致；回参、测试记录、导出反馈均在页面完成。
 
 ---
 
@@ -262,7 +274,6 @@ mvn install -pl scminterface-common,scminterface-framework -am -DskipTests
 | 枣强客户 | `...customer.msun.hospital.zaoqiangtcm` | `ZaoqiangTcmHospitalConstants` |
 | 枣强配置 | `...hospital.zaoqiangtcm.config` | `ZaoqiangTcmMsunEnvProfile`、`ZaoqiangTcmMsunProperties`、`ZaoqiangTcmMsunConfiguration` |
 | 枣强入口 | `...hospital.zaoqiangtcm.web` | `ZaoqiangTcmMsunProbeController`、`ZaoqiangTcmMsunSpdQueryController`、`ZaoqiangTcmMsunSpdPushController`、`ZaoqiangTcmMsunMasterSyncController`、`ZaoqiangTcmMsunMirrorQueryController` |
-| 枣强本地测试 | `...hospital.zaoqiangtcm.test` | `ZaoqiangTcmMsunProbeMain`、`ZaoqiangTcmMsunSpdQueryProbeMain`、`ZaoqiangTcmMsunOpenApiRunner` |
 
 其他模块：
 
