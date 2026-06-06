@@ -1160,14 +1160,13 @@ async function zqFetchAllData() {
         alert('请填写出退库查询的开始时间与结束时间');
         return;
     }
-    const materialOrDrug = (document.getElementById('fetchAll_materialOrDrug') || {}).value || '1';
     let stockLimit = parseInt((document.getElementById('fetchAll_stockLimit') || {}).value || '30', 10);
     if (isNaN(stockLimit) || stockLimit < 1) stockLimit = 30;
     if (stockLimit > 200) stockLimit = 200;
 
     if (!confirm('将按顺序拉取全部数据（含自动翻页），出退库区间：\n' + times.startTime + ' ~ ' + times.endTime
-        + '\n耗材字典 materialOrDrug=1，每页 ' + ZQ_FETCH_ALL_DICT_PAGE_SIZE + ' 条直至拉完；'
-        + '供应商/厂商 materialOrDrug=' + materialOrDrug + '；库存最多查询 ' + stockLimit + ' 组。继续？')) {
+        + '\n供应商/厂商/耗材字典均 materialOrDrug=1（仅耗材）；字典每页 ' + ZQ_FETCH_ALL_DICT_PAGE_SIZE + ' 条；'
+        + '库存最多查询 ' + stockLimit + ' 组。继续？')) {
         return;
     }
 
@@ -1181,7 +1180,8 @@ async function zqFetchAllData() {
     zqInitChecklist();
     zqRenderTestLog();
 
-    const materialParams = { materialOrDrug: materialOrDrug, limitCount: '100' };
+    const materialMasterParams = { materialOrDrug: '1', limitCount: '100' };
+    const materialMasterFetchOpts = { useOverridesOnly: true, maxPages: 2000 };
     const drugDictParams = { materialOrDrug: '1', limitCount: String(ZQ_FETCH_ALL_DICT_PAGE_SIZE) };
     const drugDictFetchOpts = { useOverridesOnly: true, maxPages: 2000 };
     let drugSpecLookup = {};
@@ -1215,13 +1215,13 @@ async function zqFetchAllData() {
         if (!catRes.ok) { alert('分类字典拉取失败，已中止'); return; }
         await zqSleep(300);
 
-        zqSetMeta('④ 供应商（全量翻页）…');
-        const supRes = await zqFetchAllPagesSilent('suppliers', materialParams);
+        zqSetMeta('④ 供应商（materialOrDrug=1 全量翻页）…');
+        const supRes = await zqFetchAllPagesSilent('suppliers', materialMasterParams, materialMasterFetchOpts);
         if (!supRes.ok) { alert('供应商拉取失败，已中止'); return; }
         await zqSleep(300);
 
-        zqSetMeta('⑤ 生产厂商（全量翻页）…');
-        const prodRes = await zqFetchAllPagesSilent('producers', materialParams);
+        zqSetMeta('⑤ 生产厂商（materialOrDrug=1 全量翻页）…');
+        const prodRes = await zqFetchAllPagesSilent('producers', materialMasterParams, materialMasterFetchOpts);
         if (!prodRes.ok) { alert('生产厂商拉取失败，已中止'); return; }
         await zqSleep(300);
 

@@ -395,7 +395,7 @@ public class MsunSpdMasterSyncExecutor
     private Long resolveOrEnsureFactoryId(String tenantId, Map<String, Object> row)
     {
         String hisFactoryId = str(row, "produce_id");
-        if (StringUtils.isEmpty(hisFactoryId))
+        if (MsunSpdFieldSupport.isPlaceholderHisId(hisFactoryId))
         {
             return null;
         }
@@ -411,7 +411,7 @@ public class MsunSpdMasterSyncExecutor
     private void upsertFactoryFromDictIfAbsent(String tenantId, Map<String, Object> row)
     {
         String hisFactoryId = str(row, "produce_id");
-        if (StringUtils.isEmpty(hisFactoryId))
+        if (MsunSpdFieldSupport.isPlaceholderHisId(hisFactoryId))
         {
             return;
         }
@@ -513,11 +513,21 @@ public class MsunSpdMasterSyncExecutor
                 batchNo);
     }
 
-    /** 仅同步材料（material_or_drug=1），不同步药品 */
+    /**
+     * 仅同步材料：material_or_drug=1；回参未带时从 request_params_json.materialOrDrug=1 推断。
+     */
     private static boolean isMaterialRow(Map<String, Object> row)
     {
         String flag = str(row, "material_or_drug");
-        return "1".equals(flag);
+        if ("1".equals(flag))
+        {
+            return true;
+        }
+        if ("0".equals(flag))
+        {
+            return false;
+        }
+        return MsunSpdFieldSupport.inferMaterialFromDrugDictRequest(str(row, "request_params_json"));
     }
 
     private static String buildLoginName(Map<String, Object> row, String identityId)

@@ -18,10 +18,69 @@ public final class MsunSpdFieldSupport
         return MSUN_SYNC_BY;
     }
 
-    /** HIS invalidFlag：0 启用 → SPD del_flag=0；其它视为作废/删除 */
+    /** HIS invalidFlag：0/启用 → SPD del_flag=0；1/作废/停用 → 1 */
     public static int toFdDelFlag(String invalidFlag)
     {
-        return "0".equals(StringUtils.trim(invalidFlag)) ? 0 : 1;
+        return isHisEnabled(invalidFlag) ? 0 : 1;
+    }
+
+    /**
+     * 众阳 invalidFlag 常见取值：0/启用/否 为有效；1/作废/停用/是 为作废。
+     * 2.5.44 字典回参可能直接返回中文「启用」。
+     */
+    public static boolean isHisEnabled(String invalidFlag)
+    {
+        if (StringUtils.isEmpty(invalidFlag))
+        {
+            return true;
+        }
+        String v = invalidFlag.trim();
+        if ("0".equals(v) || "启用".equals(v) || "否".equals(v))
+        {
+            return true;
+        }
+        if ("1".equals(v) || "作废".equals(v) || "停用".equals(v) || "是".equals(v))
+        {
+            return false;
+        }
+        return !"invalid".equalsIgnoreCase(v);
+    }
+
+    /**
+     * 2.5.44 回参行常不含 materialOrDrug，需从镜像 request_params_json 推断是否材料查询。
+     */
+    public static boolean inferMaterialFromDrugDictRequest(String requestParamsJson)
+    {
+        if (StringUtils.isEmpty(requestParamsJson))
+        {
+            return false;
+        }
+        try
+        {
+            com.alibaba.fastjson2.JSONObject req = com.alibaba.fastjson2.JSON.parseObject(requestParamsJson);
+            Object mod = req.get("materialOrDrug");
+            if (mod == null)
+            {
+                return false;
+            }
+            String text = String.valueOf(mod).trim();
+            return "1".equals(text);
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+    }
+
+    /** 众阳占位 ID（如 -1）不作为 SPD 外键主数据写入 */
+    public static boolean isPlaceholderHisId(String hisId)
+    {
+        if (StringUtils.isEmpty(hisId))
+        {
+            return true;
+        }
+        String v = hisId.trim();
+        return "-1".equals(v) || "0".equals(v);
     }
 
     /** sys_user.status：0 正常 1 停用 */

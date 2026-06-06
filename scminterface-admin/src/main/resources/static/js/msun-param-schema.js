@@ -116,7 +116,8 @@ var MSUN_PARAM_SCHEMA = {
             cursorField: 'supplierId',
             delayMs: 300,
             hint: 'limitCount 为每页条数；翻页时传入本页最大 supplierId 作为游标'
-        }
+        },
+        fetchAll: { materialOrDrug: '1', pageSize: 100 }
     },
     producers: {
         title: '2.5.63 SPD 生产厂商',
@@ -140,7 +141,8 @@ var MSUN_PARAM_SCHEMA = {
             cursorField: 'producerId',
             delayMs: 300,
             hint: 'limitCount 为每页条数；翻页时传入本页最大 producerId 作为游标'
-        }
+        },
+        fetchAll: { materialOrDrug: '1', pageSize: 100 }
     },
     mergeStocks: {
         title: '2.5.82 SPD合并库存',

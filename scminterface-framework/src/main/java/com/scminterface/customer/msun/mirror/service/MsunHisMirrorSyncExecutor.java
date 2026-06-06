@@ -178,6 +178,10 @@ public class MsunHisMirrorSyncExecutor
             JSONObject item = data.getJSONObject(i);
             Map<String, Object> row = MsunHisMirrorRowSupport.buildMirrorRow(
                     runtime, apiCode, batchNo, traceId, requestJson, item, MIRROR_SOURCE_API);
+            if (MsunHisMirrorTableNames.DRUG_DICT.equals(table))
+            {
+                MsunHisMirrorRowSupport.enrichDrugDictRow(row, requestJson);
+            }
             upsertRow(table, row);
             count++;
         }

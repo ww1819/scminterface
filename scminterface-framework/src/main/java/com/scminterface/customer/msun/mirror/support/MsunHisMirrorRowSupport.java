@@ -101,6 +101,34 @@ public final class MsunHisMirrorRowSupport
         return row;
     }
 
+    /**
+     * 2.5.44 字典行：HIS data 项常不带 materialOrDrug，从请求参数补全至 material_or_drug 列。
+     */
+    public static void enrichDrugDictRow(Map<String, Object> row, String requestParamsJson)
+    {
+        if (row == null || row.get("material_or_drug") != null)
+        {
+            return;
+        }
+        if (requestParamsJson == null || requestParamsJson.isEmpty())
+        {
+            return;
+        }
+        try
+        {
+            JSONObject req = JSON.parseObject(requestParamsJson);
+            Object mod = req.get("materialOrDrug");
+            if (mod != null)
+            {
+                row.put("material_or_drug", normalizeValue(mod));
+            }
+        }
+        catch (Exception ignored)
+        {
+            // 请求 JSON 解析失败时保持为空，由 SPD 同步侧再推断
+        }
+    }
+
     public static Map<String, Object> buildChildRelRow(
             MsunHospitalRuntime runtime,
             String syncBatchNo,
