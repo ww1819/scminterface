@@ -13,7 +13,7 @@ scminterface-framework/src/main/resources/sql/mysql/msun_his_mirror/
   └── 99_drop_mirror_tables_optional.sql  # 可选：清理全部镜像表
 ```
 
-配置：`scminterface.vendor.msun.mirror.auto-schema=true`（默认开启）。首次探针/查询/落库时自动建表补列。
+配置：`scminterface.vendor.msun.mirror.auto-schema=true`（默认开启）。首次探针/查询/落库时按 `m_msun_*` 规范表名自动建表、补列。
 
 `auto-schema=false` 时须由 DBA 手工执行上述 `01_table.sql`、`02_column.sql`（路径同上 classpath）。
 

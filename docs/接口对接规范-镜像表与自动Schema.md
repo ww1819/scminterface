@@ -634,7 +634,7 @@ SPD 中部分场景（如衡水计费）使用 `his_charge_item_mirror`、`his_i
 |------|----------|
 | 从未对接、无镜像表 | 无需执行 drop |
 | 曾联调或已建表但放弃对接 | 执行 `99_drop_mirror_tables_optional.sql` |
-| 联调前残留旧表名 | 同上（msun 脚本含旧 `m_dept` 等可选 DROP） |
+| 残留非规范表名 | 手工 DROP 后由 auto-schema 按 `m_msun_*` 重建 |
 | 对方新增接口字段 | 在 `02_column.sql` 追加 `add_mirror_column`，重启后自动补列 |
 | 对账「当时推了什么」 | 查 `m_{vendor}_push_log` 的 `request_json` / `response_json` |
 | 对账「当时拉取的主数据长什么样」 | 查对应镜像表 `raw_item_json` + `sync_batch_no` |

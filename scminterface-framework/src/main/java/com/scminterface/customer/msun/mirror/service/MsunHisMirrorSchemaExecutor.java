@@ -88,8 +88,12 @@ public class MsunHisMirrorSchemaExecutor
     {
         StringBuilder sql = new StringBuilder(160);
         sql.append("ALTER TABLE `").append(tableName).append("` ADD COLUMN `")
-                .append(patch.getColumnName()).append("` ").append(patch.getColumnType())
-                .append(" NULL COMMENT '").append(escapeComment(patch.getColumnComment())).append("'");
+                .append(patch.getColumnName()).append("` ").append(patch.getColumnType());
+        if (!containsNotNull(patch.getColumnType()))
+        {
+            sql.append(" NULL");
+        }
+        sql.append(" COMMENT '").append(escapeComment(patch.getColumnComment())).append("'");
         String after = patch.getAfterColumn();
         if (after != null && !after.isEmpty() && columnExists(conn, tableName, after))
         {
@@ -138,5 +142,10 @@ public class MsunHisMirrorSchemaExecutor
         {
             st.execute(sql);
         }
+    }
+
+    private static boolean containsNotNull(String columnType)
+    {
+        return columnType != null && columnType.toUpperCase().contains("NOT NULL");
     }
 }

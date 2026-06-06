@@ -147,9 +147,14 @@ public class MsunHisMirrorSyncExecutor
                 String identityId = item.getString("identityId");
                 for (int j = 0; j < accounts.size(); j++)
                 {
+                    String accountNo = resolveAccountNo(accounts.get(j));
+                    if (StringUtils.isEmpty(accountNo))
+                    {
+                        continue;
+                    }
                     Map<String, Object> relFields = new HashMap<>(2);
                     relFields.put("identity_id", identityId);
-                    relFields.put("account_no", String.valueOf(accounts.get(j)));
+                    relFields.put("account_no", accountNo);
                     Map<String, Object> rel = MsunHisMirrorRowSupport.buildChildRelRow(runtime, batchNo, relFields);
                     upsertRow(MsunHisMirrorTableNames.USER_IDENTITY_ACCOUNT, rel);
                 }
@@ -245,5 +250,25 @@ public class MsunHisMirrorSyncExecutor
         MsunHisMirrorRowSupport.ensurePrimaryKey(table, row);
         MsunHisMirrorRowSupport.stampTimestamps(row);
         mirrorMapper.upsertMirrorRow(table, row);
+    }
+
+    private static String resolveAccountNo(Object account)
+    {
+        if (account == null)
+        {
+            return null;
+        }
+        if (account instanceof JSONObject)
+        {
+            JSONObject obj = (JSONObject) account;
+            String no = obj.getString("accountNo");
+            if (StringUtils.isEmpty(no))
+            {
+                no = obj.getString("account_no");
+            }
+            return no;
+        }
+        String text = String.valueOf(account).trim();
+        return text.isEmpty() ? null : text;
     }
 }

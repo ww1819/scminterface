@@ -30,7 +30,8 @@ public class MsunHisMirrorSchemaScriptLoader
             "CREATE\\s+TABLE\\s+IF\\s+NOT\\s+EXISTS\\s+`([^`]+)`",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern ADD_COLUMN_CALL = Pattern.compile(
-            "CALL\\s+add_mirror_column\\('([^']+)',\\s*'([^']+)',\\s*'([^']*)',\\s*'([^']*)',\\s*'([^']*)'\\)",
+            "CALL\\s+add_mirror_column\\('((?:[^']|'')*)',\\s*'((?:[^']|'')*)',"
+                    + "\\s*'((?:[^']|'')*)',\\s*'((?:[^']|'')*)',\\s*'((?:[^']|'')*)'\\)",
             Pattern.CASE_INSENSITIVE);
 
     private static final String TABLE_SCRIPT = "sql/mysql/msun_his_mirror/01_table.sql";
@@ -108,7 +109,11 @@ public class MsunHisMirrorSchemaScriptLoader
             while (m.find())
             {
                 MsunHisMirrorColumnPatch patch = new MsunHisMirrorColumnPatch(
-                        m.group(1), m.group(2), m.group(3), m.group(4), m.group(5));
+                        unescapeSqlLiteral(m.group(1)),
+                        unescapeSqlLiteral(m.group(2)),
+                        unescapeSqlLiteral(m.group(3)),
+                        unescapeSqlLiteral(m.group(4)),
+                        unescapeSqlLiteral(m.group(5)));
                 map.computeIfAbsent(patch.getTableName(), k -> new ArrayList<>()).add(patch);
             }
         }
@@ -163,5 +168,10 @@ public class MsunHisMirrorSchemaScriptLoader
     private static boolean isBlank(String s)
     {
         return s == null || s.trim().isEmpty();
+    }
+
+    private static String unescapeSqlLiteral(String value)
+    {
+        return value == null ? null : value.replace("''", "'");
     }
 }
