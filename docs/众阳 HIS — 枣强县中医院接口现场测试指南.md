@@ -4,7 +4,8 @@
 > **对接名称**：SPD对接  
 > **依据文档**：接口文档1（科室/人员）、接口文档2（SPD 药品材料）  
 > **当前环境**：`active-env=prod`，众阳基址 `https://zqxzyyy.msuncloud.cn`  
-> **本阶段**：探针仅查询、原样回参，**不落库**；推送 2.5.41 / 2.5.42 **代码未实现、HTTP 未开放**
+> **镜像落库**：探针/查询默认写入 `m_msun_*`（`mirror.enabled=true` 且 SPD 数据源可用）  
+> **SPD 单据 API**：`ZaoqiangTcmMsunSpdPushController`（2.5.41/42/43）、`ZaoqiangTcmMsunMasterSyncController`（主数据同步）
 
 ---
 
@@ -18,8 +19,9 @@
 | 医院列表 | — | `GET /api/vendor/msun/hospitals` |
 | 枣强探针（科室/人员） | `ZaoqiangTcmHospitalConstants.API_PREFIX` | `/api/vendor/msun/hospitals/zaoqiang-tcm-001` |
 | 枣强 SPD 查询 | `ZaoqiangTcmHospitalConstants.SPD_QUERY_API_PREFIX` | `/api/vendor/msun/hospitals/zaoqiang-tcm-001/spd/query` |
+| 枣强 SPD 推送/同步 | `ZaoqiangTcmHospitalConstants.SPD_API_PREFIX` | `/api/spd/msun/hospitals/zaoqiang-tcm-001` |
 
-医院登记：`MsunHospitalRegistry.ZAOQIANG_TCM`（联调页下拉数据来源）。  
+医院登记：`MsunHospitalRegistry.ZAOQIANG_TCM` ↔ SPD `TenantEnum.ZQ_TCM` / `MsunHisTenantRegistry.ZAOQIANG_TCM`（联调页下拉数据来源）。  
 Java 包根路径仅为 `com.scminterface.customer.msun`（**无** `customer/zaoqiangTcm` 旧包）。  
 新增其他众阳医院时：在 `MsunHospitalRegistry` 追加项，并在 `customer/msun/hospital/<医院>/` 下新建独立子包。
 
@@ -66,6 +68,7 @@ scminterface:
 | SPD 查询 | 对应 `ZaoqiangTcmMsunSpdQueryController` |
 | 高级 JSON | POST 接口（2.5.102）可 JSON 覆盖表单 |
 | 右侧回参 | 当前回参、测试记录、导出反馈 |
+| **获取全部数据** | 环境与清单页：按 **科室→分类→供应商→厂商→产品档案→出退库→汇总库存→明细库存** 顺序自动翻页拉取；可设出退库起止时间 |
 
 ---
 
@@ -99,8 +102,8 @@ scminterface:
 | 2.5.63 | 生产厂商 | GET | `.../spd/query/drug-producers` | `/msun-middle-base-dict/v1/drug-produceres` | 已实现 |
 | 2.5.43 | 药房批次库存 | GET | `.../spd/query/drug-batch-stocks` | `/msun-middle-base-resource/v1/drug-batch-stocks` | 已实现 |
 | 2.5.102 | 一级库入退库记录 | POST | `.../spd/query/yk-instock` | `/msun-middle-base-resource/v1/query-yk-instock` | 已实现 |
-| 2.5.41 | 药品材料入库 | POST | — | `/msun-middle-base-resource/v1/drug-stocks-new` | **未实现** |
-| 2.5.42 | 药品材料退库 | POST | — | `/msun-middle-base-resource/v1/drug-stocks-new/d` | **未实现** |
+| 2.5.41 | 药品材料入库 | POST | `http://<IP>:8088/api/spd/msun/hospitals/zaoqiang-tcm-001/push/drug-stocks-new` | `/msun-middle-base-resource/v1/drug-stocks-new` | 已实现（SPD 系统调用） |
+| 2.5.42 | 药品材料退库 | POST | `.../push/drug-stocks-return` | `/msun-middle-base-resource/v1/drug-stocks-new/d` | 已实现（SPD 系统调用） |
 
 **2.5.44**：`hospitalId` / `orgId` 留空时，服务端用 `ZaoqiangTcmMsunEnvProfile` 中正式值（`11273002` / `11273`）。  
 **2.5.43**：`deptId`、`drugId`、`drugSpecPackingId` 三者必填（Controller 层校验）。  
@@ -114,6 +117,27 @@ scminterface:
 | 2.5.102 | `startTime`、`endTime` 必填 |
 | 2.5.58 | 参数名 `keyWord`（注意大小写） |
 | 2.5.62/63 | `materialOrDrug` 文档有 0/1/2 差异，以 HIS 回参为准 |
+
+### 2.4 SPD 系统调用（JWT 白名单，供 SPD 审核/同步）
+
+前缀：`http://<IP>:8088/api/spd/msun/hospitals/zaoqiang-tcm-001`
+
+| 文档编号 | 说明 | 方法 | 前置机路径 |
+|----------|------|------|------------|
+| — | 主数据一键同步 | POST | `.../sync/{type}`（`depts`/`identities`/`materials` 等） |
+| 2.5.41 | 出库推送 | POST | `.../push/drug-stocks-new` |
+| 2.5.42 | 退库推送 | POST | `.../push/drug-stocks-return` |
+| 2.5.43 | 退库审核实时校验 | GET | `.../query/drug-batch-stocks` |
+
+### 2.5 镜像查看 — `ZaoqiangTcmMsunMirrorQueryController`
+
+前缀：`.../mirror`
+
+| 说明 | 方法 | 路径 |
+|------|------|------|
+| 探针落库数据 | GET | `.../mirror/data/{probeKey}` |
+| 推送日志 | GET | `.../mirror/bill-his?billId=` |
+| 批次库存镜像 | GET | `.../mirror/entry-his?...` |
 
 ---
 
@@ -201,6 +225,8 @@ mvn install -pl scminterface-common,scminterface-framework -am -DskipTests
 
 ## 7. 建议测试顺序
 
+**获取全部数据（实施拉数）**：环境与清单 → 填写出退库起止时间 → **获取全部数据**。库存组数默认最多 30 组（可在页面调整上限）。
+
 - [ ] 1. 联调页选择 **枣强县中医院**，调用 `.../env` 确认 `activeEnv=prod`
 - [ ] 2. **一键顺序测试**（环境 → 科室 → 人员 sample → 字典 → 分类 → 供应商 → 厂商 → 批次[条件允许] → 入退库）
 - [ ] 3. 2.5.43 三要素不齐时一键测试会跳过，可手工从 2.1.9 + 2.5.44 填充后单独调用
@@ -235,7 +261,7 @@ mvn install -pl scminterface-common,scminterface-framework -am -DskipTests
 | 医院登记 | `...customer.msun.hospital` | `MsunHospitalRegistry`、`MsunHospitalRuntime` |
 | 枣强客户 | `...customer.msun.hospital.zaoqiangtcm` | `ZaoqiangTcmHospitalConstants` |
 | 枣强配置 | `...hospital.zaoqiangtcm.config` | `ZaoqiangTcmMsunEnvProfile`、`ZaoqiangTcmMsunProperties`、`ZaoqiangTcmMsunConfiguration` |
-| 枣强入口 | `...hospital.zaoqiangtcm.web` | `ZaoqiangTcmMsunProbeController`、`ZaoqiangTcmMsunSpdQueryController` |
+| 枣强入口 | `...hospital.zaoqiangtcm.web` | `ZaoqiangTcmMsunProbeController`、`ZaoqiangTcmMsunSpdQueryController`、`ZaoqiangTcmMsunSpdPushController`、`ZaoqiangTcmMsunMasterSyncController`、`ZaoqiangTcmMsunMirrorQueryController` |
 | 枣强本地测试 | `...hospital.zaoqiangtcm.test` | `ZaoqiangTcmMsunProbeMain`、`ZaoqiangTcmMsunSpdQueryProbeMain`、`ZaoqiangTcmMsunOpenApiRunner` |
 
 其他模块：

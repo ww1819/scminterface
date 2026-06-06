@@ -9,6 +9,7 @@ import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.mirror.mapper.MsunHisMirrorMapper;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorRowSupport;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -61,22 +62,22 @@ public class MsunHisMirrorSyncExecutor
                 rows = syncIdentities(runtime, apiCode, batchNo, traceId, requestJson, data);
                 break;
             case "2.5.44":
-                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, "m_drug_dict");
+                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, MsunHisMirrorTableNames.DRUG_DICT);
                 break;
             case "2.5.58":
-                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, "m_dict_category");
+                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, MsunHisMirrorTableNames.DICT_CATEGORY);
                 break;
             case "2.5.62":
-                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, "m_supplier");
+                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, MsunHisMirrorTableNames.SUPPLIER);
                 break;
             case "2.5.63":
-                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, "m_producer");
+                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, MsunHisMirrorTableNames.PRODUCER);
                 break;
             case "2.5.82":
-                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, "m_merge_stock");
+                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, MsunHisMirrorTableNames.MERGE_STOCK);
                 break;
             case "2.5.43":
-                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, "m_drug_batch_stock");
+                rows = syncFlatRows(runtime, apiCode, batchNo, traceId, requestJson, data, MsunHisMirrorTableNames.DRUG_BATCH_STOCK);
                 break;
             case "2.5.102":
                 rows = syncYkInstock(runtime, apiCode, batchNo, traceId, requestJson, data);
@@ -103,7 +104,7 @@ public class MsunHisMirrorSyncExecutor
             JSONObject item = data.getJSONObject(i);
             Map<String, Object> row = MsunHisMirrorRowSupport.buildMirrorRow(
                     runtime, apiCode, batchNo, traceId, requestJson, item, MIRROR_SOURCE_API);
-            upsertRow("m_dept", row);
+            upsertRow(MsunHisMirrorTableNames.DEPT, row);
             count++;
 
             JSONArray cats = item.getJSONArray("categoryIdList");
@@ -116,7 +117,7 @@ public class MsunHisMirrorSyncExecutor
                     relFields.put("dept_id", deptId);
                     relFields.put("category_id", String.valueOf(cats.get(j)));
                     Map<String, Object> rel = MsunHisMirrorRowSupport.buildChildRelRow(runtime, batchNo, relFields);
-                    upsertRow("m_dept_category_rel", rel);
+                    upsertRow(MsunHisMirrorTableNames.DEPT_CATEGORY_REL, rel);
                 }
             }
         }
@@ -137,7 +138,7 @@ public class MsunHisMirrorSyncExecutor
             JSONObject item = data.getJSONObject(i);
             Map<String, Object> row = MsunHisMirrorRowSupport.buildMirrorRow(
                     runtime, apiCode, batchNo, traceId, requestJson, item, MIRROR_SOURCE_API);
-            upsertRow("m_user_identity", row);
+            upsertRow(MsunHisMirrorTableNames.USER_IDENTITY, row);
             count++;
 
             JSONArray accounts = item.getJSONArray("accountList");
@@ -150,7 +151,7 @@ public class MsunHisMirrorSyncExecutor
                     relFields.put("identity_id", identityId);
                     relFields.put("account_no", String.valueOf(accounts.get(j)));
                     Map<String, Object> rel = MsunHisMirrorRowSupport.buildChildRelRow(runtime, batchNo, relFields);
-                    upsertRow("m_user_identity_account", rel);
+                    upsertRow(MsunHisMirrorTableNames.USER_IDENTITY_ACCOUNT, rel);
                 }
             }
         }
@@ -192,7 +193,7 @@ public class MsunHisMirrorSyncExecutor
             JSONObject item = data.getJSONObject(i);
             Map<String, Object> header = MsunHisMirrorRowSupport.buildMirrorRow(
                     runtime, apiCode, batchNo, traceId, requestJson, item, MIRROR_SOURCE_API);
-            upsertRow("m_yk_instock", header);
+            upsertRow(MsunHisMirrorTableNames.YK_INSTOCK, header);
             count++;
 
             String storageInstockId = item.getString("storageInstockId");
@@ -218,7 +219,7 @@ public class MsunHisMirrorSyncExecutor
                     detailRow.remove("request_params_json");
                     detailRow.remove("raw_item_json");
                     detailRow.remove("mirror_source");
-                    upsertRow("m_yk_instock_detail", detailRow);
+                    upsertRow(MsunHisMirrorTableNames.YK_INSTOCK_DETAIL, detailRow);
                 }
             }
         }
@@ -236,7 +237,7 @@ public class MsunHisMirrorSyncExecutor
         batch.put("mirror_source", MIRROR_SOURCE_API);
         batch.put("record_count", recordCount);
         batch.put("remark", "API查询自动落库");
-        upsertRow("m_sync_batch", batch);
+        upsertRow(MsunHisMirrorTableNames.SYNC_BATCH, batch);
     }
 
     private void upsertRow(String table, Map<String, Object> row)

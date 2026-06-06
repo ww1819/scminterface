@@ -25,6 +25,7 @@ var zqResponseStore = {};
 var zqRunningAll = false;
 var zqFetchingAllPages = false;
 var zqFetchingAllRoles = false;
+var zqRunningFetchAll = false;
 
 var ZQ_API_RESP_ORDER = ['env', 'depts', 'identities', 'drugDict', 'dictCategory', 'suppliers', 'producers', 'mergeStocks', 'batchStocks', 'ykInstock'];
 var ZQ_API_RESP_LABELS = { env: '当前环境' };
@@ -896,10 +897,332 @@ function zqLoadAllParams() {
 
 function zqInitYkDefaults() {
     const now = new Date();
+    const start = zqFormatDt(new Date(now.getTime() - 7 * 86400000));
+    const end = zqFormatDt(now);
     const startEl = document.getElementById(zqFieldId('ykInstock', 'startTime'));
     const endEl = document.getElementById(zqFieldId('ykInstock', 'endTime'));
-    if (startEl && !startEl.value) startEl.value = zqFormatDt(new Date(now.getTime() - 7 * 86400000));
-    if (endEl && !endEl.value) endEl.value = zqFormatDt(now);
+    if (startEl && !startEl.value) startEl.value = start;
+    if (endEl && !endEl.value) endEl.value = end;
+    const faStart = document.getElementById('fetchAll_startTime');
+    const faEnd = document.getElementById('fetchAll_endTime');
+    if (faStart && !faStart.value) faStart.value = start;
+    if (faEnd && !faEnd.value) faEnd.value = end;
+}
+
+function zqGetFetchAllTimes() {
+    const startTime = (document.getElementById('fetchAll_startTime') || {}).value || '';
+    const endTime = (document.getElementById('fetchAll_endTime') || {}).value || '';
+    return { startTime: startTime.trim(), endTime: endTime.trim() };
+}
+
+function zqSyncFetchAllTimesToYk() {
+    const t = zqGetFetchAllTimes();
+    zqSetField('ykInstock', 'startTime', t.startTime);
+    zqSetField('ykInstock', 'endTime', t.endTime);
+}
+
+function zqBuildDrugSpecLookup(dictResult) {
+    const map = {};
+    const items = zqExtractHisDataArray(dictResult) || [];
+    items.forEach(function (item) {
+        if (!item || item.drugId === undefined || item.drugId === null) return;
+        const drugId = String(item.drugId);
+        let specId = item.drugSpecPackingId;
+        if ((specId === undefined || specId === null || specId === '') && item.specPackingList && item.specPackingList.length) {
+            specId = item.specPackingList[0].drugSpecPackingId;
+        }
+        if (specId !== undefined && specId !== null && String(specId).trim() !== '') {
+            map[drugId] = String(specId);
+        }
+    });
+    return map;
+}
+
+function zqExtractStockKeysFromYkInstock(ykResult, drugSpecLookup) {
+    const headers = zqExtractHisDataArray(ykResult) || [];
+    const seen = {};
+    const keys = [];
+    headers.forEach(function (header) {
+        if (!header) return;
+        const deptId = header.deptId != null ? String(header.deptId) : '';
+        const details = header.stockDetailList || [];
+        details.forEach(function (detail) {
+            if (!detail || detail.drugId === undefined || detail.drugId === null) return;
+            const drugId = String(detail.drugId);
+            let drugSpecPackingId = detail.drugSpecPackingId != null ? String(detail.drugSpecPackingId) : '';
+            if (!drugSpecPackingId && drugSpecLookup && drugSpecLookup[drugId]) {
+                drugSpecPackingId = drugSpecLookup[drugId];
+            }
+            const mapKey = deptId + '|' + drugId + '|' + drugSpecPackingId;
+            if (seen[mapKey]) return;
+            seen[mapKey] = true;
+            keys.push({ deptId: deptId, drugId: drugId, drugSpecPackingId: drugSpecPackingId });
+        });
+    });
+    return keys;
+}
+
+async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
+    options = options || {};
+    const schema = MSUN_PARAM_SCHEMA[apiKey];
+    if (!schema) return { ok: false, result: null, rows: 0, message: '未知接口' };
+
+    let baseParams = Object.assign({}, zqCollectFromForm(apiKey), paramOverrides || {});
+    const jsonMerged = zqMergeJsonOverride(apiKey, baseParams);
+    if (!jsonMerged) return { ok: false, result: null, rows: 0, message: 'JSON 入参错误' };
+    baseParams = jsonMerged;
+    Object.keys(baseParams).forEach(function (k) {
+        const v = baseParams[k];
+        if (v === undefined || v === null || String(v).trim() === '') delete baseParams[k];
+    });
+
+    if (!schema.pagination) {
+        const pack = schema.bodyMode
+            ? await zqInvokeRaw(schema.method, schema.path, null, baseParams)
+            : await zqInvokeRaw(schema.method, schema.path, baseParams, null);
+        const rows = (zqExtractHisDataArray(pack.result) || []).length;
+        if (options.showResult !== false) {
+            zqShowResult(apiKey, schema.logTitle + '（全量 1 页 / ' + rows + ' 条）', pack.requestLine, pack.result, pack.elapsed);
+        }
+        return {
+            ok: zqIsHisOk(pack.result),
+            result: pack.result,
+            rows: rows,
+            elapsed: pack.elapsed,
+            requestLine: pack.requestLine,
+            message: ''
+        };
+    }
+
+    const pag = schema.pagination;
+    const pageSizeKey = pag.pageSizeKey || (pag.emptyPageBreak ? null : 'limitCount');
+    let pageSize = pageSizeKey ? parseInt(baseParams[pageSizeKey], 10) : (pag.defaultPageSize || 100);
+    if (isNaN(pageSize) || pageSize < 1) pageSize = pag.defaultPageSize || 100;
+    const cursorParam = pag.cursorParam;
+    const cursorField = pag.cursorField || cursorParam;
+    const maxPages = pag.maxPages || 500;
+    const delayMs = pag.delayMs || 300;
+    delete baseParams[cursorParam];
+
+    let allItems = [];
+    let pageNum = 0;
+    let cursor = null;
+    let lastPack = null;
+    let totalElapsed = 0;
+
+    while (pageNum < maxPages) {
+        pageNum++;
+        const params = Object.assign({}, baseParams);
+        if (pageSizeKey) params[pageSizeKey] = String(pageSize);
+        if (cursor != null) params[cursorParam] = String(cursor);
+        zqSetMeta('全量拉取: ' + schema.title + ' 第 ' + pageNum + ' 页…（已合并 ' + allItems.length + ' 条）');
+
+        const pack = schema.bodyMode
+            ? await zqInvokeRaw(schema.method, schema.path, null, params)
+            : await zqInvokeRaw(schema.method, schema.path, params, null);
+        totalElapsed += pack.elapsed;
+        lastPack = pack;
+
+        if (!zqIsHisOk(pack.result)) {
+            if (options.showResult !== false) {
+                zqShowResult(apiKey, schema.logTitle + '（全量第' + pageNum + '页失败）', pack.requestLine, pack.result, totalElapsed);
+            }
+            return { ok: false, result: pack.result, rows: allItems.length, elapsed: totalElapsed, message: '第' + pageNum + '页失败' };
+        }
+
+        const items = zqExtractHisDataArray(pack.result) || [];
+        allItems = allItems.concat(items);
+
+        if (pag.emptyPageBreak) {
+            if (items.length === 0) break;
+        } else if (items.length < pageSize) {
+            break;
+        }
+        const nextCursor = zqMaxCursorFromPage(items, cursorField);
+        if (nextCursor == null || nextCursor === cursor) break;
+        cursor = nextCursor;
+        if (pageNum < maxPages) await zqSleep(delayMs);
+    }
+
+    const merged = JSON.parse(JSON.stringify(lastPack.result));
+    merged.data.hisBody.data = allItems;
+    merged.data.hisBody._probeMerged = {
+        pages: pageNum,
+        totalRows: allItems.length,
+        pageSize: pageSize,
+        cursorParam: cursorParam,
+        mode: 'allPages'
+    };
+    merged.data.requestParams = Object.assign({}, baseParams);
+    if (pageSizeKey) merged.data.requestParams[pageSizeKey] = pageSize;
+
+    const title = schema.logTitle + '（全量 ' + pageNum + ' 页 / ' + allItems.length + ' 条）';
+    const requestLine = schema.method + ' ' + schema.path + ' [全量翻页 x' + pageNum + ', pageSize=' + pageSize
+        + ', cursor=' + cursorParam + ']\n首屏参数: ' + zqFmtJson(baseParams);
+    if (options.showResult !== false) {
+        zqShowResult(apiKey, title, requestLine, merged, totalElapsed);
+    }
+    return { ok: true, result: merged, rows: allItems.length, elapsed: totalElapsed, requestLine: requestLine, message: '' };
+}
+
+async function zqFetchAllData() {
+    if (zqRunningFetchAll || zqRunningAll || zqFetchingAllPages || zqFetchingAllRoles || !zqCheckLogin()) return;
+    const times = zqGetFetchAllTimes();
+    if (!times.startTime || !times.endTime) {
+        alert('请填写出退库查询的开始时间与结束时间');
+        return;
+    }
+    const materialOrDrug = (document.getElementById('fetchAll_materialOrDrug') || {}).value || '1';
+    let stockLimit = parseInt((document.getElementById('fetchAll_stockLimit') || {}).value || '30', 10);
+    if (isNaN(stockLimit) || stockLimit < 1) stockLimit = 30;
+    if (stockLimit > 200) stockLimit = 200;
+
+    if (!confirm('将按顺序拉取全部数据（含自动翻页），出退库区间：\n' + times.startTime + ' ~ ' + times.endTime
+        + '\n产品档案 materialOrDrug=' + materialOrDrug + '，库存最多查询 ' + stockLimit + ' 组。继续？')) {
+        return;
+    }
+
+    zqRunningFetchAll = true;
+    zqSyncFetchAllTimesToYk();
+    const btn = document.getElementById('btnFetchAll');
+    const btnRun = document.getElementById('btnRunAll');
+    if (btn) btn.disabled = true;
+    if (btnRun) btnRun.disabled = true;
+    zqTestLog = [];
+    zqInitChecklist();
+    zqRenderTestLog();
+
+    const materialParams = { materialOrDrug: materialOrDrug, limitCount: '100' };
+    let drugSpecLookup = {};
+    let stockKeys = [];
+
+    try {
+        zqSetMeta('① 科室…');
+        const deptPack = await zqInvokeRaw('GET', '/depts', { invalidFlag: '-1' }, null);
+        zqShowResult('depts', '2.1.9 科室（全量 invalidFlag=-1）', deptPack.requestLine, deptPack.result, deptPack.elapsed);
+        if (!zqIsHisOk(deptPack.result)) {
+            alert('科室查询失败，已中止');
+            return;
+        }
+        const deptList = zqExtractHisDataArray(deptPack.result) || [];
+        if (deptList.length && deptList[0].deptId != null) {
+            zqSetField('ykInstock', 'deptId', deptList[0].deptId);
+        }
+        await zqSleep(300);
+
+        zqSetMeta('② 分类字典（全量翻页）…');
+        const catRes = await zqFetchAllPagesSilent('dictCategory', { limitCount: '100' });
+        if (!catRes.ok) { alert('分类字典拉取失败，已中止'); return; }
+        await zqSleep(300);
+
+        zqSetMeta('③ 供应商（全量翻页）…');
+        const supRes = await zqFetchAllPagesSilent('suppliers', materialParams);
+        if (!supRes.ok) { alert('供应商拉取失败，已中止'); return; }
+        await zqSleep(300);
+
+        zqSetMeta('④ 生产厂商（全量翻页）…');
+        const prodRes = await zqFetchAllPagesSilent('producers', materialParams);
+        if (!prodRes.ok) { alert('生产厂商拉取失败，已中止'); return; }
+        await zqSleep(300);
+
+        zqSetMeta('⑤ 产品档案（全量翻页）…');
+        const dictRes = await zqFetchAllPagesSilent('drugDict', materialParams);
+        if (!dictRes.ok) { alert('产品档案拉取失败，已中止'); return; }
+        drugSpecLookup = zqBuildDrugSpecLookup(dictRes.result);
+        await zqSleep(300);
+
+        zqSetMeta('⑥ 出退库单据明细…');
+        const ykBody = {
+            startTime: times.startTime,
+            endTime: times.endTime
+        };
+        const ykDept = zqGetFieldValue('ykInstock', { key: 'deptId' });
+        if (ykDept) ykBody.deptId = ykDept;
+        const ykType = zqGetFieldValue('ykInstock', { key: 'type' });
+        if (ykType) ykBody.type = ykType;
+        const ykCode = zqGetFieldValue('ykInstock', { key: 'instockCode' });
+        if (ykCode) ykBody.instockCode = ykCode;
+        const ykPack = await zqInvokeRaw('POST', '/spd/query/yk-instock', null, ykBody);
+        zqShowResult('ykInstock', '2.5.102 一级库入退库（获取全部数据）', ykPack.requestLine, ykPack.result, ykPack.elapsed);
+        if (!zqIsHisOk(ykPack.result)) {
+            alert('出退库查询失败，已中止');
+            return;
+        }
+        stockKeys = zqExtractStockKeysFromYkInstock(ykPack.result, drugSpecLookup);
+        if (!stockKeys.length) {
+            zqRecordSkipped('2.5.82/2.5.43 库存', '出退库明细无 drugId 或未匹配到规格');
+            alert('出退库无可用明细行，已跳过汇总/明细库存');
+            zqSwitchTab('tab-guide', document.querySelector('.tabs .tab-btn'));
+            zqScrollToSection('guide-test-log');
+            return;
+        }
+        await zqSleep(300);
+
+        const toQuery = stockKeys.slice(0, stockLimit);
+        if (stockKeys.length > stockLimit) {
+            zqRecordSkipped('库存查询', '明细去重 ' + stockKeys.length + ' 组，仅查前 ' + stockLimit + ' 组');
+        }
+
+        for (let i = 0; i < toQuery.length; i++) {
+            const key = toQuery[i];
+            zqSetField('mergeStocks', 'deptId', key.deptId);
+            zqSetField('mergeStocks', 'drugId', key.drugId);
+            if (key.drugSpecPackingId) zqSetField('mergeStocks', 'drugSpecPackingId', key.drugSpecPackingId);
+            zqSetField('mergeStocks', 'cascadeBatch', 'false');
+
+            zqSetMeta('⑦ 汇总库存 ' + (i + 1) + '/' + toQuery.length + ' dept=' + key.deptId + ' drug=' + key.drugId + '…');
+            const mergeRes = await zqFetchAllPagesSilent('mergeStocks', {
+                deptId: key.deptId,
+                drugId: key.drugId,
+                drugSpecPackingId: key.drugSpecPackingId || undefined,
+                cascadeBatch: 'false'
+            }, { showResult: i === 0 || i === toQuery.length - 1 });
+            if (!mergeRes.ok) {
+                zqRecordSkipped('2.5.82 汇总库存', '第' + (i + 1) + '组失败 dept=' + key.deptId);
+            }
+            await zqSleep(250);
+
+            if (key.deptId && key.drugId && key.drugSpecPackingId) {
+                zqSetField('batchStocks', 'deptId', key.deptId);
+                zqSetField('batchStocks', 'drugId', key.drugId);
+                zqSetField('batchStocks', 'drugSpecPackingId', key.drugSpecPackingId);
+                zqSetMeta('⑧ 明细库存 ' + (i + 1) + '/' + toQuery.length + '…');
+                const batchPack = await zqInvokeRaw('GET', '/spd/query/drug-batch-stocks', {
+                    deptId: key.deptId,
+                    drugId: key.drugId,
+                    drugSpecPackingId: key.drugSpecPackingId
+                }, null);
+                if (i === 0 || i === toQuery.length - 1) {
+                    zqShowResult('batchStocks',
+                        '2.5.43 明细库存（' + (i + 1) + '/' + toQuery.length + '）',
+                        batchPack.requestLine, batchPack.result, batchPack.elapsed);
+                } else {
+                    const sum = zqHisSummary(batchPack.result);
+                    zqTestLog.push({
+                        time: zqFormatDt(new Date()),
+                        api: '2.5.43 明细库存 #' + (i + 1),
+                        ok: sum.ok,
+                        hisCode: sum.hisCode,
+                        message: sum.message,
+                        elapsedMs: batchPack.elapsed,
+                        raw: batchPack.result
+                    });
+                    zqRenderTestLog();
+                }
+            } else {
+                zqRecordSkipped('2.5.43 明细库存 #' + (i + 1), '缺少 drugSpecPackingId（产品档案未匹配）');
+            }
+            await zqSleep(250);
+        }
+
+        zqSetMeta('获取全部数据完成：出退库明细 ' + stockKeys.length + ' 组，已查库存 ' + toQuery.length + ' 组');
+        zqSwitchTab('tab-guide', document.querySelector('.tabs .tab-btn'));
+        zqScrollToSection('guide-test-log');
+    } finally {
+        zqRunningFetchAll = false;
+        if (btn) btn.disabled = false;
+        if (btnRun) btnRun.disabled = false;
+    }
 }
 
 async function zqViewMirrorData(apiKey) {
@@ -1015,14 +1338,16 @@ function zqRecordSkipped(api, reason) {
 }
 
 async function zqRunAllTests() {
-    if (zqRunningAll || !zqCheckLogin()) return;
+    if (zqRunningAll || zqRunningFetchAll || !zqCheckLogin()) return;
     if (!confirm('按推荐顺序测试全部查询接口？')) return;
     zqRunningAll = true;
     zqTestLog = [];
     zqInitChecklist();
     zqRenderTestLog();
     const btn = document.getElementById('btnRunAll');
+    const btnFetch = document.getElementById('btnFetchAll');
     if (btn) btn.disabled = true;
+    if (btnFetch) btnFetch.disabled = true;
     try {
         await zqLoadEnv(); await zqSleep(400);
         const deptRes = await zqCallDepts(); await zqSleep(400);
@@ -1055,6 +1380,7 @@ async function zqRunAllTests() {
     } finally {
         zqRunningAll = false;
         if (btn) btn.disabled = false;
+        if (btnFetch) btnFetch.disabled = false;
     }
 }
 

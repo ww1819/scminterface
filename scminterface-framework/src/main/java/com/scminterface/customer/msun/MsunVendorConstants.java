@@ -28,4 +28,10 @@ public final class MsunVendorConstants
     {
         return hospitalApiPrefix(hospitalKey) + "/spd/query";
     }
+
+    /** SPD 系统调用前置机（推送/查询/同步）按租户划分的前缀 */
+    public static String spdHospitalApiPrefix(String hospitalKey)
+    {
+        return "/api/spd/" + VENDOR_CODE + "/hospitals/" + hospitalKey;
+    }
 }

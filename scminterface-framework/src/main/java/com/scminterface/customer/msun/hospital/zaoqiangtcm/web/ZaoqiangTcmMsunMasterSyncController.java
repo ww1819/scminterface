@@ -1,4 +1,4 @@
-package com.scminterface.framework.web.controller;
+package com.scminterface.customer.msun.hospital.zaoqiangtcm.web;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.common.core.domain.AjaxResult;
@@ -14,19 +14,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * SPD 系统一键同步众阳 HIS 主数据（系统间调用，JWT 白名单）。
- * <p>仅拉取材料数据：供应商/厂家/字典 materialOrDrug=1。</p>
+ * 众阳 HIS — 枣强县中医院：SPD 一键同步主数据（系统间调用，JWT 白名单）。
  */
-@Api(tags = "SPD-众阳HIS主数据同步")
+@Api(tags = "SPD-众阳HIS-枣强-主数据同步")
 @RestController
 @ConditionalOnProperty(prefix = ZaoqiangTcmHospitalConstants.CONFIG_PREFIX, name = "enabled", havingValue = "true")
-@RequestMapping("/api/spd/msun/sync")
-public class SpdMsunMasterSyncController
+@RequestMapping(ZaoqiangTcmHospitalConstants.SPD_API_PREFIX + "/sync")
+public class ZaoqiangTcmMsunMasterSyncController
 {
     private final MsunSpdMasterPullService pullService;
     private final ZaoqiangTcmMsunProperties msunProperties;
 
-    public SpdMsunMasterSyncController(
+    public ZaoqiangTcmMsunMasterSyncController(
             MsunSpdMasterPullService pullService,
             ZaoqiangTcmMsunProperties msunProperties)
     {

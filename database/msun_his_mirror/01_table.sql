@@ -1,9 +1,9 @@
--- =============================================================================
+﻿-- =============================================================================
 -- 众阳云健康 HIS 接口镜像表 — 手工建表脚本（SPD 业务库，如 aspt）
 -- =============================================================================
 -- 【非标准对象】众阳云健康（msun）专用镜像表，与其他 HIS 厂家镜像表区分；勿纳入标准库初始化。
 -- 新客户部署：标准库初始化完成后，可按对接需要选择性执行本脚本；不需要时可删除全部 m_* 表。
--- 表前缀：m_（mirror）
+-- 表命名：m_{厂商英文}_{对象名}，众阳为 m_msun_*（见 MsunHisMirrorTableNames）
 -- 接口覆盖：2.1.9 / 2.1.12 / 2.5.44 / 2.5.58 / 2.5.62 / 2.5.63 / 2.5.102
 -- 执行前请先 USE 目标 SPD 业务库，按「/」分段执行；可按需只建部分表。
 -- =============================================================================
@@ -12,7 +12,7 @@
 /
 
 -- 同步批次日志（手工/定时导入均可登记）
-CREATE TABLE IF NOT EXISTS `m_sync_batch` (
+CREATE TABLE IF NOT EXISTS `m_msun_sync_batch` (
   `batch_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `sync_batch_no` VARCHAR(64) NOT NULL COMMENT '批次号',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `m_sync_batch` (
 /
 
 -- 2.1.9 科室基本信息
-CREATE TABLE IF NOT EXISTS `m_dept` (
+CREATE TABLE IF NOT EXISTS `m_msun_dept` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `m_dept` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.1.9科室基本信息';
 /
 
-CREATE TABLE IF NOT EXISTS `m_dept_category_rel` (
+CREATE TABLE IF NOT EXISTS `m_msun_dept_category_rel` (
   `rel_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS `m_dept_category_rel` (
 /
 
 -- 2.1.12 用户身份信息
-CREATE TABLE IF NOT EXISTS `m_user_identity` (
+CREATE TABLE IF NOT EXISTS `m_msun_user_identity` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `m_user_identity` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.1.12用户身份信息';
 /
 
-CREATE TABLE IF NOT EXISTS `m_user_identity_account` (
+CREATE TABLE IF NOT EXISTS `m_msun_user_identity_account` (
   `rel_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS `m_user_identity_account` (
 /
 
 -- 2.5.44 药品、材料字典
-CREATE TABLE IF NOT EXISTS `m_drug_dict` (
+CREATE TABLE IF NOT EXISTS `m_msun_drug_dict` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -253,7 +253,7 @@ CREATE TABLE IF NOT EXISTS `m_drug_dict` (
 /
 
 -- 2.5.58 SPD 药品材料分类
-CREATE TABLE IF NOT EXISTS `m_dict_category` (
+CREATE TABLE IF NOT EXISTS `m_msun_dict_category` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -279,7 +279,7 @@ CREATE TABLE IF NOT EXISTS `m_dict_category` (
 /
 
 -- 2.5.62 SPD 供应商
-CREATE TABLE IF NOT EXISTS `m_supplier` (
+CREATE TABLE IF NOT EXISTS `m_msun_supplier` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -324,7 +324,7 @@ CREATE TABLE IF NOT EXISTS `m_supplier` (
 /
 
 -- 2.5.63 SPD 生产厂商
-CREATE TABLE IF NOT EXISTS `m_producer` (
+CREATE TABLE IF NOT EXISTS `m_msun_producer` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -370,7 +370,7 @@ CREATE TABLE IF NOT EXISTS `m_producer` (
 /
 
 -- 2.5.82 SPD 合并库存
-CREATE TABLE IF NOT EXISTS `m_merge_stock` (
+CREATE TABLE IF NOT EXISTS `m_msun_merge_stock` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -417,7 +417,7 @@ CREATE TABLE IF NOT EXISTS `m_merge_stock` (
 /
 
 -- 2.5.43 药房批次库存
-CREATE TABLE IF NOT EXISTS `m_drug_batch_stock` (
+CREATE TABLE IF NOT EXISTS `m_msun_drug_batch_stock` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -460,7 +460,7 @@ CREATE TABLE IF NOT EXISTS `m_drug_batch_stock` (
 /
 
 -- 2.5.102 一级库入退库记录（主表 + 明细）
-CREATE TABLE IF NOT EXISTS `m_yk_instock` (
+CREATE TABLE IF NOT EXISTS `m_msun_yk_instock` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -491,7 +491,7 @@ CREATE TABLE IF NOT EXISTS `m_yk_instock` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.102一级库入退库主表';
 /
 
-CREATE TABLE IF NOT EXISTS `m_yk_instock_detail` (
+CREATE TABLE IF NOT EXISTS `m_msun_yk_instock_detail` (
   `detail_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',
@@ -528,7 +528,7 @@ CREATE TABLE IF NOT EXISTS `m_yk_instock_detail` (
 /
 
 -- HIS 单据推送日志（SPD 出库/退库推送后查询，评估文档 §6.5）
-CREATE TABLE IF NOT EXISTS `m_his_push_log` (
+CREATE TABLE IF NOT EXISTS `m_msun_push_log` (
   `log_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID',

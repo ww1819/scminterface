@@ -23,10 +23,10 @@ public final class MsunHisMirrorRowSupport
 
     static
     {
-        TABLE_PRIMARY_KEY.put("m_sync_batch", "batch_id");
-        TABLE_PRIMARY_KEY.put("m_dept_category_rel", "rel_id");
-        TABLE_PRIMARY_KEY.put("m_user_identity_account", "rel_id");
-        TABLE_PRIMARY_KEY.put("m_yk_instock_detail", "detail_id");
+        TABLE_PRIMARY_KEY.put(MsunHisMirrorTableNames.SYNC_BATCH, "batch_id");
+        TABLE_PRIMARY_KEY.put(MsunHisMirrorTableNames.DEPT_CATEGORY_REL, "rel_id");
+        TABLE_PRIMARY_KEY.put(MsunHisMirrorTableNames.USER_IDENTITY_ACCOUNT, "rel_id");
+        TABLE_PRIMARY_KEY.put(MsunHisMirrorTableNames.YK_INSTOCK_DETAIL, "detail_id");
     }
 
     private MsunHisMirrorRowSupport()

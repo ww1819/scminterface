@@ -1,4 +1,4 @@
--- =============================================================================
+﻿-- =============================================================================
 -- 众阳 HIS 镜像 → SPD 主数据同步 — SPD 业务库增量字段与组合唯一键
 -- =============================================================================
 -- 执行库：SPD 业务库（如 aspt），在 01_table.sql 镜像表建好后执行。
@@ -14,7 +14,7 @@ ALTER TABLE `fd_department`
   ADD UNIQUE KEY `uk_fd_department_tenant_his` (`tenant_id`, `his_id`);
 /
 
--- 耗材：众阳HIS产品档案唯一键（m_drug_dict.drug_spec_packing_id）
+-- 耗材：众阳HIS产品档案唯一键（m_msun_drug_dict.drug_spec_packing_id）
 ALTER TABLE `fd_material`
   ADD COLUMN `his_spec_packing_id` VARCHAR(64) DEFAULT NULL COMMENT '众阳HIS产品档案唯一键（drug_spec_packing_id）' AFTER `his_id`;
 /
@@ -29,7 +29,7 @@ ALTER TABLE `fd_warehouse_category`
   ADD UNIQUE KEY `uk_fd_wh_cat_tenant_his` (`tenant_id`, `his_id`);
 /
 
--- 计量单位：众阳最小包装单位（m_drug_dict.min_packing_id / min_packing_name）
+-- 计量单位：众阳最小包装单位（m_msun_drug_dict.min_packing_id / min_packing_name）
 ALTER TABLE `fd_unit`
   ADD COLUMN `his_unit_id` VARCHAR(64) DEFAULT NULL COMMENT '众阳HIS最小包装单位ID（min_packing_id）' AFTER `unit_name`;
 /

@@ -1,9 +1,9 @@
--- 众阳云健康HIS镜像表：2.5.43 药房批次库存（增量脚本，SPD 业务库手工执行）
+﻿-- 众阳云健康HIS镜像表：2.5.43 药房批次库存（增量脚本，SPD 业务库手工执行）
 -- 【非标准对象】众阳云健康（msun）专用，与其他 HIS 厂家镜像表区分；新客户标准初始化可跳过或删除。
 -- USE `aspt`;
 /
 
-CREATE TABLE IF NOT EXISTS `m_drug_batch_stock` (
+CREATE TABLE IF NOT EXISTS `m_msun_drug_batch_stock` (
   `mirror_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
   `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID，枣强=zaoqiang-tcm-001',

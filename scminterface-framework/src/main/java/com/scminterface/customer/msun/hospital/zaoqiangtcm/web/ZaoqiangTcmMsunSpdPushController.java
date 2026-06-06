@@ -1,4 +1,4 @@
-package com.scminterface.framework.web.controller;
+package com.scminterface.customer.msun.hospital.zaoqiangtcm.web;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.common.core.domain.AjaxResult;
@@ -19,19 +19,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * SPD 系统调用众阳 HIS 写库推送（2.5.41/2.5.42）及审核用 2.5.43 实时查询。
+ * 众阳 HIS — 枣强县中医院：SPD 单据推送与审核用实时查询（2.5.41/42/43）。
  */
-@Api(tags = "SPD-众阳HIS单据推送")
+@Api(tags = "SPD-众阳HIS-枣强-单据推送")
 @RestController
 @ConditionalOnProperty(prefix = ZaoqiangTcmHospitalConstants.CONFIG_PREFIX, name = "enabled", havingValue = "true")
-@RequestMapping("/api/spd/msun")
-public class SpdMsunPushController
+@RequestMapping(ZaoqiangTcmHospitalConstants.SPD_API_PREFIX)
+public class ZaoqiangTcmMsunSpdPushController
 {
     private final MsunSpdPushService pushService;
     private final MsunSpdQueryService queryService;
     private final ZaoqiangTcmMsunProperties msunProperties;
 
-    public SpdMsunPushController(
+    public ZaoqiangTcmMsunSpdPushController(
             MsunSpdPushService pushService,
             MsunSpdQueryService queryService,
             ZaoqiangTcmMsunProperties msunProperties)

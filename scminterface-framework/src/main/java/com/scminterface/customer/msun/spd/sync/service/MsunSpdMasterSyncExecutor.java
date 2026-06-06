@@ -4,6 +4,7 @@ import com.scminterface.common.annotation.DataSource;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
 import com.scminterface.customer.msun.spd.sync.mapper.MsunSpdMasterSyncMapper;
 import com.scminterface.customer.msun.spd.sync.support.MsunSpdFieldSupport;
 import java.math.BigDecimal;
@@ -27,12 +28,12 @@ public class MsunSpdMasterSyncExecutor
 
     static
     {
-        MIRROR_TABLES.add("m_dept");
-        MIRROR_TABLES.add("m_user_identity");
-        MIRROR_TABLES.add("m_supplier");
-        MIRROR_TABLES.add("m_producer");
-        MIRROR_TABLES.add("m_dict_category");
-        MIRROR_TABLES.add("m_drug_dict");
+        MIRROR_TABLES.add(MsunHisMirrorTableNames.DEPT);
+        MIRROR_TABLES.add(MsunHisMirrorTableNames.USER_IDENTITY);
+        MIRROR_TABLES.add(MsunHisMirrorTableNames.SUPPLIER);
+        MIRROR_TABLES.add(MsunHisMirrorTableNames.PRODUCER);
+        MIRROR_TABLES.add(MsunHisMirrorTableNames.DICT_CATEGORY);
+        MIRROR_TABLES.add(MsunHisMirrorTableNames.DRUG_DICT);
     }
 
     private final MsunSpdMasterSyncMapper syncMapper;
@@ -70,7 +71,7 @@ public class MsunSpdMasterSyncExecutor
 
     private int syncDepartments(MsunHospitalRuntime runtime, String batchNo)
     {
-        List<Map<String, Object>> rows = listMirror("m_dept", runtime, batchNo);
+        List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.DEPT, runtime, batchNo);
         int count = 0;
         for (Map<String, Object> row : rows)
         {
@@ -105,7 +106,7 @@ public class MsunSpdMasterSyncExecutor
 
     private int syncUsers(MsunHospitalRuntime runtime, String batchNo)
     {
-        List<Map<String, Object>> rows = listMirror("m_user_identity", runtime, batchNo);
+        List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.USER_IDENTITY, runtime, batchNo);
         int count = 0;
         String tenantId = runtime.getTenantId();
         for (Map<String, Object> row : rows)
@@ -149,7 +150,7 @@ public class MsunSpdMasterSyncExecutor
 
     private int syncSuppliers(MsunHospitalRuntime runtime, String batchNo)
     {
-        List<Map<String, Object>> rows = listMirror("m_supplier", runtime, batchNo);
+        List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.SUPPLIER, runtime, batchNo);
         int count = 0;
         for (Map<String, Object> row : rows)
         {
@@ -180,7 +181,7 @@ public class MsunSpdMasterSyncExecutor
 
     private int syncFactories(MsunHospitalRuntime runtime, String batchNo)
     {
-        List<Map<String, Object>> rows = listMirror("m_producer", runtime, batchNo);
+        List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.PRODUCER, runtime, batchNo);
         int count = 0;
         for (Map<String, Object> row : rows)
         {
@@ -208,7 +209,7 @@ public class MsunSpdMasterSyncExecutor
 
     private int syncCategories(MsunHospitalRuntime runtime, String batchNo)
     {
-        List<Map<String, Object>> rows = listMirror("m_dict_category", runtime, batchNo);
+        List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.DICT_CATEGORY, runtime, batchNo);
         int count = 0;
         for (Map<String, Object> row : rows)
         {
@@ -233,7 +234,7 @@ public class MsunSpdMasterSyncExecutor
 
     private int syncMaterials(MsunHospitalRuntime runtime, String batchNo)
     {
-        List<Map<String, Object>> rows = listMirror("m_drug_dict", runtime, batchNo);
+        List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.DRUG_DICT, runtime, batchNo);
         String tenantId = runtime.getTenantId();
         int count = 0;
         for (Map<String, Object> row : rows)

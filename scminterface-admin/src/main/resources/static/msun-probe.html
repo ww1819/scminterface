@@ -231,6 +231,38 @@
                     <button type="button" class="btn-call" onclick="zqLoadEnv()">刷新环境</button>
                     <div id="resp-slot-env" class="api-inline-resp"></div>
                 </div>
+                <div class="api-block" id="block-fetch-all">
+                    <h3>获取全部数据（按业务顺序）</h3>
+                    <p class="api-desc">
+                        顺序：<strong>科室 → 分类 → 供应商 → 生产厂家 → 产品档案 → 出退库单据明细 → 汇总库存 → 明细库存</strong>。
+                        出退库使用下方时间范围；汇总/明细库存根据出退库明细中的耗材，结合产品档案解析规格后逐组查询（有上限）。
+                    </p>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>出退库 开始时间 <span class="req">*</span></label>
+                            <input type="text" id="fetchAll_startTime" placeholder="yyyy-MM-dd HH:mm:ss">
+                        </div>
+                        <div class="field">
+                            <label>出退库 结束时间 <span class="req">*</span></label>
+                            <input type="text" id="fetchAll_endTime" placeholder="yyyy-MM-dd HH:mm:ss">
+                        </div>
+                        <div class="field">
+                            <label>产品档案 materialOrDrug</label>
+                            <select id="fetchAll_materialOrDrug">
+                                <option value="1" selected>1 材料（耗材）</option>
+                                <option value="0">0 药品</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>库存查询组数上限</label>
+                            <input type="text" id="fetchAll_stockLimit" value="30" title="出退库明细去重后，最多查询多少组汇总/明细库存">
+                        </div>
+                    </div>
+                    <div class="tool-row">
+                        <button type="button" class="btn-call warn" id="btnFetchAll" onclick="zqFetchAllData()">获取全部数据</button>
+                    </div>
+                    <p class="hint">分页类接口自动翻页合并；耗时较长请勿重复点击。人员(2.1.12)不在本流程内。</p>
+                </div>
                 <div class="api-block">
                     <h3>一键顺序测试（推荐给实施人员）</h3>
                     <p class="api-desc">按文档推荐顺序自动调用：环境 → 科室 → 人员 → 字典 → 分类 → 供应商 → 厂商 → 批次库存(条件允许) → 入退库。</p>

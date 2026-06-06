@@ -1,10 +1,10 @@
 # 众阳 HIS 对接 — SPD 字段与逻辑完善评估（待确认）
 
-> **文档版本**：v1.4  
+> **文档版本**：v1.5  
 > **编制日期**：2026-06-05  
 > **依据**：接口文档3（枣强县中医院）、当前 `spd` / `scminterface` 代码与 DDL 现状  
-> **状态**：**仅评估，尚未编码**；供业务与开发确认后分步实施  
-> **适用租户**：功能仅对 **`tenant_id = zaoqiang-tcm-001`（枣强县中医院）** 开放  
+> **状态**：**核心能力已编码**；院方确认项（§14）与部分优化仍待闭环  
+> **适用租户**：已接入众阳 HIS 的 SPD 租户（当前仅 **`zaoqiang-tcm-001`**，见 `MsunHisTenantRegistry` / `MsunHospitalRegistry`）  
 > **关联会话**：861fd963-f475-487d-aec4-45bf4856ca7a  
 
 ---
@@ -37,31 +37,32 @@
 
 | 能力 | 状态 |
 |------|------|
-| 2.5.82 合并库存 + `m_merge_stock` | 已实现 |
-| 2.5.43 批次库存 + `m_drug_batch_stock` | 已实现（列与 API 部分未对齐，见附录 B） |
+| 2.5.82 合并库存 + `m_msun_merge_stock` | 已实现 |
+| 2.5.43 批次库存 + `m_msun_drug_batch_stock` | 已实现（列与 API 部分未对齐，见附录 B） |
 | 2.5.82 落库后链式 2.5.43 | 已实现 |
 | 主数据镜像 → SPD | 已实现（`MsunSpdMasterSyncExecutor`） |
 | 镜像探针查询 `GET .../mirror/data/{probeKey}` | 已实现 |
-| 2.5.41 / 2.5.42 **写库推送** | **未开放**（路径已在 `MsunSpdApiPaths`） |
+| 2.5.41 / 2.5.42 **写库推送** | **已开放**（`ZaoqiangTcmMsunSpdPushController`，按 `hospitalKey` 路径） |
+| `m_msun_push_log` + `mirror/bill-his` / `entry-his` | 已实现 |
+| SPD 201/401 审核编排 + UI HIS 列 | 已实现（枣强租户） |
+| 镜像表 `m_msun_*` + auto-schema | 已实现 |
+| 租户枚举登记 | `MsunHospitalRegistry` ↔ `MsunHisTenantRegistry` |
 
-### 1.3 待完成
+### 1.3 待完成 / 待确认
 
 | 模块 | 待办 |
 |------|------|
-| 租户隔离 | 仅枣强展示/调用 |
-| HIS 单据/明细查看 | 出库、退库页 + 明细行（镜像只读） |
-| 主数据 | `fd_warehouse` HIS 药库科室对照 |
-| DDL | 单据/库存/镜像表补列 + `his_push_status` |
-| 出库 201 | 审核编排 2.5.41 + **补退**（补推送，非退库） |
-| 退库 401 | HIS 数量门禁 + 审核后立即 2.5.42 + 防重复 |
-| scminterface | 推送 API + 按业务键查镜像 + 可选 `m_his_push_log` |
-| spd-biz | 扩展 `StkIoBillServiceImpl.auditStkIoBill`（枣强分支） |
+| 主数据 | `fd_warehouse.his_id` 药库科室对照（院方确认列名见 §14） |
+| 401 优化 | 从 201 继承 `his_memo`；`spdMainId` 传数字主表 id（§14 建议） |
+| 院方确认 | `inStockStatus`、`isReturnToSupplier`、101 入库是否一期 |
+| 部署联调 | 顺序 201 → 补退 → 401；现场配置 `spd.interface.ip/port` |
+| 新客户 | 按《接口对接规范》§8 增加 Registry + 租户 Controller |
 
 ---
 
 ## 2. 租户隔离
 
-与 `MsunHisMasterSyncServiceImpl.assertZaoqiangTenant()`、`TenantEnum.ZQ_TCM` 一致。
+与 `MsunHisTenantSupport.assertIntegrated()`、`TenantEnum.ZQ_TCM`、`MsunHospitalRegistry.ZAOQIANG_TCM` 一致。
 
 | 功能 | 前端 | 后端 |
 |------|------|------|
@@ -236,9 +237,9 @@ AND 仓库/科室 HIS 对照完整
 
 ### 6.4 scminterface 镜像表补齐（附录 B）
 
-`m_drug_batch_stock` 增加 `pharmacy_stock_id`、`stock_amount`、`yc_stock_query_id` 等，与 2.5.43 API 对齐。
+`m_msun_drug_batch_stock` 增加 `pharmacy_stock_id`、`stock_amount`、`yc_stock_query_id` 等，与 2.5.43 API 对齐。
 
-### 6.5 可选 `m_his_push_log`
+### 6.5 可选 `m_msun_push_log`
 
 | 字段 | 说明 |
 |------|------|
@@ -273,7 +274,7 @@ AND 仓库/科室 HIS 对照完整
 在现有 `auditStkIoBill` 内增加租户分支（参考衡水 `tryApplyOutboundReceiptConfirmation`）：
 
 ```
-assertZaoqiangTenant（调用侧或 Service 内）
+MsunHisTenantSupport.assertIntegrated（调用侧或 Service 内）
 → 推送前校验（§7）
 → updateInventory（现有）
 → 2.5.41 推送未成功明细
@@ -287,7 +288,7 @@ assertZaoqiangTenant（调用侧或 Service 内）
 
 ### 8.3 HIS 查看
 
-§10；推送前仅能查库存类镜像，推送后查 `m_his_push_log`。
+§10；推送前仅能查库存类镜像，推送后查 `m_msun_push_log`。
 
 ---
 
@@ -312,7 +313,7 @@ assertZaoqiangTenant（调用侧或 Service 内）
 | ③ | `updateInventory`（现有 401 逻辑，扣科室/补仓库） | — |
 | ④ | 更新 `bill_status=2` 等（现有审核落库） | — |
 | ⑤ | **立即** 2.5.42：跳过 `his_push_status=成功` 的明细 | — |
-| ⑥ | 更新行级 `his_push_status`；写 `m_his_push_log`（若有） | — |
+| ⑥ | 更新行级 `his_push_status`；写 `m_msun_push_log`（若有） | — |
 | ⑦ | 本地全部成功 → `commit` | — |
 | ⑧ | ⑤⑥任失败 → **抛异常回滚 ③④**（本地未审、库存恢复） | 见 §11.2 |
 
@@ -334,8 +335,8 @@ assertZaoqiangTenant（调用侧或 Service 内）
 
 | 时机 | 可查内容 | 数据来源 |
 |------|----------|----------|
-| **推送前** | 合并/批次库存、入退库流水（若已拉取） | `m_merge_stock`、`m_drug_batch_stock`、`m_yk_instock*`；按科室+耗材+批号匹配 |
-| **推送后** | 上述 + **本单推送记录** | + `m_his_push_log`（按 `bill_id`/`spdMainId`） |
+| **推送前** | 合并/批次库存、入退库流水（若已拉取） | `m_msun_merge_stock`、`m_msun_drug_batch_stock`、`m_msun_yk_instock*`；按科室+耗材+批号匹配 |
+| **推送后** | 上述 + **本单推送记录** | + `m_msun_push_log`（按 `bill_id`/`spdMainId`） |
 
 推送前 **无法** 按 SPD 单号精确查「HIS 单据」，仅能查关联库存镜像。
 
@@ -343,9 +344,9 @@ assertZaoqiangTenant（调用侧或 Service 内）
 
 | 场景 | 表 | 匹配条件 |
 |------|-----|----------|
-| 明细 → 批次 | `m_drug_batch_stock` | 优先 `pharmacy_stock_id`（列补齐后）= `his_pharmacy_stock_id`；否则 `dept_id+drug_id+drug_spec_packing_id+batch_number`；过渡期解析 `raw_item_json` |
-| 合并库存 | `m_merge_stock` | `dept_id+drug_id+drug_spec_packing_id` |
-| 入退库流水 | `m_yk_instock` / `detail` | 科室、时间、`instock_code` |
+| 明细 → 批次 | `m_msun_drug_batch_stock` | 优先 `pharmacy_stock_id`（列补齐后）= `his_pharmacy_stock_id`；否则 `dept_id+drug_id+drug_spec_packing_id+batch_number`；过渡期解析 `raw_item_json` |
+| 合并库存 | `m_msun_merge_stock` | `dept_id+drug_id+drug_spec_packing_id` |
+| 入退库流水 | `m_msun_yk_instock` / `detail` | 科室、时间、`instock_code` |
 
 ### 10.4 接口
 
@@ -353,7 +354,7 @@ assertZaoqiangTenant（调用侧或 Service 内）
 |------|-----|
 | **已有** | `GET .../mirror/data/{probeKey}`（全表分页，不适合按单查） |
 | **待增 P0** | `GET .../mirror/entry-his?entryId=&pharmacyStockId=` |
-| **待增 P1** | `GET .../mirror/bill-his?billId=&billType=`（依赖 `m_his_push_log` 或关联键） |
+| **待增 P1** | `GET .../mirror/bill-his?billId=&billType=`（依赖 `m_msun_push_log` 或关联键） |
 
 ### 10.5 与审核校验
 
@@ -373,7 +374,7 @@ assertZaoqiangTenant（调用侧或 Service 内）
 |------|----------|
 | 「HIS 推送与 SPD 同一数据库事务」 | **错误**。HIS 为 HTTP，仅 SPD 库表在同一 `@Transactional` 内 |
 | 可行方案 | **单请求编排**：先本地校验 → 改本地库存 → 调 HIS → 成功 commit / 失败 rollback 本地 |
-| HIS 已成功、本地 rollback 失败 | **HIS 无法随 DB 回滚**；靠 `memo`/`spdDetailId` 幂等 + `m_his_push_log` + 运维补偿（§14） |
+| HIS 已成功、本地 rollback 失败 | **HIS 无法随 DB 回滚**；靠 `memo`/`spdDetailId` 幂等 + `m_msun_push_log` + 运维补偿（§14） |
 
 ### 11.2 退库时序
 
@@ -422,11 +423,13 @@ sequenceDiagram
 | 层级 | 位置 | 动作 |
 |------|------|------|
 | spd-biz | `StkIoBillServiceImpl.auditStkIoBill` | 枣强 + `bill_type` 201/401 分支 |
-| spd-biz | 新建 `MsunHisBillPushService` | 调 scminterface；`assertZaoqiangTenant` |
-| spd-biz | `MsunHisMasterSyncServiceImpl` | 可复用 `buildInterfaceBaseUrl` 模式 |
-| scminterface | 新建 Push Controller | 2.5.41 / 2.5.42 |
-| scminterface | 扩展 `MsunHisMirrorQueryService` | `entry-his` / `bill-his` |
-| scminterface | `01_table.sql` / `02_column.sql` | 附录 B + `m_his_push_log` |
+| spd-biz | `MsunHisBillPushServiceImpl` | `/api/spd/msun/hospitals/{hospitalKey}/push/*` |
+| spd-biz | `MsunHisTenantRegistry` / `MsunHisTenantSupport` | 与 scminterface 枚举对齐 |
+| spd-biz | `MsunHisMirrorProxyController` | 按租户代理 `.../mirror/*` |
+| scminterface | `ZaoqiangTcmMsunSpdPushController` | 2.5.41 / 2.5.42 / 2.5.43 |
+| scminterface | `ZaoqiangTcmMsunMasterSyncController` | `.../sync/{type}` |
+| scminterface | `ZaoqiangTcmMsunMirrorQueryController` | `entry-his` / `bill-his` |
+| scminterface | `01_table.sql` / `02_column.sql` | 附录 B + `m_msun_push_log` |
 | spd-ui | 出库/退库/仓库页 | `MsunHisViewButton`、补退、行级状态 |
 
 **不宜**新建平行审核接口，避免与库存、流水、收货确认逻辑脱节。
@@ -446,7 +449,7 @@ sequenceDiagram
 | 6 | spd-biz：**201 审核推送** + 回写 `pharmacyStockId` | 1,2,4 |
 | 7 | spd-biz：**401 审核编排** | **6 必须完成** |
 | 8 | spd-ui：HIS 查看 + 补退 + 门禁展示 | 5 |
-| 9 | `m_his_push_log` + `bill-his` + 对账 | 可选 |
+| 9 | `m_msun_push_log` + `bill-his` + 对账 | 可选 |
 
 ---
 
@@ -474,7 +477,7 @@ sequenceDiagram
 
 ---
 
-## 附录 B：`m_drug_batch_stock` 与 API 对齐
+## 附录 B：`m_msun_drug_batch_stock` 与 API 对齐
 
 | 2.5.43 API | 当前镜像列 | 建议 |
 |------------|------------|------|
@@ -492,3 +495,4 @@ sequenceDiagram
 |------|------|------|
 | v1.0～v1.3 | 2026-06-05 | 见历史 |
 | v1.4 | 2026-06-05 | 评审修订：跨系统事务表述、§4.3/4.4 数据流与既有规则、完整 DDL、镜像列对齐、推送前后查看区分、代码落点、实施依赖 201→401 |
+| v1.5 | 2026-06-05 | 与《接口对接规范》对齐：按 hospitalKey 的 SPD API、双端 Registry、核心能力标为已实现 |

@@ -2,13 +2,14 @@
 
 ## 定位
 
-- **不建独立镜像库**。`m_*` 表建在 **SPD 业务库**（如 `aspt`）中，与现有业务表同库。
+- **不建独立镜像库**。镜像表建在 **SPD 业务库**（如 `aspt`）中，与现有业务表同库。
+- **命名规范**：`m_{厂商英文}_{对象名}`。众阳（msun）为 **`m_msun_*`**，与其他厂家镜像表隔离，避免撞名。
 - **【非标准对象】众阳云健康（msun）专用**，表注释含「众阳云健康HIS镜像表」，与其他 HIS 厂家镜像表区分；**不纳入**新客户标准库自动初始化。
 - **新客户**：标准库初始化完成后，若不需要接口镜像，可执行 `99_drop_mirror_tables_optional.sql` 删除全部 `m_*` 表；需要时由实施人员按接口手工执行建表脚本。
 
 ## 手工执行顺序（可选，推荐用应用自动建表）
 
-自 v1.5 起，scminterface 在**首次调用/探针/查询**对应接口时，会按接口**按需**检测并创建缺失的 `m_*` 表及增量字段（`scminterface.vendor.msun.mirror.auto-schema=true`，默认开启）。存在**表联动**时（如 `m_dept`↔`m_dept_category_rel`、`m_yk_instock`↔`m_yk_instock_detail`、各落库表↔`m_sync_batch`）会**一并**建表与补列。实施人员**通常无需**再手工执行 `01_table.sql`。
+自 v1.5 起，scminterface 在**首次调用/探针/查询**对应接口时，会按接口**按需**检测并创建缺失的 `m_msun_*` 表及增量字段（`scminterface.vendor.msun.mirror.auto-schema=true`，默认开启）。存在**表联动**时（如 `m_msun_dept`↔`m_msun_dept_category_rel`、各落库表↔`m_msun_sync_batch`）会**一并**建表与补列。实施人员**通常无需**再手工执行 `01_table.sql`。
 
 仍保留 `database/msun_his_mirror/` 脚本供审计、离线环境或关闭 `auto-schema` 时使用：
 
@@ -40,12 +41,12 @@ scminterface.vendor.msun.spd-master-sync.enabled: true
 
 | 接口 | 镜像表 | SPD 表 |
 |------|--------|--------|
-| 2.1.9 | `m_dept` | `fd_department` |
-| 2.1.12 | `m_user_identity` | `sys_user` + `sys_user_department` |
-| 2.5.62 | `m_supplier` | `fd_supplier` |
-| 2.5.63 | `m_producer` | `fd_factory` |
-| 2.5.58 | `m_dict_category` | `fd_warehouse_category` |
-| 2.5.44 | `m_drug_dict` | `fd_unit` + `fd_material` |
+| 2.1.9 | `m_msun_dept` | `fd_department` |
+| 2.1.12 | `m_msun_user_identity` | `sys_user` + `sys_user_department` |
+| 2.5.62 | `m_msun_supplier` | `fd_supplier` |
+| 2.5.63 | `m_msun_producer` | `fd_factory` |
+| 2.5.58 | `m_msun_dict_category` | `fd_warehouse_category` |
+| 2.5.44 | `m_msun_drug_dict` | `fd_unit` + `fd_material` |
 
 同步按本批次 `sync_batch_no` 读取镜像行；`tenant_id` 写入各 SPD 表（`sys_user` 使用 `customer_id`）。
 
@@ -57,18 +58,19 @@ scminterface.vendor.msun.spd-master-sync.enabled: true
 
 | 表名 | 接口 | 说明 |
 |------|------|------|
-| `m_sync_batch` | — | 同步批次日志 |
-| `m_dept` | 2.1.9 | 科室基本信息 |
-| `m_dept_category_rel` | 2.1.9 | 科室分类 categoryIdList |
-| `m_user_identity` | 2.1.12 | 用户身份信息 |
-| `m_user_identity_account` | 2.1.12 | 账号 accountList |
-| `m_drug_dict` | 2.5.44 | 药品/材料字典 |
-| `m_dict_category` | 2.5.58 | SPD 分类字典 |
-| `m_supplier` | 2.5.62 | SPD 供应商 |
-| `m_producer` | 2.5.63 | SPD 生产厂商 |
-| `m_yk_instock` | 2.5.102 | 一级库入退库主表 |
-| `m_yk_instock_detail` | 2.5.102 | 入退库明细 |
-| `m_drug_batch_stock` | 2.5.43 | 药房批次库存（见 04 脚本） |
+| `m_msun_sync_batch` | — | 同步批次日志 |
+| `m_msun_dept` | 2.1.9 | 科室基本信息 |
+| `m_msun_dept_category_rel` | 2.1.9 | 科室分类 categoryIdList |
+| `m_msun_user_identity` | 2.1.12 | 用户身份信息 |
+| `m_msun_user_identity_account` | 2.1.12 | 账号 accountList |
+| `m_msun_drug_dict` | 2.5.44 | 药品/材料字典 |
+| `m_msun_dict_category` | 2.5.58 | SPD 分类字典 |
+| `m_msun_supplier` | 2.5.62 | SPD 供应商 |
+| `m_msun_producer` | 2.5.63 | SPD 生产厂商 |
+| `m_msun_yk_instock` | 2.5.102 | 一级库入退库主表 |
+| `m_msun_yk_instock_detail` | 2.5.102 | 入退库明细 |
+| `m_msun_drug_batch_stock` | 2.5.43 | 药房批次库存 |
+| `m_msun_push_log` | 2.5.41/42 | SPD 推送日志 |
 
 ## 设计说明
 

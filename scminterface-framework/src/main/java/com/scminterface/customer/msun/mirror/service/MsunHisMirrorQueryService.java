@@ -4,6 +4,7 @@ import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.mirror.config.MsunHisMirrorProperties;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorProbeRegistry;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
 import com.scminterface.framework.datasource.DataSourceAvailability;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class MsunHisMirrorQueryService
         {
             throw new IllegalStateException("SPD 数据源未启用");
         }
-        schemaService.ensureTable("m_drug_batch_stock");
+        schemaService.ensureTable(MsunHisMirrorTableNames.DRUG_BATCH_STOCK);
         return queryExecutor.queryEntryHis(runtime, pharmacyStockId, deptId, drugId, drugSpecPackingId, batchNumber);
     }
 
@@ -96,7 +97,7 @@ public class MsunHisMirrorQueryService
         {
             throw new IllegalStateException("SPD 数据源未启用");
         }
-        schemaService.ensureTable("m_his_push_log");
+        schemaService.ensureTable(MsunHisMirrorTableNames.PUSH_LOG);
         return queryExecutor.queryBillHis(runtime, billId, billType);
     }
 }

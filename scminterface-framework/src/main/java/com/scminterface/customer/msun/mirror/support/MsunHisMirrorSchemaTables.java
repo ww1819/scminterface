@@ -1,6 +1,5 @@
 package com.scminterface.customer.msun.mirror.support;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,23 +10,22 @@ import java.util.Map;
  */
 public final class MsunHisMirrorSchemaTables
 {
-    /** 各 API 落库时的主入口表（联动表自动补全） */
     private static final Map<String, List<String>> API_SEED_TABLES;
 
     static
     {
         Map<String, List<String>> map = new LinkedHashMap<>();
-        map.put("2.1.9", Collections.singletonList("m_dept"));
-        map.put("2.1.12", Collections.singletonList("m_user_identity"));
-        map.put("2.5.44", Collections.singletonList("m_drug_dict"));
-        map.put("2.5.58", Collections.singletonList("m_dict_category"));
-        map.put("2.5.62", Collections.singletonList("m_supplier"));
-        map.put("2.5.63", Collections.singletonList("m_producer"));
-        map.put("2.5.82", Collections.singletonList("m_merge_stock"));
-        map.put("2.5.43", Collections.singletonList("m_drug_batch_stock"));
-        map.put("2.5.102", Collections.singletonList("m_yk_instock"));
-        map.put("2.5.41", Collections.singletonList("m_his_push_log"));
-        map.put("2.5.42", Collections.singletonList("m_his_push_log"));
+        map.put("2.1.9", Collections.singletonList(MsunHisMirrorTableNames.DEPT));
+        map.put("2.1.12", Collections.singletonList(MsunHisMirrorTableNames.USER_IDENTITY));
+        map.put("2.5.44", Collections.singletonList(MsunHisMirrorTableNames.DRUG_DICT));
+        map.put("2.5.58", Collections.singletonList(MsunHisMirrorTableNames.DICT_CATEGORY));
+        map.put("2.5.62", Collections.singletonList(MsunHisMirrorTableNames.SUPPLIER));
+        map.put("2.5.63", Collections.singletonList(MsunHisMirrorTableNames.PRODUCER));
+        map.put("2.5.82", Collections.singletonList(MsunHisMirrorTableNames.MERGE_STOCK));
+        map.put("2.5.43", Collections.singletonList(MsunHisMirrorTableNames.DRUG_BATCH_STOCK));
+        map.put("2.5.102", Collections.singletonList(MsunHisMirrorTableNames.YK_INSTOCK));
+        map.put("2.5.41", Collections.singletonList(MsunHisMirrorTableNames.PUSH_LOG));
+        map.put("2.5.42", Collections.singletonList(MsunHisMirrorTableNames.PUSH_LOG));
         API_SEED_TABLES = Collections.unmodifiableMap(map);
     }
 
@@ -56,12 +54,8 @@ public final class MsunHisMirrorSchemaTables
         {
             return Collections.emptyList();
         }
-        List<String> seeds = new ArrayList<>(spec.getTables().size());
-        for (MsunHisMirrorProbeRegistry.MirrorTableSpec t : spec.getTables())
-        {
-            seeds.add(t.getTable());
-        }
-        return MsunHisMirrorTableLinkage.expandWithLinkages(seeds);
+        return MsunHisMirrorTableLinkage.expandWithLinkages(
+                MsunHisMirrorProbeRegistry.tableNamesForProbe(probeKey));
     }
 
     public static List<String> tablesForTable(String tableName)

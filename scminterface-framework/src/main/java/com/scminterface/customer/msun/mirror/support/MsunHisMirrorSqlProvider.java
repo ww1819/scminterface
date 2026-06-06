@@ -12,25 +12,7 @@ import java.util.Set;
  */
 public final class MsunHisMirrorSqlProvider
 {
-    private static final Set<String> ALLOWED_TABLES = new HashSet<>();
-
-    static
-    {
-        ALLOWED_TABLES.add("m_sync_batch");
-        ALLOWED_TABLES.add("m_dept");
-        ALLOWED_TABLES.add("m_dept_category_rel");
-        ALLOWED_TABLES.add("m_user_identity");
-        ALLOWED_TABLES.add("m_user_identity_account");
-        ALLOWED_TABLES.add("m_drug_dict");
-        ALLOWED_TABLES.add("m_dict_category");
-        ALLOWED_TABLES.add("m_supplier");
-        ALLOWED_TABLES.add("m_producer");
-        ALLOWED_TABLES.add("m_yk_instock");
-        ALLOWED_TABLES.add("m_yk_instock_detail");
-        ALLOWED_TABLES.add("m_merge_stock");
-        ALLOWED_TABLES.add("m_drug_batch_stock");
-        ALLOWED_TABLES.add("m_his_push_log");
-    }
+    private static final Set<String> ALLOWED_TABLES = new HashSet<>(MsunHisMirrorTableNames.allTableNames());
 
     private MsunHisMirrorSqlProvider()
     {
@@ -101,7 +83,8 @@ public final class MsunHisMirrorSqlProvider
 
     public static String deleteYkInstockDetails(Map<String, Object> params)
     {
-        return "DELETE FROM m_yk_instock_detail WHERE hospital_key = #{hospitalKey} AND active_env = #{activeEnv} "
+        return "DELETE FROM " + MsunHisMirrorTableNames.YK_INSTOCK_DETAIL
+                + " WHERE hospital_key = #{hospitalKey} AND active_env = #{activeEnv} "
                 + "AND storage_instock_id = #{storageInstockId}";
     }
 
@@ -190,7 +173,8 @@ public final class MsunHisMirrorSqlProvider
     public static String queryEntryHisMirror(Map<String, Object> params)
     {
         StringBuilder sql = new StringBuilder(512);
-        sql.append("SELECT * FROM m_drug_batch_stock WHERE hospital_key = #{hospitalKey} ");
+        sql.append("SELECT * FROM ").append(MsunHisMirrorTableNames.DRUG_BATCH_STOCK)
+                .append(" WHERE hospital_key = #{hospitalKey} ");
         sql.append("AND tenant_id = #{tenantId} AND active_env = #{activeEnv} ");
         if (params.get("pharmacyStockId") != null && !"".equals(String.valueOf(params.get("pharmacyStockId"))))
         {
@@ -221,7 +205,8 @@ public final class MsunHisMirrorSqlProvider
         StringBuilder sql = new StringBuilder(512);
         sql.append("SELECT log_id, hospital_key, tenant_id, active_env, spd_bill_id, spd_entry_id, ");
         sql.append("bill_no, bill_type, api_code, his_trace_id, push_status, push_msg, insert_time, ");
-        sql.append("request_json, response_json FROM m_his_push_log WHERE hospital_key = #{hospitalKey} ");
+        sql.append("request_json, response_json FROM ").append(MsunHisMirrorTableNames.PUSH_LOG)
+                .append(" WHERE hospital_key = #{hospitalKey} ");
         sql.append("AND tenant_id = #{tenantId} AND active_env = #{activeEnv} ");
         if (params.get("billId") != null && !"".equals(String.valueOf(params.get("billId"))))
         {

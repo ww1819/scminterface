@@ -1,5 +1,6 @@
 package com.scminterface.customer.msun.mirror.support;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -16,20 +17,20 @@ public final class MsunHisMirrorProbeRegistry
     static
     {
         register("depts", "2.1.9", "科室镜像",
-                spec("m_dept", "科室主表", true),
-                spec("m_dept_category_rel", "科室分类关联", false));
+                spec(MsunHisMirrorTableNames.DEPT, "科室主表", true),
+                spec(MsunHisMirrorTableNames.DEPT_CATEGORY_REL, "科室分类关联", false));
         register("identities", "2.1.12", "人员身份镜像",
-                spec("m_user_identity", "身份主表", true),
-                spec("m_user_identity_account", "身份账号", false));
-        register("drugDict", "2.5.44", "药品材料字典镜像", spec("m_drug_dict", "字典主表", true));
-        register("dictCategory", "2.5.58", "分类字典镜像", spec("m_dict_category", "分类主表", true));
-        register("suppliers", "2.5.62", "供应商镜像", spec("m_supplier", "供应商主表", true));
-        register("producers", "2.5.63", "生产厂商镜像", spec("m_producer", "厂商主表", true));
-        register("mergeStocks", "2.5.82", "合并库存镜像", spec("m_merge_stock", "合并库存", true));
-        register("batchStocks", "2.5.43", "批次库存镜像", spec("m_drug_batch_stock", "批次库存", true));
+                spec(MsunHisMirrorTableNames.USER_IDENTITY, "身份主表", true),
+                spec(MsunHisMirrorTableNames.USER_IDENTITY_ACCOUNT, "身份账号", false));
+        register("drugDict", "2.5.44", "药品材料字典镜像", spec(MsunHisMirrorTableNames.DRUG_DICT, "字典主表", true));
+        register("dictCategory", "2.5.58", "分类字典镜像", spec(MsunHisMirrorTableNames.DICT_CATEGORY, "分类主表", true));
+        register("suppliers", "2.5.62", "供应商镜像", spec(MsunHisMirrorTableNames.SUPPLIER, "供应商主表", true));
+        register("producers", "2.5.63", "生产厂商镜像", spec(MsunHisMirrorTableNames.PRODUCER, "厂商主表", true));
+        register("mergeStocks", "2.5.82", "合并库存镜像", spec(MsunHisMirrorTableNames.MERGE_STOCK, "合并库存", true));
+        register("batchStocks", "2.5.43", "批次库存镜像", spec(MsunHisMirrorTableNames.DRUG_BATCH_STOCK, "批次库存", true));
         register("ykInstock", "2.5.102", "一级库入退库镜像",
-                spec("m_yk_instock", "入退库主表", true),
-                spec("m_yk_instock_detail", "入退库明细", false));
+                spec(MsunHisMirrorTableNames.YK_INSTOCK, "入退库主表", true),
+                spec(MsunHisMirrorTableNames.YK_INSTOCK_DETAIL, "入退库明细", false));
     }
 
     private MsunHisMirrorProbeRegistry()
@@ -44,6 +45,21 @@ public final class MsunHisMirrorProbeRegistry
     public static boolean isQueryable(String probeKey)
     {
         return SPECS.containsKey(probeKey);
+    }
+
+    public static List<String> tableNamesForProbe(String probeKey)
+    {
+        ProbeMirrorSpec spec = specOf(probeKey);
+        if (spec == null)
+        {
+            return Collections.emptyList();
+        }
+        List<String> tables = new ArrayList<>(spec.getTables().size());
+        for (MirrorTableSpec t : spec.getTables())
+        {
+            tables.add(t.getTable());
+        }
+        return tables;
     }
 
     private static void register(String probeKey, String apiCode, String title, MirrorTableSpec... tables)

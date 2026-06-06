@@ -18,6 +18,9 @@ public final class ZaoqiangTcmHospitalConstants
 
     public static final String SPD_QUERY_API_PREFIX = API_PREFIX + "/spd/query";
 
+    /** SPD 调用前置机：推送/实时查询/主数据同步（按 hospitalKey 隔离） */
+    public static final String SPD_API_PREFIX = "/api/spd/msun/hospitals/" + HOSPITAL_KEY;
+
     private ZaoqiangTcmHospitalConstants()
     {
     }

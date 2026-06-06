@@ -116,7 +116,7 @@ public class ZaoqiangTcmMsunMirrorQueryController
                 .put("vendorName", MsunVendorConstants.VENDOR_NAME)
                 .put("hospitalKey", msunProperties.getHospitalKey())
                 .put("hospitalName", msunProperties.getHospitalName())
-                .put("tenantId", ZaoqiangTcmHospitalConstants.TENANT_ID)
+                .put("tenantId", msunProperties.getTenantId())
                 .put("activeEnv", msunProperties.getActiveEnv())
                 .put("msunBaseUrl", msunProperties.getBaseUrl());
     }

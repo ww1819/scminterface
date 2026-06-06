@@ -54,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
         "/api/spd/order/publish",         // SPD推送采购订单接口（系统间调用，前置机查SPD库组装）
         "/api/spd/order/publishPayload",  // SPD携带完整订单体推送（前置机不查SPD库）
         "/api/spd/delivery",              // SPD内部配送单查询/下载接口（系统间调用）
-        "/api/spd/msun/sync",             // SPD一键同步众阳HIS主数据（系统间调用）
+        "/api/spd/msun/hospitals",        // SPD 调用众阳 HIS（按 hospitalKey：sync/push/query，系统间调用）
         "/api/scm/spd/delivery",          // SCM接收SPD配送单查询/下载接口（系统间调用）
         "/api/scm/pushPurchaseOrders",    // SCM接收采购订单接口（系统间调用）
         "/api/scm/zs"                     // SCM接收第三方数据(ZS)（系统间调用）

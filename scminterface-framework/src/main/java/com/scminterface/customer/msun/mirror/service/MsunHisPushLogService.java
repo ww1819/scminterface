@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorRowSupport;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
 import com.scminterface.framework.util.ZsUuid7;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -11,7 +12,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 /**
- * HIS 推送日志落库 m_his_push_log。
+ * HIS 推送日志落库 {@link com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames#PUSH_LOG}。
  */
 @Service
 public class MsunHisPushLogService
@@ -68,7 +69,7 @@ public class MsunHisPushLogService
             row.put("push_msg", "HIS响应无法解析");
         }
 
-        schemaService.ensureTable("m_his_push_log");
+        schemaService.ensureTable(MsunHisMirrorTableNames.PUSH_LOG);
         pushLogExecutor.insert(row);
     }
 
