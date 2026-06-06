@@ -5,6 +5,7 @@ import com.scminterface.common.core.domain.AjaxResult;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.ZaoqiangTcmHospitalConstants;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.config.ZaoqiangTcmMsunProperties;
 import com.scminterface.customer.msun.service.MsunSpdQueryService;
+import com.scminterface.customer.msun.spd.service.MsunSpdPushInvokeResult;
 import com.scminterface.customer.msun.spd.service.MsunSpdPushService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -81,17 +82,21 @@ public class ZaoqiangTcmMsunSpdPushController
     {
         try
         {
-            JSONObject data = callable.call();
+            MsunSpdPushInvokeResult invoke = callable.call();
+            JSONObject data = invoke.getWrappedResponse();
+            Map<String, Object> payload = new HashMap<>(4);
+            payload.put("data", data);
+            payload.put("hisInvoke", invoke.getDebug());
             Object hisBody = data.get("hisBody");
             if (hisBody instanceof JSONObject)
             {
                 JSONObject hb = (JSONObject) hisBody;
                 if (!Boolean.TRUE.equals(hb.getBoolean("success")))
                 {
-                    return AjaxResult.error(hb.getString("message") != null ? hb.getString("message") : "HIS推送失败", data);
+                    return AjaxResult.error(hb.getString("message") != null ? hb.getString("message") : "HIS推送失败", payload);
                 }
             }
-            return AjaxResult.success("推送成功", data);
+            return AjaxResult.success("推送成功", payload);
         }
         catch (IllegalArgumentException ex)
         {
@@ -122,6 +127,6 @@ public class ZaoqiangTcmMsunSpdPushController
     @FunctionalInterface
     private interface PushCallable
     {
-        JSONObject call() throws Exception;
+        MsunSpdPushInvokeResult call() throws Exception;
     }
 }

@@ -541,7 +541,7 @@ CREATE TABLE IF NOT EXISTS `m_msun_push_log` (
   `response_json` MEDIUMTEXT COMMENT '响应报文',
   `his_trace_id` VARCHAR(64) DEFAULT NULL COMMENT 'HIS traceId',
   `push_status` VARCHAR(16) DEFAULT NULL COMMENT '成功/失败',
-  `push_msg` VARCHAR(500) DEFAULT NULL COMMENT '失败原因',
+  `push_msg` TEXT DEFAULT NULL COMMENT '失败原因',
   `insert_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '插入时间',
   PRIMARY KEY (`log_id`),
   KEY `idx_tenant_bill` (`tenant_id`, `spd_bill_id`),

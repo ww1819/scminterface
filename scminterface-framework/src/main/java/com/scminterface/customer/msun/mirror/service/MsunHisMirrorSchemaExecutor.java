@@ -3,6 +3,7 @@ package com.scminterface.customer.msun.mirror.service;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorColumnPatch;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorSchemaScriptLoader;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -55,6 +56,10 @@ public class MsunHisMirrorSchemaExecutor
                 log.info("众阳HIS镜像表已自动创建: {}", tableName);
             }
             applyColumnPatches(conn, tableName, scriptLoader.getColumnPatches(tableName));
+            if (MsunHisMirrorTableNames.PUSH_LOG.equals(tableName))
+            {
+                widenPushLogMsgColumn(conn);
+            }
         }
         catch (Exception ex)
         {
@@ -147,5 +152,34 @@ public class MsunHisMirrorSchemaExecutor
     private static boolean containsNotNull(String columnType)
     {
         return columnType != null && columnType.toUpperCase().contains("NOT NULL");
+    }
+
+    /** 已有库 push_msg 多为 VARCHAR(500)，HIS 失败原因过长；启动后首次推送时自动扩为 TEXT。 */
+    private static void widenPushLogMsgColumn(Connection conn) throws Exception
+    {
+        if (!tableExists(conn, MsunHisMirrorTableNames.PUSH_LOG))
+        {
+            return;
+        }
+        String sql = "SELECT DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM information_schema.COLUMNS "
+                + "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = 'push_msg'";
+        try (PreparedStatement ps = conn.prepareStatement(sql))
+        {
+            ps.setString(1, MsunHisMirrorTableNames.PUSH_LOG);
+            try (ResultSet rs = ps.executeQuery())
+            {
+                if (!rs.next())
+                {
+                    return;
+                }
+                String dataType = rs.getString(1);
+                if (dataType != null && "varchar".equalsIgnoreCase(dataType.trim()))
+                {
+                    executeStatement(conn, "ALTER TABLE `" + MsunHisMirrorTableNames.PUSH_LOG
+                            + "` MODIFY COLUMN `push_msg` TEXT NULL COMMENT '失败原因'");
+                    log.info("众阳HIS推送日志表 push_msg 已扩为 TEXT");
+                }
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@ import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.service.MsunSpdQueryService;
 import com.scminterface.customer.msun.spd.billpush.MsunSpdBillPushConstants;
+import com.scminterface.customer.msun.spd.service.MsunSpdPushInvokeResult;
 import com.scminterface.customer.msun.spd.service.MsunSpdPushService;
 import com.scminterface.framework.datasource.DataSourceAvailability;
 import java.math.BigDecimal;
@@ -77,20 +78,15 @@ public class MsunSpdBillPushService
         {
             Map<String, Object> one = new LinkedHashMap<>();
             one.put("billId", billId);
-            try
+            Map<String, Object> detail = pushOneBill(runtime, billId);
+            one.putAll(detail);
+            if (Boolean.FALSE.equals(detail.get("success")))
             {
-                Map<String, Object> detail = pushOneBill(runtime, billId);
-                one.put("success", true);
-                one.putAll(detail);
-                ok++;
-            }
-            catch (Exception ex)
-            {
-                String brief = summarizePushError(ex);
-                log.warn("单据推送失败 billId={} err={}", billId, brief, ex);
-                one.put("success", false);
-                one.put("message", brief);
                 fail++;
+            }
+            else
+            {
+                ok++;
             }
             results.add(one);
         }
@@ -125,6 +121,7 @@ public class MsunSpdBillPushService
         if (toPush.isEmpty())
         {
             Map<String, Object> skip = new LinkedHashMap<>();
+            skip.put("success", true);
             skip.put("billNo", bill.get("bill_no"));
             skip.put("skipped", true);
             skip.put("message", "无待推送明细（均已成功）");
@@ -132,41 +129,77 @@ public class MsunSpdBillPushService
         }
 
         markBillPushing(tenantId, billId);
+        Map<String, Object> hisInvoke = null;
+        Map<String, Object> pendingHisBody = null;
         try
         {
-            JSONObject response;
+            MsunSpdPushInvokeResult invoke = null;
             if (billType == 201)
             {
                 Map<String, Object> body = buildOutboundBody(runtime, bill, toPush);
-                response = pushService.pushDrugStocksNew(runtime, body, extractLogMeta(bill));
-                applyOutboundResponse(tenantId, billId, toPush, response);
+                pendingHisBody = stripLogMetaFromBody(body);
+                invoke = pushService.pushDrugStocksNew(runtime, body, extractLogMeta(bill));
+                hisInvoke = invoke.getDebug();
+                applyOutboundResponse(tenantId, billId, toPush, invoke.getWrappedResponse());
             }
             else if (billType == 401)
             {
                 Map<String, Object> body = buildReturnBody(runtime, bill, toPush);
-                response = pushService.pushDrugStocksReturn(runtime, body, extractLogMeta(bill));
-                applyReturnResponse(tenantId, toPush, response);
+                pendingHisBody = stripLogMetaFromBody(body);
+                invoke = pushService.pushDrugStocksReturn(runtime, body, extractLogMeta(bill));
+                hisInvoke = invoke.getDebug();
+                applyReturnResponse(tenantId, toPush, invoke.getWrappedResponse());
             }
             else
             {
                 throw new IllegalArgumentException("不支持推送的单据类型 billType=" + billType);
             }
-            String traceId = extractTraceId(response);
+            String traceId = extractTraceId(invoke.getWrappedResponse());
             markBillSuccess(tenantId, billId, traceId);
             Map<String, Object> ok = new LinkedHashMap<>();
+            ok.put("success", true);
             ok.put("billNo", bill.get("bill_no"));
             ok.put("billType", billType);
             ok.put("pushedEntryCount", toPush.size());
             ok.put("traceId", traceId);
+            ok.put("hisInvoke", hisInvoke);
             return ok;
         }
         catch (Exception ex)
         {
             String brief = summarizePushError(ex);
+            log.warn("单据推送失败 billId={} err={}", billId, brief, ex);
             markBillFailed(tenantId, billId, toPush, brief);
-            throw ex instanceof IllegalArgumentException ? (IllegalArgumentException) ex
-                    : new IllegalStateException(brief, ex);
+            Map<String, Object> fail = new LinkedHashMap<>();
+            fail.put("success", false);
+            fail.put("billNo", bill.get("bill_no"));
+            fail.put("billType", billType);
+            fail.put("message", brief);
+            if (hisInvoke != null)
+            {
+                fail.put("hisInvoke", hisInvoke);
+            }
+            else if (pendingHisBody != null)
+            {
+                Map<String, Object> partial = new LinkedHashMap<>(4);
+                partial.put("apiCode", billType == 401 ? "2.5.42" : "2.5.41");
+                partial.put("requestBody", pendingHisBody);
+                partial.put("note", "HIS 未调用或调用前失败，仅展示已组装的入参");
+                fail.put("hisInvoke", partial);
+            }
+            return fail;
         }
+    }
+
+    private static Map<String, Object> stripLogMetaFromBody(Map<String, Object> body)
+    {
+        if (body == null)
+        {
+            return null;
+        }
+        Map<String, Object> copy = new LinkedHashMap<>(body);
+        copy.remove("_spdLogMeta");
+        return copy;
     }
 
     private void assertSpdEnabled()

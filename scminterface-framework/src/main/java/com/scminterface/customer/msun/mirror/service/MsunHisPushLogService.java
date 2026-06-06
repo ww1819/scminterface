@@ -3,12 +3,15 @@ package com.scminterface.customer.msun.mirror.service;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorPushLogRowSupport;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorRowSupport;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
 import com.scminterface.framework.util.ZsUuid7;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,6 +20,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class MsunHisPushLogService
 {
+    private static final Logger log = LoggerFactory.getLogger(MsunHisPushLogService.class);
+
     private static final int PUSH_MSG_MAX_LEN = 480;
     private static final int HIS_TRACE_ID_MAX_LEN = 64;
     private static final int PUSH_STATUS_MAX_LEN = 16;
@@ -64,7 +69,12 @@ public class MsunHisPushLogService
             row.put("push_status", MsunHisMirrorRowSupport.clampVarchar(ok ? "成功" : "失败", PUSH_STATUS_MAX_LEN));
             if (!ok)
             {
-                row.put("push_msg", MsunHisMirrorRowSupport.clampVarchar(hisBody.getString("message"), PUSH_MSG_MAX_LEN));
+                String msg = MsunHisMirrorPushLogRowSupport.extractHisMessage(hisBody.get("message"));
+                if (msg == null)
+                {
+                    msg = MsunHisMirrorPushLogRowSupport.extractHisMessage(hisBody.get("msg"));
+                }
+                row.put("push_msg", MsunHisMirrorRowSupport.clampVarchar(msg, PUSH_MSG_MAX_LEN));
             }
         }
         else
@@ -74,7 +84,16 @@ public class MsunHisPushLogService
         }
 
         schemaService.ensureTable(MsunHisMirrorTableNames.PUSH_LOG);
-        pushLogExecutor.insert(row);
+        try
+        {
+            pushLogExecutor.insert(row);
+        }
+        catch (Exception ex)
+        {
+            // 推送日志落库失败不应阻断 HIS 推送主流程；完整报文见 request_json/response_json
+            log.warn("HIS推送日志落库失败 billNo={} api={} err={}",
+                    row.get("bill_no"), apiCode, ex.getMessage());
+        }
     }
 
     private static void putIfPresent(Map<String, Object> row, String col, Object val)

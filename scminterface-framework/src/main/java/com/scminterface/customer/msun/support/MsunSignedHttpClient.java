@@ -72,6 +72,11 @@ public class MsunSignedHttpClient
 
     public String post(String url, Map<String, Object> body) throws Exception
     {
+        return postWithDebug(url, body).getResponseBody();
+    }
+
+    public MsunSignedHttpResult postWithDebug(String url, Map<String, Object> body) throws Exception
+    {
         String paramsJsonStr = CollectionUtil.isNotEmpty(body) ? JSON.toJSONString(body) : "";
         long timestamp = System.currentTimeMillis();
         String signatureStr = paramsJsonStr + timestamp;
@@ -80,11 +85,18 @@ public class MsunSignedHttpClient
         String keyType = resolveKeyType(appSecret);
         String sign = signPayload(md5Str, keyType);
 
+        Map<String, String> headers = buildHeaders(sign, timestamp, keyType);
         HttpRequest request = HttpUtil.createPost(url);
-        request.addHeaders(buildHeaders(sign, timestamp, keyType));
+        request.addHeaders(headers);
         request.body(paramsJsonStr);
         HttpResponse response = request.execute();
-        return response.body();
+        return new MsunSignedHttpResult(
+                "POST",
+                url,
+                headers,
+                paramsJsonStr,
+                response.body(),
+                response.getStatus());
     }
 
     private Map<String, String> buildHeaders(String sign, long timestamp, String keyType)
