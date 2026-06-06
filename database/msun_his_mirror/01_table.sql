@@ -435,7 +435,10 @@ CREATE TABLE IF NOT EXISTS `m_drug_batch_stock` (
   `drug_spec_packing_id` VARCHAR(64) DEFAULT NULL COMMENT '规格包装ID',
   `batch_number` VARCHAR(128) DEFAULT NULL COMMENT '批号',
   `stock_id` VARCHAR(64) DEFAULT NULL COMMENT '库存ID',
+  `pharmacy_stock_id` VARCHAR(64) DEFAULT NULL COMMENT '2.5.43 pharmacyStockId',
   `quantity` DECIMAL(18,4) DEFAULT NULL COMMENT '库存数量',
+  `stock_amount` DECIMAL(18,4) DEFAULT NULL COMMENT '2.5.43 stockAmount',
+  `yc_stock_query_id` VARCHAR(64) DEFAULT NULL COMMENT '2.5.43 ycStockQueryId',
   `buy_price` DECIMAL(18,4) DEFAULT NULL COMMENT '进价',
   `retail_price` DECIMAL(18,4) DEFAULT NULL COMMENT '零售价',
   `effective` VARCHAR(32) DEFAULT NULL COMMENT '有效期',
@@ -522,4 +525,28 @@ CREATE TABLE IF NOT EXISTS `m_yk_instock_detail` (
   KEY `idx_drug_id` (`drug_id`),
   KEY `idx_sync_batch` (`sync_batch_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳云健康HIS镜像表-2.5.102一级库入退库明细(stockDetailList)';
+/
+
+-- HIS 单据推送日志（SPD 出库/退库推送后查询，评估文档 §6.5）
+CREATE TABLE IF NOT EXISTS `m_his_push_log` (
+  `log_id` VARCHAR(36) NOT NULL COMMENT '主键UUID7',
+  `hospital_key` VARCHAR(64) NOT NULL COMMENT '医院客户键',
+  `tenant_id` VARCHAR(64) NOT NULL COMMENT 'SPD租户ID',
+  `active_env` VARCHAR(16) NOT NULL DEFAULT 'prod' COMMENT '环境',
+  `spd_bill_id` VARCHAR(64) DEFAULT NULL COMMENT 'SPD主单ID',
+  `spd_entry_id` VARCHAR(64) DEFAULT NULL COMMENT 'SPD明细ID',
+  `bill_no` VARCHAR(64) DEFAULT NULL COMMENT '单号',
+  `bill_type` VARCHAR(16) DEFAULT NULL COMMENT '单据类型 201/401',
+  `api_code` VARCHAR(16) NOT NULL COMMENT '2.5.41/2.5.42',
+  `request_json` MEDIUMTEXT COMMENT '请求报文',
+  `response_json` MEDIUMTEXT COMMENT '响应报文',
+  `his_trace_id` VARCHAR(64) DEFAULT NULL COMMENT 'HIS traceId',
+  `push_status` VARCHAR(16) DEFAULT NULL COMMENT '成功/失败',
+  `push_msg` VARCHAR(500) DEFAULT NULL COMMENT '失败原因',
+  `insert_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '插入时间',
+  PRIMARY KEY (`log_id`),
+  KEY `idx_tenant_bill` (`tenant_id`, `spd_bill_id`),
+  KEY `idx_bill_no` (`bill_no`),
+  KEY `idx_entry` (`spd_entry_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='【非标准】众阳HIS推送日志';
 /

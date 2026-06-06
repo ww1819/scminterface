@@ -29,4 +29,13 @@ public interface MsunHisMirrorMapper
 
     @SelectProvider(type = MsunHisMirrorSqlProvider.class, method = "listMirrorRows")
     List<Map<String, Object>> listMirrorRows(Map<String, Object> params);
+
+    @InsertProvider(type = MsunHisMirrorSqlProvider.class, method = "insertMirrorRow")
+    int insertMirrorRow(@Param("table") String table, @Param("row") Map<String, Object> row);
+
+    @SelectProvider(type = MsunHisMirrorSqlProvider.class, method = "queryEntryHisMirror")
+    List<Map<String, Object>> queryEntryHisMirror(Map<String, Object> params);
+
+    @SelectProvider(type = MsunHisMirrorSqlProvider.class, method = "queryBillHisMirror")
+    List<Map<String, Object>> queryBillHisMirror(Map<String, Object> params);
 }

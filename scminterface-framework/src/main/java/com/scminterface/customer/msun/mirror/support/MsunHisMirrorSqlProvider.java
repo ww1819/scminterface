@@ -29,6 +29,7 @@ public final class MsunHisMirrorSqlProvider
         ALLOWED_TABLES.add("m_yk_instock_detail");
         ALLOWED_TABLES.add("m_merge_stock");
         ALLOWED_TABLES.add("m_drug_batch_stock");
+        ALLOWED_TABLES.add("m_his_push_log");
     }
 
     private MsunHisMirrorSqlProvider()
@@ -139,6 +140,98 @@ public final class MsunHisMirrorSqlProvider
         {
             sql.append(" ORDER BY update_time DESC LIMIT #{limit} OFFSET #{offset}");
         }
+        return sql.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static String insertMirrorRow(Map<String, Object> params)
+    {
+        String table = (String) params.get("table");
+        Map<String, Object> row = (Map<String, Object>) params.get("row");
+        if (!ALLOWED_TABLES.contains(table))
+        {
+            throw new IllegalArgumentException("非法镜像表: " + table);
+        }
+        if (row == null || row.isEmpty())
+        {
+            throw new IllegalArgumentException("镜像行数据为空");
+        }
+        List<String> cols = new ArrayList<>();
+        for (String key : row.keySet())
+        {
+            if (MsunHisMirrorRowSupport.isValidColumn(key))
+            {
+                cols.add(key);
+            }
+        }
+        StringBuilder sql = new StringBuilder(128 + cols.size() * 20);
+        sql.append("INSERT INTO `").append(table).append("` (");
+        for (int i = 0; i < cols.size(); i++)
+        {
+            if (i > 0)
+            {
+                sql.append(',');
+            }
+            sql.append('`').append(cols.get(i)).append('`');
+        }
+        sql.append(") VALUES (");
+        for (int i = 0; i < cols.size(); i++)
+        {
+            if (i > 0)
+            {
+                sql.append(',');
+            }
+            sql.append("#{row.").append(cols.get(i)).append('}');
+        }
+        sql.append(')');
+        return sql.toString();
+    }
+
+    public static String queryEntryHisMirror(Map<String, Object> params)
+    {
+        StringBuilder sql = new StringBuilder(512);
+        sql.append("SELECT * FROM m_drug_batch_stock WHERE hospital_key = #{hospitalKey} ");
+        sql.append("AND tenant_id = #{tenantId} AND active_env = #{activeEnv} ");
+        if (params.get("pharmacyStockId") != null && !"".equals(String.valueOf(params.get("pharmacyStockId"))))
+        {
+            sql.append("AND (pharmacy_stock_id = #{pharmacyStockId} OR stock_id = #{pharmacyStockId}) ");
+        }
+        if (params.get("deptId") != null)
+        {
+            sql.append("AND dept_id = #{deptId} ");
+        }
+        if (params.get("drugId") != null)
+        {
+            sql.append("AND drug_id = #{drugId} ");
+        }
+        if (params.get("drugSpecPackingId") != null)
+        {
+            sql.append("AND drug_spec_packing_id = #{drugSpecPackingId} ");
+        }
+        if (params.get("batchNumber") != null)
+        {
+            sql.append("AND batch_number = #{batchNumber} ");
+        }
+        sql.append("ORDER BY update_time DESC LIMIT 20");
+        return sql.toString();
+    }
+
+    public static String queryBillHisMirror(Map<String, Object> params)
+    {
+        StringBuilder sql = new StringBuilder(512);
+        sql.append("SELECT log_id, hospital_key, tenant_id, active_env, spd_bill_id, spd_entry_id, ");
+        sql.append("bill_no, bill_type, api_code, his_trace_id, push_status, push_msg, insert_time, ");
+        sql.append("request_json, response_json FROM m_his_push_log WHERE hospital_key = #{hospitalKey} ");
+        sql.append("AND tenant_id = #{tenantId} AND active_env = #{activeEnv} ");
+        if (params.get("billId") != null && !"".equals(String.valueOf(params.get("billId"))))
+        {
+            sql.append("AND spd_bill_id = #{billId} ");
+        }
+        if (params.get("billType") != null && !"".equals(String.valueOf(params.get("billType"))))
+        {
+            sql.append("AND bill_type = #{billType} ");
+        }
+        sql.append("ORDER BY insert_time DESC LIMIT 50");
         return sql.toString();
     }
 }

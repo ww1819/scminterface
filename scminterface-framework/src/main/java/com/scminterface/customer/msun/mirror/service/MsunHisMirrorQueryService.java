@@ -61,4 +61,36 @@ public class MsunHisMirrorQueryService
             throw ex;
         }
     }
+
+    public Map<String, Object> queryEntryHis(
+            MsunHospitalRuntime runtime,
+            String pharmacyStockId,
+            String deptId,
+            String drugId,
+            String drugSpecPackingId,
+            String batchNumber)
+    {
+        if (!mirrorProperties.isEnabled())
+        {
+            throw new IllegalStateException("镜像落库未启用");
+        }
+        if (!dataSourceAvailability.isAvailable(DataSourceType.SPD))
+        {
+            throw new IllegalStateException("SPD 数据源未启用");
+        }
+        return queryExecutor.queryEntryHis(runtime, pharmacyStockId, deptId, drugId, drugSpecPackingId, batchNumber);
+    }
+
+    public Map<String, Object> queryBillHis(MsunHospitalRuntime runtime, String billId, String billType)
+    {
+        if (!mirrorProperties.isEnabled())
+        {
+            throw new IllegalStateException("镜像落库未启用");
+        }
+        if (!dataSourceAvailability.isAvailable(DataSourceType.SPD))
+        {
+            throw new IllegalStateException("SPD 数据源未启用");
+        }
+        return queryExecutor.queryBillHis(runtime, billId, billType);
+    }
 }

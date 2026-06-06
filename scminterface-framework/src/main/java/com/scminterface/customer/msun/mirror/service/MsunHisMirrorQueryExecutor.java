@@ -81,6 +81,75 @@ public class MsunHisMirrorQueryExecutor
         return result;
     }
 
+    @DataSource(DataSourceType.SPD)
+    public Map<String, Object> queryEntryHis(
+            MsunHospitalRuntime runtime,
+            String pharmacyStockId,
+            String deptId,
+            String drugId,
+            String drugSpecPackingId,
+            String batchNumber)
+    {
+        Map<String, Object> query = baseScope(runtime);
+        if (pharmacyStockId != null)
+        {
+            query.put("pharmacyStockId", pharmacyStockId);
+        }
+        if (deptId != null)
+        {
+            query.put("deptId", deptId);
+        }
+        if (drugId != null)
+        {
+            query.put("drugId", drugId);
+        }
+        if (drugSpecPackingId != null)
+        {
+            query.put("drugSpecPackingId", drugSpecPackingId);
+        }
+        if (batchNumber != null)
+        {
+            query.put("batchNumber", batchNumber);
+        }
+        List<Map<String, Object>> batchRows = mirrorMapper.queryEntryHisMirror(query);
+
+        Map<String, Object> result = new LinkedHashMap<>(10);
+        result.put("hospitalKey", runtime.getHospitalKey());
+        result.put("tenantId", runtime.getTenantId());
+        result.put("activeEnv", runtime.getActiveEnv());
+        result.put("pharmacyStockId", pharmacyStockId);
+        result.put("batchStocks", batchRows);
+        return result;
+    }
+
+    @DataSource(DataSourceType.SPD)
+    public Map<String, Object> queryBillHis(
+            MsunHospitalRuntime runtime,
+            String billId,
+            String billType)
+    {
+        if (billId == null || billId.trim().isEmpty())
+        {
+            throw new IllegalArgumentException("billId 不能为空");
+        }
+        Map<String, Object> query = baseScope(runtime);
+        query.put("billId", billId.trim());
+        if (billType != null && !billType.trim().isEmpty())
+        {
+            query.put("billType", billType.trim());
+        }
+        List<Map<String, Object>> pushLogs = mirrorMapper.queryBillHisMirror(query);
+
+        Map<String, Object> result = new LinkedHashMap<>(10);
+        result.put("hospitalKey", runtime.getHospitalKey());
+        result.put("tenantId", runtime.getTenantId());
+        result.put("activeEnv", runtime.getActiveEnv());
+        result.put("billId", billId);
+        result.put("billType", billType);
+        result.put("pushLogs", pushLogs);
+        return result;
+    }
+
     private static Map<String, Object> baseScope(MsunHospitalRuntime runtime)
     {
         Map<String, Object> scope = new HashMap<>(4);

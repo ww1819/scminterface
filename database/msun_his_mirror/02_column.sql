@@ -200,6 +200,10 @@ UPDATE m_merge_stock SET insert_time = mirror_time, update_time = mirror_time WH
 /
 UPDATE m_drug_batch_stock SET insert_time = mirror_time, update_time = mirror_time WHERE mirror_time IS NOT NULL;
 /
--- ========== 预留：后续 HIS 回参新增字段在此追加 ==========
--- CALL add_mirror_column('m_drug_dict', 'new_field_from_his', 'varchar(128)', 'HIS新增字段说明', 'org_id');
+-- ========== 2.5.43 镜像列与 API 对齐（评估文档附录 B）==========
+CALL add_mirror_column('m_drug_batch_stock', 'pharmacy_stock_id', 'varchar(64)', '2.5.43 pharmacyStockId', 'stock_id');
+/
+CALL add_mirror_column('m_drug_batch_stock', 'stock_amount', 'decimal(18,4)', '2.5.43 stockAmount', 'quantity');
+/
+CALL add_mirror_column('m_drug_batch_stock', 'yc_stock_query_id', 'varchar(64)', '2.5.43 ycStockQueryId', 'stock_amount');
 /

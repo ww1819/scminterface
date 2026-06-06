@@ -63,6 +63,52 @@ public class ZaoqiangTcmMsunMirrorQueryController
         }
     }
 
+    @ApiOperation("按 SPD 单号查询 HIS 推送日志（评估文档 §10.4 bill-his）")
+    @GetMapping("/bill-his")
+    public AjaxResult queryBillHis(
+            @RequestParam String billId,
+            @RequestParam(required = false) String billType)
+    {
+        try
+        {
+            Map<String, Object> data = mirrorQueryService.queryBillHis(msunProperties, billId, billType);
+            return enrichEnv(AjaxResult.success(data));
+        }
+        catch (IllegalStateException | IllegalArgumentException ex)
+        {
+            return AjaxResult.error(ex.getMessage());
+        }
+        catch (Exception ex)
+        {
+            return AjaxResult.error("HIS单据推送日志查询失败: " + ex.getMessage());
+        }
+    }
+
+    @ApiOperation("按明细键查询 HIS 批次库存镜像（评估文档 §10.4 entry-his）")
+    @GetMapping("/entry-his")
+    public AjaxResult queryEntryHis(
+            @RequestParam(required = false) String pharmacyStockId,
+            @RequestParam(required = false) String deptId,
+            @RequestParam(required = false) String drugId,
+            @RequestParam(required = false) String drugSpecPackingId,
+            @RequestParam(required = false) String batchNumber)
+    {
+        try
+        {
+            Map<String, Object> data = mirrorQueryService.queryEntryHis(
+                    msunProperties, pharmacyStockId, deptId, drugId, drugSpecPackingId, batchNumber);
+            return enrichEnv(AjaxResult.success(data));
+        }
+        catch (IllegalStateException | IllegalArgumentException ex)
+        {
+            return AjaxResult.error(ex.getMessage());
+        }
+        catch (Exception ex)
+        {
+            return AjaxResult.error("HIS明细镜像查询失败: " + ex.getMessage());
+        }
+    }
+
     private AjaxResult enrichEnv(AjaxResult result)
     {
         return result
