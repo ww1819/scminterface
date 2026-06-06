@@ -749,6 +749,28 @@ function zqFormatDt(d) {
         pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
 }
 
+/** API 时间 yyyy-MM-dd HH:mm:ss → datetime-local 控件值 */
+function zqApiDtToLocal(apiStr) {
+    if (!apiStr) return '';
+    const s = String(apiStr).trim();
+    const m = s.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})(?::(\d{2}))?/);
+    if (!m) return '';
+    return m[1] + 'T' + m[2] + ':' + (m[3] || '00');
+}
+
+/** datetime-local 控件值 → API 时间 yyyy-MM-dd HH:mm:ss */
+function zqLocalDtToApi(localStr) {
+    if (!localStr) return '';
+    const s = String(localStr).trim();
+    if (s.indexOf('T') < 0) return s;
+    const parts = s.split('T');
+    let time = parts[1] || '00:00:00';
+    if (time.length === 5) time += ':00';
+    const segs = time.split(':');
+    if (segs.length === 2) time += ':00';
+    return parts[0] + ' ' + time;
+}
+
 function zqSleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
 // ---------- 动态表单渲染 ----------
@@ -763,6 +785,10 @@ function zqRenderField(apiKey, field) {
                 const sel = (field.defaultValue === opt) ? ' selected' : '';
                 return '<option value="' + zqEscapeHtml(opt) + '"' + sel + '>' + zqEscapeHtml(label) + '</option>';
             }).join('') + '</select>';
+    } else if (field.inputType === 'datetime') {
+        const dv = field.defaultValue !== undefined ? zqApiDtToLocal(field.defaultValue) : '';
+        input = '<input type="datetime-local" step="1" id="' + id + '" data-api="' + apiKey + '" data-key="' + field.key + '"'
+            + (dv ? ' value="' + zqEscapeHtml(dv) + '"' : '') + '>';
     } else {
         input = '<input type="text" id="' + id + '" data-api="' + apiKey + '" data-key="' + field.key + '"' +
             (field.defaultValue !== undefined ? ' value="' + zqEscapeHtml(field.defaultValue) + '"' : '') + '>';
@@ -817,9 +843,17 @@ function zqRenderAllForms() {
 }
 
 function zqGetFieldValue(apiKey, field) {
-    const el = document.getElementById(zqFieldId(apiKey, field.key));
+    const key = typeof field === 'object' ? field.key : field;
+    const el = document.getElementById(zqFieldId(apiKey, key));
     if (!el) return '';
-    return el.value.trim();
+    const val = el.value.trim();
+    if (el.type === 'datetime-local') {
+        return zqLocalDtToApi(val);
+    }
+    if (typeof field === 'object' && field.inputType === 'datetime') {
+        return zqLocalDtToApi(val);
+    }
+    return val;
 }
 
 function zqCollectFromForm(apiKey) {
@@ -913,7 +947,10 @@ function zqLoadAllParams() {
             if (saved.form) {
                 MSUN_PARAM_SCHEMA[apiKey].fields.forEach(function (f) {
                     const el = document.getElementById(zqFieldId(apiKey, f.key));
-                    if (el && saved.form[f.key] !== undefined) el.value = saved.form[f.key];
+                    if (el && saved.form[f.key] !== undefined) {
+                        el.value = (f.inputType === 'datetime' || el.type === 'datetime-local')
+                            ? zqApiDtToLocal(saved.form[f.key]) : saved.form[f.key];
+                    }
                 });
             }
             const jsonTa = document.getElementById(zqJsonId(apiKey));
@@ -928,18 +965,21 @@ function zqInitYkDefaults() {
     const end = zqFormatDt(now);
     const startEl = document.getElementById(zqFieldId('ykInstock', 'startTime'));
     const endEl = document.getElementById(zqFieldId('ykInstock', 'endTime'));
-    if (startEl && !startEl.value) startEl.value = start;
-    if (endEl && !endEl.value) endEl.value = end;
+    if (startEl && !startEl.value) startEl.value = zqApiDtToLocal(start);
+    if (endEl && !endEl.value) endEl.value = zqApiDtToLocal(end);
     const faStart = document.getElementById('fetchAll_startTime');
     const faEnd = document.getElementById('fetchAll_endTime');
-    if (faStart && !faStart.value) faStart.value = start;
-    if (faEnd && !faEnd.value) faEnd.value = end;
+    if (faStart && !faStart.value) faStart.value = zqApiDtToLocal(start);
+    if (faEnd && !faEnd.value) faEnd.value = zqApiDtToLocal(end);
 }
 
 function zqGetFetchAllTimes() {
-    const startTime = (document.getElementById('fetchAll_startTime') || {}).value || '';
-    const endTime = (document.getElementById('fetchAll_endTime') || {}).value || '';
-    return { startTime: startTime.trim(), endTime: endTime.trim() };
+    const startEl = document.getElementById('fetchAll_startTime');
+    const endEl = document.getElementById('fetchAll_endTime');
+    return {
+        startTime: zqLocalDtToApi((startEl && startEl.value) || ''),
+        endTime: zqLocalDtToApi((endEl && endEl.value) || '')
+    };
 }
 
 function zqSyncFetchAllTimesToYk() {
@@ -994,7 +1034,9 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
     const schema = MSUN_PARAM_SCHEMA[apiKey];
     if (!schema) return { ok: false, result: null, rows: 0, message: '未知接口' };
 
-    let baseParams = Object.assign({}, zqCollectFromForm(apiKey), paramOverrides || {});
+    let baseParams = options.useOverridesOnly
+        ? Object.assign({}, paramOverrides || {})
+        : Object.assign({}, zqCollectFromForm(apiKey), paramOverrides || {});
     const jsonMerged = zqMergeJsonOverride(apiKey, baseParams);
     if (!jsonMerged) return { ok: false, result: null, rows: 0, message: 'JSON 入参错误' };
     baseParams = jsonMerged;
@@ -1137,28 +1179,37 @@ async function zqFetchAllData() {
         }
         await zqSleep(300);
 
-        zqSetMeta('② 分类字典（全量翻页）…');
-        const catRes = await zqFetchAllPagesSilent('dictCategory', { limitCount: '100' });
+        zqSetMeta('② 人员身份（roleType 0~8 全量）…');
+        const idPack = await zqInvokeRaw('GET', '/identities/all', null, null);
+        zqShowResult('identities', '2.1.12 人员身份（获取全部数据）', idPack.requestLine, idPack.result, idPack.elapsed);
+        if (!zqIsHisOk(idPack.result)) {
+            alert('人员身份拉取失败，已中止');
+            return;
+        }
+        await zqSleep(300);
+
+        zqSetMeta('③ 分类字典（全量翻页，不传 keyWord）…');
+        const catRes = await zqFetchAllPagesSilent('dictCategory', { limitCount: '100' }, { useOverridesOnly: true });
         if (!catRes.ok) { alert('分类字典拉取失败，已中止'); return; }
         await zqSleep(300);
 
-        zqSetMeta('③ 供应商（全量翻页）…');
+        zqSetMeta('④ 供应商（全量翻页）…');
         const supRes = await zqFetchAllPagesSilent('suppliers', materialParams);
         if (!supRes.ok) { alert('供应商拉取失败，已中止'); return; }
         await zqSleep(300);
 
-        zqSetMeta('④ 生产厂商（全量翻页）…');
+        zqSetMeta('⑤ 生产厂商（全量翻页）…');
         const prodRes = await zqFetchAllPagesSilent('producers', materialParams);
         if (!prodRes.ok) { alert('生产厂商拉取失败，已中止'); return; }
         await zqSleep(300);
 
-        zqSetMeta('⑤ 产品档案（全量翻页）…');
+        zqSetMeta('⑥ 产品档案（全量翻页）…');
         const dictRes = await zqFetchAllPagesSilent('drugDict', materialParams);
         if (!dictRes.ok) { alert('产品档案拉取失败，已中止'); return; }
         drugSpecLookup = zqBuildDrugSpecLookup(dictRes.result);
         await zqSleep(300);
 
-        zqSetMeta('⑥ 出退库单据明细…');
+        zqSetMeta('⑦ 出退库单据明细…');
         const ykBody = {
             startTime: times.startTime,
             endTime: times.endTime
@@ -1197,7 +1248,7 @@ async function zqFetchAllData() {
             if (key.drugSpecPackingId) zqSetField('mergeStocks', 'drugSpecPackingId', key.drugSpecPackingId);
             zqSetField('mergeStocks', 'cascadeBatch', 'false');
 
-            zqSetMeta('⑦ 汇总库存 ' + (i + 1) + '/' + toQuery.length + ' dept=' + key.deptId + ' drug=' + key.drugId + '…');
+            zqSetMeta('⑧ 汇总库存 ' + (i + 1) + '/' + toQuery.length + ' dept=' + key.deptId + ' drug=' + key.drugId + '…');
             const mergeRes = await zqFetchAllPagesSilent('mergeStocks', {
                 deptId: key.deptId,
                 drugId: key.drugId,
@@ -1213,7 +1264,7 @@ async function zqFetchAllData() {
                 zqSetField('batchStocks', 'deptId', key.deptId);
                 zqSetField('batchStocks', 'drugId', key.drugId);
                 zqSetField('batchStocks', 'drugSpecPackingId', key.drugSpecPackingId);
-                zqSetMeta('⑧ 明细库存 ' + (i + 1) + '/' + toQuery.length + '…');
+                zqSetMeta('⑨ 明细库存 ' + (i + 1) + '/' + toQuery.length + '…');
                 const batchPack = await zqInvokeRaw('GET', '/spd/query/drug-batch-stocks', {
                     deptId: key.deptId,
                     drugId: key.drugId,
@@ -1333,7 +1384,9 @@ async function zqCallIdentitiesSample() {
 
 function zqSetField(apiKey, fieldKey, value) {
     const el = document.getElementById(zqFieldId(apiKey, fieldKey));
-    if (el && value !== undefined && value !== null) el.value = String(value);
+    if (el && value !== undefined && value !== null) {
+        el.value = el.type === 'datetime-local' ? zqApiDtToLocal(value) : String(value);
+    }
 }
 
 function zqFillFromLastDict() {

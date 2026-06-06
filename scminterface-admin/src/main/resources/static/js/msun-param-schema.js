@@ -43,7 +43,7 @@ var MSUN_PARAM_SCHEMA = {
         path: '/spd/query/drug-dict-infos',
         logTitle: '2.5.44 药品材料字典',
         spdMasterSync: true,
-        hint: '写入 SPD 产品档案 fd_material 须 materialOrDrug=1（材料）且行含 drugSpecPackingId',
+        hint: '写入 fd_material 须 materialOrDrug=1；SPD 无供应商/厂商/库房分类/单位时，按字典行自动补全（分类→fd_warehouse_category，单位→最小包装单位）',
         fields: [
             { key: 'drugCode', label: 'drugCode', hint: '药品编码' },
             { key: 'drugId', label: 'drugId', hint: '药品/材料字典ID' },
@@ -76,7 +76,7 @@ var MSUN_PARAM_SCHEMA = {
         spdMasterSync: true,
         hint: '调用后 upsert SPD 表 fd_warehouse_category（耗材分类）',
         fields: [
-            { key: 'keyWord', label: 'keyWord', hint: '分类名称模糊', defaultValue: '西药' },
+            { key: 'keyWord', label: 'keyWord', hint: '分类名称模糊，留空拉全量' },
             { key: 'limitCount', label: 'limitCount', hint: '查询条数', defaultValue: '20' }
         ],
         pagination: {
@@ -185,8 +185,8 @@ var MSUN_PARAM_SCHEMA = {
         logTitle: '2.5.102 一级库入退库',
         bodyMode: true,
         fields: [
-            { key: 'startTime', label: 'startTime', required: true, hint: 'yyyy-MM-dd HH:mm:ss' },
-            { key: 'endTime', label: 'endTime', required: true, hint: 'yyyy-MM-dd HH:mm:ss' },
+            { key: 'startTime', label: 'startTime', required: true, inputType: 'datetime', hint: '点击选择日期时间' },
+            { key: 'endTime', label: 'endTime', required: true, inputType: 'datetime', hint: '点击选择日期时间' },
             { key: 'deptId', label: 'deptId', hint: '入退库科室' },
             { key: 'type', label: 'type', hint: '0入库 1退库', options: ['', '0', '1'] },
             { key: 'instockCode', label: 'instockCode', hint: '入退库单号' }

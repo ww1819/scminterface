@@ -232,6 +232,11 @@ public class MsunSpdMasterSyncExecutor
         return count;
     }
 
+    /**
+     * 2.5.44 材料字典 → fd_material。
+     * 供应商/生产厂家/库房分类/单位：优先用 SPD 已有主数据（含独立镜像批次同步结果）；
+     * 若 SPD 中不存在，则以本行字典字段补全（不依赖供应商/厂商/分类镜像表是否已拉取）。
+     */
     private int syncMaterials(MsunHospitalRuntime runtime, String batchNo)
     {
         List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.DRUG_DICT, runtime, batchNo);
@@ -243,8 +248,10 @@ public class MsunSpdMasterSyncExecutor
             {
                 continue;
             }
-            // 耗材单位：仅使用众阳镜像中的最小包装单位
-            ensureUnit(tenantId, str(row, "min_packing_id"), str(row, "min_packing_name"));
+            ensureUnitFromDict(tenantId, row);
+            ensureSupplierFromDict(tenantId, row);
+            ensureFactoryFromDict(tenantId, row);
+            ensureWarehouseCategoryFromDict(tenantId, row);
         }
         for (Map<String, Object> row : rows)
         {
@@ -259,10 +266,10 @@ public class MsunSpdMasterSyncExecutor
             {
                 continue;
             }
-            Long supplierId = resolveSupplierId(tenantId, str(row, "supplier_id"));
-            Long factoryId = resolveFactoryId(tenantId, str(row, "produce_id"));
-            Long storeroomId = resolveCategoryId(tenantId, str(row, "drug_catagory_id"));
-            Long unitId = resolveUnitId(tenantId, str(row, "min_packing_id"), str(row, "min_packing_name"));
+            Long supplierId = resolveOrEnsureSupplierId(tenantId, row);
+            Long factoryId = resolveOrEnsureFactoryId(tenantId, row);
+            Long storeroomId = resolveOrEnsureWarehouseCategoryId(tenantId, row);
+            Long unitId = resolveOrEnsureUnitId(tenantId, row);
 
             Map<String, Object> spd = new HashMap<>(24);
             spd.put("code", MsunSpdFieldSupport.truncate(
@@ -291,10 +298,26 @@ public class MsunSpdMasterSyncExecutor
         return count;
     }
 
-    private void ensureUnit(String tenantId, String hisUnitId, String unitName)
+    /** 字典最小包装单位 → fd_unit */
+    private void ensureUnitFromDict(String tenantId, Map<String, Object> row)
+    {
+        String hisUnitId = str(row, "min_packing_id");
+        String unitName = str(row, "min_packing_name");
+        upsertUnitIfAbsent(tenantId, hisUnitId, unitName);
+    }
+
+    private Long resolveOrEnsureUnitId(String tenantId, Map<String, Object> row)
+    {
+        String hisUnitId = str(row, "min_packing_id");
+        String unitName = str(row, "min_packing_name");
+        upsertUnitIfAbsent(tenantId, hisUnitId, unitName);
+        return resolveUnitId(tenantId, hisUnitId, unitName);
+    }
+
+    private void upsertUnitIfAbsent(String tenantId, String hisUnitId, String unitName)
     {
         String resolvedId = MsunSpdFieldSupport.resolveHisUnitId(hisUnitId, unitName);
-        if (StringUtils.isEmpty(resolvedId) || StringUtils.isEmpty(unitName))
+        if (StringUtils.isEmpty(resolvedId))
         {
             return;
         }
@@ -302,15 +325,159 @@ public class MsunSpdMasterSyncExecutor
         {
             return;
         }
+        String displayName = MsunSpdFieldSupport.firstNonBlank(unitName, hisUnitId, resolvedId);
         Map<String, Object> spd = new HashMap<>(10);
         spd.put("unitCode", MsunSpdFieldSupport.truncate(resolvedId, 64));
-        spd.put("unitName", MsunSpdFieldSupport.truncate(unitName, 255));
+        spd.put("unitName", MsunSpdFieldSupport.truncate(displayName, 255));
         spd.put("hisUnitId", resolvedId);
         spd.put("tenantId", tenantId);
         spd.put("delFlag", 0);
         spd.put("createBy", MsunSpdFieldSupport.syncBy());
         spd.put("updateBy", MsunSpdFieldSupport.syncBy());
         syncMapper.upsertFdUnit(spd);
+    }
+
+    private void ensureSupplierFromDict(String tenantId, Map<String, Object> row)
+    {
+        upsertSupplierFromDictIfAbsent(tenantId, row);
+    }
+
+    private Long resolveOrEnsureSupplierId(String tenantId, Map<String, Object> row)
+    {
+        String hisSupplierId = str(row, "supplier_id");
+        if (StringUtils.isEmpty(hisSupplierId))
+        {
+            return null;
+        }
+        Long id = syncMapper.selectFdSupplierIdByHisId(tenantId, hisSupplierId);
+        if (id != null)
+        {
+            return id;
+        }
+        upsertSupplierFromDictIfAbsent(tenantId, row);
+        return syncMapper.selectFdSupplierIdByHisId(tenantId, hisSupplierId);
+    }
+
+    private void upsertSupplierFromDictIfAbsent(String tenantId, Map<String, Object> row)
+    {
+        String hisSupplierId = str(row, "supplier_id");
+        if (StringUtils.isEmpty(hisSupplierId))
+        {
+            return;
+        }
+        if (syncMapper.selectFdSupplierIdByHisId(tenantId, hisSupplierId) != null)
+        {
+            return;
+        }
+        String supplierName = MsunSpdFieldSupport.firstNonBlank(str(row, "supplier_name"), hisSupplierId);
+        Map<String, Object> spd = new HashMap<>(12);
+        spd.put("code", MsunSpdFieldSupport.truncate(hisSupplierId, 64));
+        spd.put("name", MsunSpdFieldSupport.truncate(supplierName, 255));
+        spd.put("referredCode", null);
+        spd.put("hisId", hisSupplierId);
+        spd.put("tenantId", tenantId);
+        spd.put("delFlag", 0);
+        spd.put("address", null);
+        spd.put("phone", null);
+        spd.put("contacts", null);
+        spd.put("contactsPhone", null);
+        spd.put("taxNumber", null);
+        spd.put("createBy", MsunSpdFieldSupport.syncBy());
+        spd.put("updateBy", MsunSpdFieldSupport.syncBy());
+        syncMapper.upsertFdSupplier(spd);
+    }
+
+    private void ensureFactoryFromDict(String tenantId, Map<String, Object> row)
+    {
+        upsertFactoryFromDictIfAbsent(tenantId, row);
+    }
+
+    private Long resolveOrEnsureFactoryId(String tenantId, Map<String, Object> row)
+    {
+        String hisFactoryId = str(row, "produce_id");
+        if (StringUtils.isEmpty(hisFactoryId))
+        {
+            return null;
+        }
+        Long id = syncMapper.selectFdFactoryIdByHisId(tenantId, hisFactoryId);
+        if (id != null)
+        {
+            return id;
+        }
+        upsertFactoryFromDictIfAbsent(tenantId, row);
+        return syncMapper.selectFdFactoryIdByHisId(tenantId, hisFactoryId);
+    }
+
+    private void upsertFactoryFromDictIfAbsent(String tenantId, Map<String, Object> row)
+    {
+        String hisFactoryId = str(row, "produce_id");
+        if (StringUtils.isEmpty(hisFactoryId))
+        {
+            return;
+        }
+        if (syncMapper.selectFdFactoryIdByHisId(tenantId, hisFactoryId) != null)
+        {
+            return;
+        }
+        String factoryName = MsunSpdFieldSupport.firstNonBlank(str(row, "produce_name"), hisFactoryId);
+        Map<String, Object> spd = new HashMap<>(12);
+        spd.put("factoryCode", MsunSpdFieldSupport.truncate(hisFactoryId, 64));
+        spd.put("factoryName", MsunSpdFieldSupport.truncate(factoryName, 255));
+        spd.put("factoryReferredCode", null);
+        spd.put("factoryAddress", null);
+        spd.put("factoryContact", null);
+        spd.put("hisId", hisFactoryId);
+        spd.put("tenantId", tenantId);
+        spd.put("delFlag", 0);
+        spd.put("createBy", MsunSpdFieldSupport.syncBy());
+        spd.put("updateBy", MsunSpdFieldSupport.syncBy());
+        syncMapper.upsertFdFactory(spd);
+    }
+
+    private void ensureWarehouseCategoryFromDict(String tenantId, Map<String, Object> row)
+    {
+        upsertWarehouseCategoryFromDictIfAbsent(tenantId, row);
+    }
+
+    private Long resolveOrEnsureWarehouseCategoryId(String tenantId, Map<String, Object> row)
+    {
+        String hisCategoryId = str(row, "drug_catagory_id");
+        if (StringUtils.isEmpty(hisCategoryId))
+        {
+            return null;
+        }
+        Long id = syncMapper.selectFdWarehouseCategoryIdByHisId(tenantId, hisCategoryId);
+        if (id != null)
+        {
+            return id;
+        }
+        upsertWarehouseCategoryFromDictIfAbsent(tenantId, row);
+        return syncMapper.selectFdWarehouseCategoryIdByHisId(tenantId, hisCategoryId);
+    }
+
+    /** 字典分类 → SPD 库房分类 fd_warehouse_category */
+    private void upsertWarehouseCategoryFromDictIfAbsent(String tenantId, Map<String, Object> row)
+    {
+        String hisCategoryId = str(row, "drug_catagory_id");
+        if (StringUtils.isEmpty(hisCategoryId))
+        {
+            return;
+        }
+        if (syncMapper.selectFdWarehouseCategoryIdByHisId(tenantId, hisCategoryId) != null)
+        {
+            return;
+        }
+        String categoryName = MsunSpdFieldSupport.firstNonBlank(str(row, "drug_catagory_name"), hisCategoryId);
+        Map<String, Object> spd = new HashMap<>(10);
+        spd.put("warehouseCategoryCode", MsunSpdFieldSupport.truncate(hisCategoryId, 64));
+        spd.put("warehouseCategoryName", MsunSpdFieldSupport.truncate(categoryName, 255));
+        spd.put("referredName", null);
+        spd.put("hisId", hisCategoryId);
+        spd.put("tenantId", tenantId);
+        spd.put("delFlag", 0);
+        spd.put("createBy", MsunSpdFieldSupport.syncBy());
+        spd.put("updateBy", MsunSpdFieldSupport.syncBy());
+        syncMapper.upsertFdWarehouseCategory(spd);
     }
 
     private Long resolveDeptId(String tenantId, String hisDeptId)
@@ -320,33 +487,6 @@ public class MsunSpdMasterSyncExecutor
             return null;
         }
         return syncMapper.selectFdDepartmentIdByHisId(tenantId, hisDeptId);
-    }
-
-    private Long resolveSupplierId(String tenantId, String hisSupplierId)
-    {
-        if (StringUtils.isEmpty(hisSupplierId))
-        {
-            return null;
-        }
-        return syncMapper.selectFdSupplierIdByHisId(tenantId, hisSupplierId);
-    }
-
-    private Long resolveFactoryId(String tenantId, String hisFactoryId)
-    {
-        if (StringUtils.isEmpty(hisFactoryId))
-        {
-            return null;
-        }
-        return syncMapper.selectFdFactoryIdByHisId(tenantId, hisFactoryId);
-    }
-
-    private Long resolveCategoryId(String tenantId, String hisCategoryId)
-    {
-        if (StringUtils.isEmpty(hisCategoryId))
-        {
-            return null;
-        }
-        return syncMapper.selectFdWarehouseCategoryIdByHisId(tenantId, hisCategoryId);
     }
 
     private Long resolveUnitId(String tenantId, String hisUnitId, String unitName)

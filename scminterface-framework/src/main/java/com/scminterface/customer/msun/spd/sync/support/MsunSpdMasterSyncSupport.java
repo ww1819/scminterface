@@ -22,7 +22,7 @@ public final class MsunSpdMasterSyncSupport
         Map<String, String> hints = new LinkedHashMap<>(8);
         hints.put("2.1.9", "fd_department");
         hints.put("2.1.12", "sys_user、sys_user_department");
-        hints.put("2.5.44", "fd_material、fd_unit（仅 material_or_drug=1 且含 drug_spec_packing_id）");
+        hints.put("2.5.44", "fd_material、fd_unit/fd_supplier/fd_factory/fd_warehouse_category（材料行；外键缺失时从字典补全）");
         hints.put("2.5.58", "fd_warehouse_category");
         hints.put("2.5.62", "fd_supplier");
         hints.put("2.5.63", "fd_factory");
@@ -51,7 +51,7 @@ public final class MsunSpdMasterSyncSupport
         }
         if ("2.5.44".equals(apiCode))
         {
-            return "镜像 " + mirrorRows + " 行但 SPD=0：仅同步 material_or_drug=1 且含 drug_spec_packing_id 的耗材行，请设置 materialOrDrug=1";
+            return "镜像 " + mirrorRows + " 行但 SPD=0：仅同步 material_or_drug=1 且含 drug_spec_packing_id 的耗材行；外键将按字典补全供应商/厂商/库房分类/最小包装单位";
         }
         String target = spdTableHint(apiCode);
         if (target.isEmpty())

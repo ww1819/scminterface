@@ -78,12 +78,25 @@
         .api-block h3 { font-size: 14px; color: #111827; margin-bottom: 4px; }
         .api-desc { font-size: 12px; color: #6b7280; margin-bottom: 12px; line-height: 1.5; }
         .form-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px 14px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px;
+            align-items: start;
         }
-        .field label { display: block; font-size: 12px; color: #374151; margin-bottom: 4px; }
+        .form-grid-fetch-all {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            max-width: 720px;
+        }
+        @media (max-width: 640px) {
+            .form-grid-fetch-all { grid-template-columns: 1fr; max-width: none; }
+        }
+        .field { min-width: 0; }
+        .field label { display: block; font-size: 12px; color: #374151; margin-bottom: 4px; line-height: 1.4; }
+        .field input[type="datetime-local"] {
+            width: 100%; min-width: 0; max-width: 100%;
+            box-sizing: border-box;
+        }
         .field input, .field select, .field textarea {
             width: 100%; padding: 7px 10px; border: 1px solid #d1d5db;
-            border-radius: 6px; font-size: 13px;
+            border-radius: 6px; font-size: 13px; box-sizing: border-box;
         }
         .field input:focus, .field textarea:focus { outline: none; border-color: #14b8a6; }
         .btn-call {
@@ -160,6 +173,8 @@
         }
         .hint { font-size: 11px; color: #9ca3af; margin-top: 8px; line-height: 1.5; }
         .field-hint { display: block; font-size: 10px; color: #9ca3af; margin-top: 2px; line-height: 1.35; }
+        .fetch-all-hint { margin: 4px 0 0; font-size: 11px; }
+        #block-fetch-all .tool-row { margin-top: 14px; }
         .req { color: #dc2626; }
         .json-editor-wrap { margin-top: 12px; font-size: 12px; }
         .json-editor-wrap summary { cursor: pointer; color: #0f766e; padding: 6px 0; }
@@ -234,17 +249,17 @@
                 <div class="api-block" id="block-fetch-all">
                     <h3>获取全部数据（按业务顺序）</h3>
                     <p class="api-desc">
-                        顺序：<strong>科室 → 分类 → 供应商 → 生产厂家 → 产品档案 → 出退库单据明细 → 汇总库存 → 明细库存</strong>。
-                        出退库使用下方时间范围；汇总/明细库存根据出退库明细中的耗材，结合产品档案解析规格后逐组查询（有上限）。
+                        顺序：<strong>科室 → 人员 → 分类 → 供应商 → 生产厂家 → 产品档案 → 出退库单据明细 → 汇总库存 → 明细库存</strong>。
+                        分类全量拉取（不传 keyWord）；人员按 roleType 0~8 合并；出退库使用下方时间范围。
                     </p>
-                    <div class="form-grid">
+                    <div class="form-grid form-grid-fetch-all">
                         <div class="field">
                             <label>出退库 开始时间 <span class="req">*</span></label>
-                            <input type="text" id="fetchAll_startTime" placeholder="yyyy-MM-dd HH:mm:ss">
+                            <input type="datetime-local" id="fetchAll_startTime" step="1" title="选择开始日期时间">
                         </div>
                         <div class="field">
                             <label>出退库 结束时间 <span class="req">*</span></label>
-                            <input type="text" id="fetchAll_endTime" placeholder="yyyy-MM-dd HH:mm:ss">
+                            <input type="datetime-local" id="fetchAll_endTime" step="1" title="选择结束日期时间">
                         </div>
                         <div class="field">
                             <label>产品档案 materialOrDrug</label>
@@ -255,13 +270,15 @@
                         </div>
                         <div class="field">
                             <label>库存查询组数上限</label>
-                            <input type="text" id="fetchAll_stockLimit" value="30" title="出退库明细去重后，最多查询多少组汇总/明细库存">
+                            <input type="number" id="fetchAll_stockLimit" value="30" min="1" max="500"
+                                title="出退库明细去重后，最多查询多少组汇总/明细库存">
                         </div>
                     </div>
+                    <p class="field-hint fetch-all-hint">出退库时间点击选择，提交格式为 yyyy-MM-dd HH:mm:ss；默认最近 7 天。</p>
                     <div class="tool-row">
                         <button type="button" class="btn-call warn" id="btnFetchAll" onclick="zqFetchAllData()">获取全部数据</button>
                     </div>
-                    <p class="hint">分页类接口自动翻页合并；耗时较长请勿重复点击。人员(2.1.12)不在本流程内。</p>
+                    <p class="hint">分页类接口自动翻页合并；耗时较长请勿重复点击。</p>
                 </div>
                 <div class="api-block">
                     <h3>一键顺序测试（推荐给实施人员）</h3>
