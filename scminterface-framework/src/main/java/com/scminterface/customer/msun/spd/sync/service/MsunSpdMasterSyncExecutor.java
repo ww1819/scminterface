@@ -4,6 +4,7 @@ import com.scminterface.common.annotation.DataSource;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
+import com.scminterface.customer.msun.hospital.zaoqiangtcm.ZaoqiangTcmHospitalConstants;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
 import com.scminterface.customer.msun.spd.sync.mapper.MsunSpdMasterSyncMapper;
 import com.scminterface.customer.msun.spd.sync.support.MsunSpdFieldSupport;
@@ -376,6 +377,7 @@ public class MsunSpdMasterSyncExecutor
     {
         List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.DRUG_DICT, runtime, batchNo);
         String tenantId = runtime.getTenantId();
+        boolean zaoqiang = isZaoqiangHospital(runtime);
         int count = 0;
         for (Map<String, Object> row : rows)
         {
@@ -384,7 +386,10 @@ public class MsunSpdMasterSyncExecutor
                 continue;
             }
             ensureUnitFromDict(tenantId, row);
-            ensureSupplierFromDict(tenantId, row);
+            if (!zaoqiang || StringUtils.isNotEmpty(str(row, "supplier_id")))
+            {
+                ensureSupplierFromDict(tenantId, row);
+            }
             ensureFactoryFromDict(tenantId, row);
             ensureWarehouseCategoryFromDict(tenantId, row);
         }
@@ -401,13 +406,23 @@ public class MsunSpdMasterSyncExecutor
             {
                 continue;
             }
+            Long existingMaterialId = syncMapper.selectFdMaterialIdByHisSpec(tenantId, drugId, specPackingId);
             Integer existingDelFlag = syncMapper.selectFdMaterialDelFlagByHisSpec(tenantId, drugId, specPackingId);
             if (existingDelFlag != null && existingDelFlag == 1)
             {
                 continue;
             }
 
-            Long supplierId = resolveOrEnsureSupplierId(tenantId, row);
+            boolean zaoqiangUpdate = zaoqiang && existingMaterialId != null;
+            String hisSupplierId = str(row, "supplier_id");
+            BigDecimal buyPrice = toDecimal(row, "buy_price");
+            BigDecimal retailPrice = toDecimal(row, "retail_price");
+
+            Long supplierId = null;
+            if (!zaoqiangUpdate || StringUtils.isNotEmpty(hisSupplierId))
+            {
+                supplierId = resolveOrEnsureSupplierId(tenantId, row);
+            }
             Long factoryId = resolveOrEnsureFactoryId(tenantId, row);
             Long storeroomId = resolveOrEnsureWarehouseCategoryId(tenantId, row);
             Long unitId = resolveOrEnsureUnitId(tenantId, row);
@@ -418,8 +433,7 @@ public class MsunSpdMasterSyncExecutor
             spd.put("name", MsunSpdFieldSupport.truncate(str(row, "drug_name"), 100));
             spd.put("speci", MsunSpdFieldSupport.truncate(str(row, "spec"), 100));
             spd.put("model", MsunSpdFieldSupport.truncate(str(row, "model_type"), 100));
-            spd.put("price", toDecimal(row, "buy_price"));
-            spd.put("salePrice", toDecimal(row, "retail_price"));
+            applyZaoqiangMaterialPriceFields(spd, zaoqiangUpdate, buyPrice, retailPrice);
             spd.put("referredName", MsunSpdFieldSupport.truncate(str(row, "input_code"), 100));
             spd.put("registerNo", MsunSpdFieldSupport.truncate(str(row, "approved_no"), 100));
             spd.put("medicalNo", MsunSpdFieldSupport.truncate(str(row, "national_medical_insurance_code"), 100));
@@ -429,7 +443,14 @@ public class MsunSpdMasterSyncExecutor
             spd.put("tenantId", tenantId);
             spd.put("delFlag", 0);
             spd.put("isUse", MsunSpdFieldSupport.toFdMaterialIsUse(str(row, "invalid_flag")));
-            spd.put("supplierId", supplierId);
+            if (zaoqiangUpdate && StringUtils.isEmpty(hisSupplierId))
+            {
+                spd.put("skipSupplierUpdate", Boolean.TRUE);
+            }
+            else
+            {
+                spd.put("supplierId", supplierId);
+            }
             spd.put("factoryId", factoryId);
             spd.put("storeroomId", storeroomId);
             spd.put("unitId", unitId);
@@ -438,6 +459,39 @@ public class MsunSpdMasterSyncExecutor
             count += mergeFdMaterial(spd);
         }
         return count;
+    }
+
+    /**
+     * 枣强 HIS 2.5.44 字典常不回传进价/零售价；更新已存在产品档案时不覆盖 SPD 单价（price）与销售价（sale_price）。
+     */
+    private static void applyZaoqiangMaterialPriceFields(
+            Map<String, Object> spd,
+            boolean zaoqiangUpdate,
+            BigDecimal buyPrice,
+            BigDecimal retailPrice)
+    {
+        if (zaoqiangUpdate && buyPrice == null)
+        {
+            spd.put("skipPriceUpdate", Boolean.TRUE);
+        }
+        else
+        {
+            spd.put("price", buyPrice);
+        }
+        if (zaoqiangUpdate && retailPrice == null)
+        {
+            spd.put("skipSalePriceUpdate", Boolean.TRUE);
+        }
+        else
+        {
+            spd.put("salePrice", retailPrice);
+        }
+    }
+
+    private static boolean isZaoqiangHospital(MsunHospitalRuntime runtime)
+    {
+        return runtime != null
+                && ZaoqiangTcmHospitalConstants.HOSPITAL_KEY.equals(runtime.getHospitalKey());
     }
 
     /** 2.5.44：仅材料行且分类在白名单内 */
