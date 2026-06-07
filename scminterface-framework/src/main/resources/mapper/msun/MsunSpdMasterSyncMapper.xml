@@ -50,6 +50,12 @@
         LIMIT 1
     </select>
 
+    <select id="selectSysUserIdByHisId" resultType="java.lang.Long">
+        SELECT user_id FROM sys_user
+        WHERE customer_id = #{customerId} AND his_id = #{hisId} AND del_flag = '0'
+        LIMIT 1
+    </select>
+
     <insert id="upsertFdDepartment">
         INSERT INTO fd_department (
             code, name, referred_name, his_id, tenant_id, del_flag, parent_id, create_by, create_time, update_by, update_time
@@ -201,9 +207,10 @@
             #{status}, #{delFlag}, #{password}, #{createBy}, NOW(), #{updateBy}, NOW()
         )
         ON DUPLICATE KEY UPDATE
+            user_name = VALUES(user_name),
             nick_name = VALUES(nick_name),
             his_id = VALUES(his_id),
-            dept_id = VALUES(dept_id),
+            his_identity_id = VALUES(his_identity_id),
             status = VALUES(status),
             del_flag = VALUES(del_flag),
             update_by = VALUES(update_by),
@@ -218,6 +225,37 @@
             SELECT 1 FROM sys_user_department
             WHERE user_id = #{userId} AND department_id = #{departmentId}
         )
+    </insert>
+
+    <!-- 用户科室权限：m_msun_user_identity → sys_user_department（与现场映射 SQL 一致） -->
+    <insert id="insertSysUserDepartmentsFromMirrorBatch">
+        INSERT INTO sys_user_department (user_id, department_id, status, tenant_id, create_by, create_time)
+        SELECT DISTINCT
+            su.user_id,
+            fd.id,
+            0,
+            #{tenantId},
+            #{createBy},
+            NOW()
+        FROM m_msun_user_identity a
+        INNER JOIN sys_user su
+            ON a.user_id = su.his_id
+           AND su.customer_id = #{tenantId}
+           AND su.del_flag = '0'
+        INNER JOIN fd_department fd
+            ON a.dept_id = fd.his_id
+           AND fd.tenant_id = #{tenantId}
+           AND fd.del_flag = 0
+        WHERE a.hospital_key = #{hospitalKey}
+          AND a.tenant_id = #{tenantId}
+          AND a.active_env = #{activeEnv}
+          AND a.sync_batch_no = #{syncBatchNo}
+          AND a.dept_id IS NOT NULL
+          AND TRIM(a.dept_id) != ''
+          AND NOT EXISTS (
+            SELECT 1 FROM sys_user_department ud
+            WHERE ud.user_id = su.user_id AND ud.department_id = fd.id
+          )
     </insert>
 
     <update id="purgeFdWarehouseCategoryOutsideHisIds">

@@ -30,6 +30,8 @@ public interface MsunSpdMasterSyncMapper
 
     Long selectSysUserIdByHisIdentity(@Param("customerId") String customerId, @Param("hisIdentityId") String hisIdentityId);
 
+    Long selectSysUserIdByHisId(@Param("customerId") String customerId, @Param("hisId") String hisId);
+
     int upsertFdDepartment(Map<String, Object> row);
 
     int updateFdDepartmentParent(
@@ -55,6 +57,16 @@ public interface MsunSpdMasterSyncMapper
     int upsertSysUser(Map<String, Object> row);
 
     int insertSysUserDepartmentIfAbsent(Map<String, Object> row);
+
+    /**
+     * 镜像批次 2.1.12 身份行 → sys_user_department（su.his_id=a.user_id，fd.his_id=a.dept_id，已存在则跳过）。
+     */
+    int insertSysUserDepartmentsFromMirrorBatch(
+            @Param("hospitalKey") String hospitalKey,
+            @Param("tenantId") String tenantId,
+            @Param("activeEnv") String activeEnv,
+            @Param("syncBatchNo") String syncBatchNo,
+            @Param("createBy") String createBy);
 
     int purgeFdWarehouseCategoryOutsideHisIds(
             @Param("tenantId") String tenantId,

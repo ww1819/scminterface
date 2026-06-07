@@ -9,8 +9,10 @@ import com.scminterface.customer.msun.spd.sync.mapper.MsunSpdMasterSyncMapper;
 import com.scminterface.customer.msun.spd.sync.support.MsunSpdFieldSupport;
 import com.scminterface.customer.msun.spd.sync.support.MsunSpdMasterSyncConstants;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,48 +107,79 @@ public class MsunSpdMasterSyncExecutor
         return count;
     }
 
+    /**
+     * 2.1.12 用户身份 → sys_user（按 HIS user_id 聚合）+ sys_user_department（按身份行科室去重）。
+     * <p>用户：his_id=user_id，user_name=min(user_code)，nick_name=min(user_name)。
+     * 科室权限：每条身份行的 dept_id 对照 fd_department.his_id，写入 sys_user_department。
+     */
     private int syncUsers(MsunHospitalRuntime runtime, String batchNo)
     {
         List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.USER_IDENTITY, runtime, batchNo);
-        int count = 0;
         String tenantId = runtime.getTenantId();
+        Map<String, List<Map<String, Object>>> byHisUserId = new LinkedHashMap<>();
         for (Map<String, Object> row : rows)
         {
-            String identityId = str(row, "identity_id");
-            if (StringUtils.isEmpty(identityId))
+            String hisUserId = str(row, "user_id");
+            if (StringUtils.isEmpty(hisUserId))
             {
                 continue;
             }
-            String loginName = buildLoginName(row, identityId);
-            Long deptId = resolveDeptId(tenantId, str(row, "dept_id"));
+            byHisUserId.computeIfAbsent(hisUserId, k -> new ArrayList<>()).add(row);
+        }
+
+        int count = 0;
+        for (Map.Entry<String, List<Map<String, Object>>> entry : byHisUserId.entrySet())
+        {
+            String hisUserId = entry.getKey();
+            List<Map<String, Object>> identityRows = entry.getValue();
+            String userName = MsunSpdFieldSupport.firstNonBlank(
+                    aggregateMinString(identityRows, "user_code"),
+                    aggregateMinString(identityRows, "staff_code"),
+                    "his_" + hisUserId);
+            String nickName = MsunSpdFieldSupport.firstNonBlank(
+                    aggregateMinString(identityRows, "user_name"), userName);
 
             Map<String, Object> spd = new HashMap<>(20);
-            spd.put("userName", MsunSpdFieldSupport.truncate(loginName, 30));
-            spd.put("nickName", MsunSpdFieldSupport.truncate(str(row, "user_name"), 30));
-            spd.put("hisId", str(row, "user_id"));
-            spd.put("hisIdentityId", identityId);
+            spd.put("userName", MsunSpdFieldSupport.truncate(userName, 30));
+            spd.put("nickName", MsunSpdFieldSupport.truncate(nickName, 30));
+            spd.put("hisId", hisUserId);
+            spd.put("hisIdentityId", hisUserId);
             spd.put("customerId", tenantId);
-            spd.put("deptId", deptId);
+            spd.put("deptId", null);
             spd.put("status", "0");
             spd.put("delFlag", "0");
             spd.put("password", DEFAULT_USER_PASSWORD);
             spd.put("createBy", MsunSpdFieldSupport.syncBy());
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
             count += syncMapper.upsertSysUser(spd);
+        }
 
-            Long userId = syncMapper.selectSysUserIdByHisIdentity(tenantId, identityId);
-            if (userId != null && deptId != null)
+        int deptRelCount = syncMapper.insertSysUserDepartmentsFromMirrorBatch(
+                runtime.getHospitalKey(),
+                tenantId,
+                runtime.getActiveEnv(),
+                batchNo,
+                MsunSpdFieldSupport.syncBy());
+        return count + deptRelCount;
+    }
+
+    /** 与 SQL {@code MIN(column)} 一致：取非空字典序最小值。 */
+    private static String aggregateMinString(List<Map<String, Object>> rows, String column)
+    {
+        String min = null;
+        for (Map<String, Object> row : rows)
+        {
+            String value = str(row, column);
+            if (StringUtils.isEmpty(value))
             {
-                Map<String, Object> rel = new HashMap<>(8);
-                rel.put("userId", userId);
-                rel.put("departmentId", deptId);
-                rel.put("status", 0);
-                rel.put("tenantId", tenantId);
-                rel.put("createBy", MsunSpdFieldSupport.syncBy());
-                syncMapper.insertSysUserDepartmentIfAbsent(rel);
+                continue;
+            }
+            if (min == null || value.compareTo(min) < 0)
+            {
+                min = value;
             }
         }
-        return count;
+        return min;
     }
 
     private int syncSuppliers(MsunHospitalRuntime runtime, String batchNo)
@@ -550,18 +583,6 @@ public class MsunSpdMasterSyncExecutor
             return false;
         }
         return MsunSpdFieldSupport.inferMaterialFromDrugDictRequest(str(row, "request_params_json"));
-    }
-
-    private static String buildLoginName(Map<String, Object> row, String identityId)
-    {
-        String userCode = str(row, "user_code");
-        String staffCode = str(row, "staff_code");
-        String base = MsunSpdFieldSupport.firstNonBlank(userCode, staffCode);
-        if (StringUtils.isNotEmpty(base))
-        {
-            return base + "_" + identityId;
-        }
-        return "his_" + identityId;
     }
 
     private static String str(Map<String, Object> row, String key)
