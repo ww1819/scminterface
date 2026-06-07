@@ -21,7 +21,7 @@ public final class MsunSpdMasterSyncSupport
     {
         Map<String, String> hints = new LinkedHashMap<>(8);
         hints.put("2.1.9", "fd_department");
-        hints.put("2.1.12", "sys_user（按 user_id 聚合）、sys_user_department（身份科室去重）");
+        hints.put("2.1.12", "sys_user（按 user_id 聚合；admin/super_01 登录名自动加 his_ 前缀）、sys_user_department");
         hints.put("2.5.44", "fd_material（仅 materialOrDrug=1 且分类在白名单内；invalidFlag→is_use；已逻辑删除档案跳过）");
         hints.put("2.5.58", "fd_warehouse_category（仅分类白名单；不逻辑删除既有分类）");
         hints.put("2.5.62", "fd_supplier");

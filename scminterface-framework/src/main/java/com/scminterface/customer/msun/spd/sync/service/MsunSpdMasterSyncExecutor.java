@@ -109,7 +109,7 @@ public class MsunSpdMasterSyncExecutor
 
     /**
      * 2.1.12 用户身份 → sys_user（按 HIS user_id 聚合）+ sys_user_department（按身份行科室去重）。
-     * <p>用户：his_id=user_id，user_name=min(user_code)，nick_name=min(user_name)。
+     * <p>用户：his_id=user_id，user_name=min(user_code)（保留名 admin/super_01 自动改写），nick_name=min(user_name)。
      * 科室权限：每条身份行的 dept_id 对照 fd_department.his_id，写入 sys_user_department。
      */
     private int syncUsers(MsunHospitalRuntime runtime, String batchNo)
@@ -132,15 +132,15 @@ public class MsunSpdMasterSyncExecutor
         {
             String hisUserId = entry.getKey();
             List<Map<String, Object>> identityRows = entry.getValue();
-            String userName = MsunSpdFieldSupport.firstNonBlank(
+            String rawLogin = MsunSpdFieldSupport.firstNonBlank(
                     aggregateMinString(identityRows, "user_code"),
-                    aggregateMinString(identityRows, "staff_code"),
-                    "his_" + hisUserId);
+                    aggregateMinString(identityRows, "staff_code"));
+            String userName = MsunSpdFieldSupport.resolveHisSyncUserName(rawLogin, hisUserId);
             String nickName = MsunSpdFieldSupport.firstNonBlank(
                     aggregateMinString(identityRows, "user_name"), userName);
 
             Map<String, Object> spd = new HashMap<>(20);
-            spd.put("userName", MsunSpdFieldSupport.truncate(userName, 30));
+            spd.put("userName", userName);
             spd.put("nickName", MsunSpdFieldSupport.truncate(nickName, 30));
             spd.put("hisId", hisUserId);
             spd.put("hisIdentityId", hisUserId);

@@ -9,6 +9,12 @@ public final class MsunSpdFieldSupport
 {
     private static final String MSUN_SYNC_BY = "msun-mirror-sync";
 
+    /** SPD 平台管理员登录名（{@code sys_user.customer_id} 通常为空） */
+    public static final String PLATFORM_ADMIN_LOGIN = "admin";
+
+    /** SPD 各租户机构管理员登录名 */
+    public static final String TENANT_ADMIN_LOGIN = "super_01";
+
     private MsunSpdFieldSupport()
     {
     }
@@ -16,6 +22,42 @@ public final class MsunSpdFieldSupport
     public static String syncBy()
     {
         return MSUN_SYNC_BY;
+    }
+
+    /**
+     * 众阳 HIS 同步用户登录名：{@code admin}/{@code super_01} 为 SPD 保留账号，冲突时加 {@code his_} 前缀与 HIS user_id 后缀。
+     */
+    public static String resolveHisSyncUserName(String candidate, String hisUserId)
+    {
+        String hisId = StringUtils.isEmpty(hisUserId) ? "0" : hisUserId.trim();
+        String login = StringUtils.trimToEmpty(candidate);
+        if (StringUtils.isEmpty(login))
+        {
+            login = "his_" + hisId;
+        }
+        if (isReservedSpdLoginName(login))
+        {
+            String suffix = truncate(hisId, 18);
+            if (PLATFORM_ADMIN_LOGIN.equalsIgnoreCase(login))
+            {
+                login = "his_admin_" + suffix;
+            }
+            else
+            {
+                login = "his_super_" + suffix;
+            }
+        }
+        return truncate(login, 30);
+    }
+
+    public static boolean isReservedSpdLoginName(String login)
+    {
+        if (StringUtils.isEmpty(login))
+        {
+            return false;
+        }
+        String v = login.trim();
+        return PLATFORM_ADMIN_LOGIN.equalsIgnoreCase(v) || TENANT_ADMIN_LOGIN.equalsIgnoreCase(v);
     }
 
     /** HIS invalidFlag：0/启用 → SPD del_flag=0；1/作废/停用 → 1（科室/供应商/厂商等主数据） */
