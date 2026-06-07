@@ -19,7 +19,9 @@ import org.springframework.scheduling.support.CronTrigger;
 import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.framework.datasource.DataSourceAvailability;
 import com.scminterface.framework.datasource.TaskDataSourceSupport;
+import com.scminterface.framework.web.service.HospitalScheduledTaskMatcher;
 import com.scminterface.framework.web.service.ScheduledTaskService;
+import com.scminterface.framework.web.service.SpdHospitalContextService;
 
 /**
  * 动态定时任务配置
@@ -39,6 +41,12 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private HospitalScheduledTaskMatcher hospitalScheduledTaskMatcher;
+
+    @Autowired
+    private SpdHospitalContextService spdHospitalContextService;
 
     private ScheduledTaskRegistrar taskRegistrar;
     
@@ -95,6 +103,7 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
                 }
                 else
                 {
+                log.info("SPD 定时任务注册：当前医院 {}", spdHospitalContextService.describeCurrentHospital());
                 List<Map<String, Object>> tasks = scheduledTaskService.getAllSpdTasks();
                 if (tasks != null && !tasks.isEmpty())
                 {
@@ -156,6 +165,11 @@ public class ScheduledTaskConfig implements SchedulingConfigurer
             if (!"0".equals(status))
             {
                 log.debug("任务 {}.{} 已停用，跳过注册", taskClass, taskMethod);
+                return;
+            }
+
+            if (!hospitalScheduledTaskMatcher.matches(taskClass))
+            {
                 return;
             }
 

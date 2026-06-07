@@ -6,9 +6,12 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import com.scminterface.customer.hengsuiThird.his.HisBillingTenantConstants;
 import com.scminterface.framework.datasource.DataSourceAvailability;
 import com.scminterface.common.enums.DataSourceType;
+import com.scminterface.framework.web.service.HospitalScheduledTaskMatcher;
 import com.scminterface.framework.web.service.ScheduledTaskService;
+import com.scminterface.framework.web.service.SpdHospitalContextService;
 
 /**
  * 衡水三院：住院/门诊计费镜像定时任务默认注册（每 2 小时；抓取昨天+今天，见 {@link com.scminterface.customer.hengsuiThird.his.HisChargeMirrorFetchSql}）。
@@ -27,13 +30,19 @@ public class HengshuiChargeScheduledTaskBootstrap implements ApplicationRunner
 
     private final DataSourceAvailability dataSourceAvailability;
     private final ScheduledTaskService scheduledTaskService;
+    private final HospitalScheduledTaskMatcher hospitalScheduledTaskMatcher;
+    private final SpdHospitalContextService spdHospitalContextService;
 
     public HengshuiChargeScheduledTaskBootstrap(
         DataSourceAvailability dataSourceAvailability,
-        ScheduledTaskService scheduledTaskService)
+        ScheduledTaskService scheduledTaskService,
+        HospitalScheduledTaskMatcher hospitalScheduledTaskMatcher,
+        SpdHospitalContextService spdHospitalContextService)
     {
         this.dataSourceAvailability = dataSourceAvailability;
         this.scheduledTaskService = scheduledTaskService;
+        this.hospitalScheduledTaskMatcher = hospitalScheduledTaskMatcher;
+        this.spdHospitalContextService = spdHospitalContextService;
     }
 
     @Override
@@ -42,6 +51,12 @@ public class HengshuiChargeScheduledTaskBootstrap implements ApplicationRunner
         if (!dataSourceAvailability.isAvailable(DataSourceType.SPD))
         {
             log.debug("SPD 数据源未启用，跳过衡水计费镜像定时任务默认注册");
+            return;
+        }
+        if (!hospitalScheduledTaskMatcher.isCurrentHospital(HisBillingTenantConstants.TENANT_HENGSHUI_THIRD))
+        {
+            log.info("当前医院为 {}，非衡水三院，跳过衡水计费镜像默认定时任务注册",
+                spdHospitalContextService.describeCurrentHospital());
             return;
         }
         try
