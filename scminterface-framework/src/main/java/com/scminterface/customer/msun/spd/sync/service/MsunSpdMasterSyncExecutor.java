@@ -7,6 +7,7 @@ import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
 import com.scminterface.customer.msun.spd.sync.mapper.MsunSpdMasterSyncMapper;
 import com.scminterface.customer.msun.spd.sync.support.MsunSpdFieldSupport;
+import com.scminterface.customer.msun.spd.sync.support.MsunSpdMasterSyncConstants;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -210,11 +211,12 @@ public class MsunSpdMasterSyncExecutor
     private int syncCategories(MsunHospitalRuntime runtime, String batchNo)
     {
         List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.DICT_CATEGORY, runtime, batchNo);
+        String tenantId = runtime.getTenantId();
         int count = 0;
         for (Map<String, Object> row : rows)
         {
             String hisId = str(row, "his_dict_id");
-            if (StringUtils.isEmpty(hisId))
+            if (StringUtils.isEmpty(hisId) || !MsunSpdMasterSyncConstants.isAllowedMaterialCategory(hisId))
             {
                 continue;
             }
@@ -223,12 +225,14 @@ public class MsunSpdMasterSyncExecutor
             spd.put("warehouseCategoryName", MsunSpdFieldSupport.truncate(str(row, "his_dict_name"), 255));
             spd.put("referredName", null);
             spd.put("hisId", hisId);
-            spd.put("tenantId", runtime.getTenantId());
+            spd.put("tenantId", tenantId);
             spd.put("delFlag", 0);
             spd.put("createBy", MsunSpdFieldSupport.syncBy());
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
             count += syncMapper.upsertFdWarehouseCategory(spd);
         }
+        syncMapper.purgeFdWarehouseCategoryOutsideHisIds(
+                tenantId, MsunSpdMasterSyncConstants.ALLOWED_MATERIAL_CATEGORY_HIS_IDS);
         return count;
     }
 
@@ -244,7 +248,7 @@ public class MsunSpdMasterSyncExecutor
         int count = 0;
         for (Map<String, Object> row : rows)
         {
-            if (!isMaterialRow(row))
+            if (!isAllowedMaterialDictRow(row))
             {
                 continue;
             }
@@ -255,7 +259,7 @@ public class MsunSpdMasterSyncExecutor
         }
         for (Map<String, Object> row : rows)
         {
-            if (!isMaterialRow(row))
+            if (!isAllowedMaterialDictRow(row))
             {
                 continue;
             }
@@ -295,7 +299,19 @@ public class MsunSpdMasterSyncExecutor
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
             count += syncMapper.upsertFdMaterial(spd);
         }
+        syncMapper.purgeFdMaterialOutsideCategoryHisIds(
+                tenantId, MsunSpdMasterSyncConstants.ALLOWED_MATERIAL_CATEGORY_HIS_IDS);
         return count;
+    }
+
+    /** 2.5.44：仅材料行且分类在白名单内 */
+    private static boolean isAllowedMaterialDictRow(Map<String, Object> row)
+    {
+        if (!isMaterialRow(row))
+        {
+            return false;
+        }
+        return MsunSpdMasterSyncConstants.isAllowedMaterialCategory(str(row, "drug_catagory_id"));
     }
 
     /** 字典最小包装单位 → fd_unit */
@@ -459,7 +475,8 @@ public class MsunSpdMasterSyncExecutor
     private void upsertWarehouseCategoryFromDictIfAbsent(String tenantId, Map<String, Object> row)
     {
         String hisCategoryId = str(row, "drug_catagory_id");
-        if (StringUtils.isEmpty(hisCategoryId))
+        if (StringUtils.isEmpty(hisCategoryId)
+                || !MsunSpdMasterSyncConstants.isAllowedMaterialCategory(hisCategoryId))
         {
             return;
         }

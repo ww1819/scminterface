@@ -135,21 +135,28 @@ public final class MsunHisMirrorRowSupport
 
     public static void enrichDrugDictRow(Map<String, Object> row, String requestParamsJson)
     {
-        if (row == null || row.get("material_or_drug") != null)
-        {
-            return;
-        }
-        if (requestParamsJson == null || requestParamsJson.isEmpty())
+        if (row == null || requestParamsJson == null || requestParamsJson.isEmpty())
         {
             return;
         }
         try
         {
             JSONObject req = JSON.parseObject(requestParamsJson);
-            Object mod = req.get("materialOrDrug");
-            if (mod != null)
+            if (row.get("material_or_drug") == null)
             {
-                row.put("material_or_drug", normalizeValue(mod));
+                Object mod = req.get("materialOrDrug");
+                if (mod != null)
+                {
+                    row.put("material_or_drug", normalizeValue(mod));
+                }
+            }
+            if (row.get("invalid_flag") == null)
+            {
+                Object inv = req.get("invalidFlag");
+                if (inv != null && String.valueOf(inv).trim().length() > 0)
+                {
+                    row.put("invalid_flag", normalizeValue(inv));
+                }
             }
         }
         catch (Exception ignored)

@@ -713,6 +713,76 @@ function zqMaxCursorFromPage(items, field) {
     return max;
 }
 
+function zqSchemaHasField(schema, fieldKey) {
+    return !!(schema && schema.fields && schema.fields.some(function (f) { return f.key === fieldKey; }));
+}
+
+/** 联调调用策略：含 materialOrDrug 时固定为 1（材料） */
+function zqApplySchemaCallPolicy(schema, params) {
+    const out = Object.assign({}, params || {});
+    if (zqSchemaHasField(schema, 'materialOrDrug')) {
+        out.materialOrDrug = '1';
+    }
+    return out;
+}
+
+/** invalidFlag 未填时，分别请求 0 与 1 并合并 */
+function zqNeedsInvalidFlagSweep(schema, params) {
+    if (!zqSchemaHasField(schema, 'invalidFlag')) return false;
+    const v = params.invalidFlag;
+    return v === undefined || v === null || String(v).trim() === '';
+}
+
+function zqBackfillInvalidFlagOnItems(items, invalidFlag) {
+    if (!Array.isArray(items)) return items;
+    const flag = String(invalidFlag);
+    items.forEach(function (item) {
+        if (!item) return;
+        if (item.invalidFlag === undefined || item.invalidFlag === null || String(item.invalidFlag).trim() === '') {
+            item.invalidFlag = flag;
+        }
+    });
+    return items;
+}
+
+function zqBuildInvalidFlagSweepShell(r0, r1) {
+    const shell = (r1 && r1.result) ? r1.result : (r0 && r0.result ? r0.result : { code: 500, msg: '无有效回参' });
+    const out = JSON.parse(JSON.stringify(shell));
+    if (!out.data) out.data = {};
+    if (!out.data.hisBody) out.data.hisBody = { success: true, code: '0000', data: [] };
+    return out;
+}
+
+function zqMergeInvalidFlagSweepResults(schema, baseParams, r0, r1) {
+    let items0 = [];
+    let items1 = [];
+    if (r0 && r0.result && zqIsHisOk(r0.result)) {
+        items0 = zqExtractHisDataArray(r0.result) || [];
+    }
+    if (r1 && r1.result && zqIsHisOk(r1.result)) {
+        items1 = zqExtractHisDataArray(r1.result) || [];
+    }
+    zqBackfillInvalidFlagOnItems(items0, '0');
+    zqBackfillInvalidFlagOnItems(items1, '1');
+    const merged = items0.concat(items1);
+    const out = zqBuildInvalidFlagSweepShell(r0, r1);
+    out.data.hisBody.data = merged;
+    out.data.hisBody.success = merged.length > 0 || zqIsHisOk(r0 && r0.result) || zqIsHisOk(r1 && r1.result);
+    out.data.hisBody._probeMerged = {
+        mode: 'invalidFlagSweep',
+        invalidFlags: ['0', '1'],
+        totalRows: merged.length,
+        rows0: items0.length,
+        rows1: items1.length
+    };
+    out.data.requestParams = Object.assign({}, baseParams, { materialOrDrug: '1', invalidFlag: '0+1' });
+    const elapsed = ((r0 && r0.elapsed) || 0) + ((r1 && r1.elapsed) || 0);
+    const requestLine = schema.method + ' ' + schema.path
+        + ' [invalidFlag=0+1 合并]\n参数0: ' + zqFmtJson(Object.assign({}, baseParams, { invalidFlag: '0' }))
+        + '\n参数1: ' + zqFmtJson(Object.assign({}, baseParams, { invalidFlag: '1' }));
+    return { result: out, elapsed: elapsed, requestLine: requestLine, rows: merged.length };
+}
+
 function zqSetBlockBusy(apiKey, busy) {
     const block = document.getElementById('block-' + apiKey);
     if (!block) return;
@@ -767,6 +837,10 @@ async function zqCallApiAllPages(apiKey) {
     }
     let baseParams = zqMergeJsonOverride(apiKey, zqCollectFromForm(apiKey));
     if (!baseParams || !zqValidateRequired(apiKey, baseParams)) return null;
+    baseParams = zqApplySchemaCallPolicy(schema, baseParams);
+    if (zqNeedsInvalidFlagSweep(schema, baseParams)) {
+        return zqCallApiAllPagesInvalidFlagSweep(apiKey, baseParams, schema);
+    }
 
     const pag = schema.pagination;
     const pageSizeKey = pag.pageSizeKey || (pag.emptyPageBreak ? null : 'limitCount');
@@ -857,6 +931,26 @@ async function zqCallApiAllPages(apiKey) {
         zqShowResult(apiKey, title, requestLine, merged, totalElapsed);
         zqSetMeta('全量拉取完成: ' + title);
         return merged;
+    } finally {
+        zqFetchingAllPages = false;
+        zqSetBlockBusy(apiKey, false);
+    }
+}
+
+async function zqCallApiAllPagesInvalidFlagSweep(apiKey, baseParams, schema) {
+    zqFetchingAllPages = true;
+    zqSetBlockBusy(apiKey, true);
+    try {
+        zqSetMeta('全量拉取: ' + schema.title + '（invalidFlag 0+1）…');
+        const r0 = await zqFetchAllPagesSilent(apiKey, Object.assign({}, baseParams, { invalidFlag: '0' }),
+            { _skipInvalidFlagSweep: true, showResult: false });
+        const r1 = await zqFetchAllPagesSilent(apiKey, Object.assign({}, baseParams, { invalidFlag: '1' }),
+            { _skipInvalidFlagSweep: true, showResult: false });
+        const merged = zqMergeInvalidFlagSweepResults(schema, baseParams, r0, r1);
+        const title = schema.logTitle + '（invalidFlag 0+1 全量 / ' + merged.rows + ' 条）';
+        zqShowResult(apiKey, title, merged.requestLine, merged.result, merged.elapsed);
+        zqSetMeta('全量拉取完成: ' + title);
+        return merged.result;
     } finally {
         zqFetchingAllPages = false;
         zqSetBlockBusy(apiKey, false);
@@ -1167,13 +1261,33 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
     let baseParams = options.useOverridesOnly
         ? Object.assign({}, paramOverrides || {})
         : Object.assign({}, zqCollectFromForm(apiKey), paramOverrides || {});
-    const jsonMerged = zqMergeJsonOverride(apiKey, baseParams);
+    const jsonMerged = options.useOverridesOnly ? baseParams : zqMergeJsonOverride(apiKey, baseParams);
     if (!jsonMerged) return { ok: false, result: null, rows: 0, message: 'JSON 入参错误' };
-    baseParams = jsonMerged;
+    baseParams = zqApplySchemaCallPolicy(schema, jsonMerged);
     Object.keys(baseParams).forEach(function (k) {
         const v = baseParams[k];
         if (v === undefined || v === null || String(v).trim() === '') delete baseParams[k];
     });
+
+    if (!options._skipInvalidFlagSweep && zqNeedsInvalidFlagSweep(schema, baseParams)) {
+        const r0 = await zqFetchAllPagesSilent(apiKey, Object.assign({}, baseParams, { invalidFlag: '0' }),
+            Object.assign({}, options, { useOverridesOnly: true, _skipInvalidFlagSweep: true, showResult: false }));
+        const r1 = await zqFetchAllPagesSilent(apiKey, Object.assign({}, baseParams, { invalidFlag: '1' }),
+            Object.assign({}, options, { useOverridesOnly: true, _skipInvalidFlagSweep: true, showResult: false }));
+        const merged = zqMergeInvalidFlagSweepResults(schema, baseParams, r0, r1);
+        const title = schema.logTitle + '（invalidFlag 0+1 全量 / ' + merged.rows + ' 条）';
+        if (options.showResult !== false) {
+            zqShowResult(apiKey, title, merged.requestLine, merged.result, merged.elapsed);
+        }
+        return {
+            ok: merged.rows > 0 || zqIsHisOk(merged.result),
+            result: merged.result,
+            rows: merged.rows,
+            elapsed: merged.elapsed,
+            requestLine: merged.requestLine,
+            message: ''
+        };
+    }
 
     if (!schema.pagination) {
         const pack = schema.bodyMode
@@ -1510,6 +1624,22 @@ async function zqCallApi(apiKey) {
     const schema = MSUN_PARAM_SCHEMA[apiKey];
     let params = zqMergeJsonOverride(apiKey, zqCollectFromForm(apiKey));
     if (!params || !zqValidateRequired(apiKey, params)) return null;
+    params = zqApplySchemaCallPolicy(schema, params);
+    if (zqNeedsInvalidFlagSweep(schema, params)) {
+        if (!zqCheckLogin()) return null;
+        zqSetMeta('请求中: ' + schema.logTitle + '（invalidFlag 0+1）…');
+        const pack0 = schema.bodyMode
+            ? await zqInvokeRaw(schema.method, schema.path, null, Object.assign({}, params, { invalidFlag: '0' }))
+            : await zqInvokeRaw(schema.method, schema.path, Object.assign({}, params, { invalidFlag: '0' }), null);
+        const pack1 = schema.bodyMode
+            ? await zqInvokeRaw(schema.method, schema.path, null, Object.assign({}, params, { invalidFlag: '1' }))
+            : await zqInvokeRaw(schema.method, schema.path, Object.assign({}, params, { invalidFlag: '1' }), null);
+        const merged = zqMergeInvalidFlagSweepResults(schema, params, pack0, pack1);
+        const title = schema.logTitle + '（invalidFlag 0+1 / ' + merged.rows + ' 条）';
+        zqShowResult(apiKey, title, merged.requestLine, merged.result, merged.elapsed);
+        zqSetMeta('完成: ' + title);
+        return merged.result;
+    }
     if (schema.bodyMode) {
         return zqInvoke(apiKey, schema.logTitle, schema.method, schema.path, null, params);
     }

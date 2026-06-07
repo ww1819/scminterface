@@ -212,4 +212,38 @@
         )
     </insert>
 
+    <update id="purgeFdWarehouseCategoryOutsideHisIds">
+        UPDATE fd_warehouse_category
+        SET del_flag = 1,
+            update_by = 'msun-mirror-sync',
+            update_time = NOW()
+        WHERE tenant_id = #{tenantId}
+          AND del_flag = 0
+          AND (
+            his_id IS NULL
+            OR his_id NOT IN
+            <foreach collection="allowedHisIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+          )
+    </update>
+
+    <update id="purgeFdMaterialOutsideCategoryHisIds">
+        UPDATE fd_material m
+        LEFT JOIN fd_warehouse_category wc
+            ON m.storeroom_id = wc.warehouse_category_id AND m.tenant_id = wc.tenant_id
+        SET m.del_flag = 1,
+            m.update_by = 'msun-mirror-sync',
+            m.update_time = NOW()
+        WHERE m.tenant_id = #{tenantId}
+          AND m.del_flag = 0
+          AND (
+            wc.his_id IS NULL
+            OR wc.his_id NOT IN
+            <foreach collection="allowedHisIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+          )
+    </update>
+
 </mapper>

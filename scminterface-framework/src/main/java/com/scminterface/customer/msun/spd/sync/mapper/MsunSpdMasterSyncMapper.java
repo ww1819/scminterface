@@ -50,4 +50,12 @@ public interface MsunSpdMasterSyncMapper
     int upsertSysUser(Map<String, Object> row);
 
     int insertSysUserDepartmentIfAbsent(Map<String, Object> row);
+
+    int purgeFdWarehouseCategoryOutsideHisIds(
+            @Param("tenantId") String tenantId,
+            @Param("allowedHisIds") java.util.Collection<String> allowedHisIds);
+
+    int purgeFdMaterialOutsideCategoryHisIds(
+            @Param("tenantId") String tenantId,
+            @Param("allowedHisIds") java.util.Collection<String> allowedHisIds);
 }
