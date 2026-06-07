@@ -236,6 +236,8 @@ public class MsunSpdMasterSyncExecutor
 
     /**
      * 2.5.44 材料字典 → fd_material。
+     * 众阳 invalid_flag → is_use（1 启用 / 2 停用）；del_flag 仅新增时置 0，更新不改。
+     * 若 SPD 已逻辑删除（del_flag=1）则跳过，避免字典同步覆盖人工删除。
      * 供应商/生产厂家/库房分类/单位：优先用 SPD 已有主数据（含独立镜像批次同步结果）；
      * 若 SPD 中不存在，则以本行字典字段补全（不依赖供应商/厂商/分类镜像表是否已拉取）。
      */
@@ -268,6 +270,12 @@ public class MsunSpdMasterSyncExecutor
             {
                 continue;
             }
+            Integer existingDelFlag = syncMapper.selectFdMaterialDelFlagByHisSpec(tenantId, drugId, specPackingId);
+            if (existingDelFlag != null && existingDelFlag == 1)
+            {
+                continue;
+            }
+
             Long supplierId = resolveOrEnsureSupplierId(tenantId, row);
             Long factoryId = resolveOrEnsureFactoryId(tenantId, row);
             Long storeroomId = resolveOrEnsureWarehouseCategoryId(tenantId, row);
@@ -288,7 +296,8 @@ public class MsunSpdMasterSyncExecutor
             // his_spec_packing_id：众阳HIS产品档案唯一键（drug_spec_packing_id）
             spd.put("hisSpecPackingId", specPackingId);
             spd.put("tenantId", tenantId);
-            spd.put("delFlag", MsunSpdFieldSupport.toFdDelFlag(str(row, "invalid_flag")));
+            spd.put("delFlag", 0);
+            spd.put("isUse", MsunSpdFieldSupport.toFdMaterialIsUse(str(row, "invalid_flag")));
             spd.put("supplierId", supplierId);
             spd.put("factoryId", factoryId);
             spd.put("storeroomId", storeroomId);

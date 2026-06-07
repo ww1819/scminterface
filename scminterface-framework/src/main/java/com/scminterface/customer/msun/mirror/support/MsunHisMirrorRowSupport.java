@@ -150,14 +150,7 @@ public final class MsunHisMirrorRowSupport
                     row.put("material_or_drug", normalizeValue(mod));
                 }
             }
-            if (row.get("invalid_flag") == null)
-            {
-                Object inv = req.get("invalidFlag");
-                if (inv != null && String.valueOf(inv).trim().length() > 0)
-                {
-                    row.put("invalid_flag", normalizeValue(inv));
-                }
-            }
+            // invalidFlag 为查询过滤条件，非行级启停用；勿用请求参数回填 invalid_flag（避免 0+1 双拉时误标整批作废）
         }
         catch (Exception ignored)
         {

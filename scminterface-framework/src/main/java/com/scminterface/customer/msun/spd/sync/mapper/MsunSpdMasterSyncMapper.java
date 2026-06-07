@@ -45,6 +45,11 @@ public interface MsunSpdMasterSyncMapper
 
     int upsertFdUnit(Map<String, Object> row);
 
+    Integer selectFdMaterialDelFlagByHisSpec(
+            @Param("tenantId") String tenantId,
+            @Param("hisId") String hisId,
+            @Param("hisSpecPackingId") String hisSpecPackingId);
+
     int upsertFdMaterial(Map<String, Object> row);
 
     int upsertSysUser(Map<String, Object> row);

@@ -153,15 +153,23 @@
             update_time = NOW()
     </insert>
 
+    <select id="selectFdMaterialDelFlagByHisSpec" resultType="java.lang.Integer">
+        SELECT del_flag FROM fd_material
+        WHERE tenant_id = #{tenantId}
+          AND his_id = #{hisId}
+          AND his_spec_packing_id = #{hisSpecPackingId}
+        LIMIT 1
+    </select>
+
     <insert id="upsertFdMaterial">
         INSERT INTO fd_material (
             code, name, speci, model, price, sale_price, referred_name, register_no, medical_no,
-            his_id, his_spec_packing_id, tenant_id, del_flag,
+            his_id, his_spec_packing_id, tenant_id, del_flag, is_use,
             supplier_id, factory_id, storeroom_id, unit_id,
             create_by, create_time, update_by, update_time
         ) VALUES (
             #{code}, #{name}, #{speci}, #{model}, #{price}, #{salePrice}, #{referredName}, #{registerNo}, #{medicalNo},
-            #{hisId}, #{hisSpecPackingId}, #{tenantId}, #{delFlag},
+            #{hisId}, #{hisSpecPackingId}, #{tenantId}, #{delFlag}, #{isUse},
             #{supplierId}, #{factoryId}, #{storeroomId}, #{unitId},
             #{createBy}, NOW(), #{updateBy}, NOW()
         )
@@ -175,7 +183,7 @@
             referred_name = VALUES(referred_name),
             register_no = VALUES(register_no),
             medical_no = VALUES(medical_no),
-            del_flag = VALUES(del_flag),
+            is_use = VALUES(is_use),
             supplier_id = VALUES(supplier_id),
             factory_id = VALUES(factory_id),
             storeroom_id = VALUES(storeroom_id),

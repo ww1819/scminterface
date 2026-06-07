@@ -18,10 +18,19 @@ public final class MsunSpdFieldSupport
         return MSUN_SYNC_BY;
     }
 
-    /** HIS invalidFlag：0/启用 → SPD del_flag=0；1/作废/停用 → 1 */
+    /** HIS invalidFlag：0/启用 → SPD del_flag=0；1/作废/停用 → 1（科室/供应商/厂商等主数据） */
     public static int toFdDelFlag(String invalidFlag)
     {
         return isHisEnabled(invalidFlag) ? 0 : 1;
+    }
+
+    /**
+     * 众阳 2.5.44 产品档案 invalidFlag → {@code fd_material.is_use}（字典 is_use_status：1=启用，2=停用）。
+     * <p>与 {@link #toFdDelFlag} 分离：产品档案启停用不写 del_flag，SPD 侧逻辑删除由人工维护且同步时不覆盖。
+     */
+    public static String toFdMaterialIsUse(String invalidFlag)
+    {
+        return isHisEnabled(invalidFlag) ? "1" : "2";
     }
 
     /**
