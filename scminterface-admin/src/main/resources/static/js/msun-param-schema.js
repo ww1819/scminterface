@@ -49,7 +49,7 @@ var MSUN_PARAM_SCHEMA = {
             { key: 'drugId', label: 'drugId', hint: '药品/材料字典ID' },
             { key: 'drugName', label: 'drugName', hint: '名称或拼音模糊' },
             { key: 'materialOrDrug', label: 'materialOrDrug', hint: '调用时固定为 1（材料）', options: ['0', '1'] },
-            { key: 'limitCount', label: 'limitCount', hint: '选填，每页/查询条数' },
+            { key: 'limitCount', label: 'limitCount', hint: '选填（当前请求不传）' },
             { key: 'invalidFlag', label: 'invalidFlag', hint: '选填：0启用 1作废；未填时自动 0+1 各调一次', options: ['', '0', '1'] },
             { key: 'specialFlag', label: 'specialFlag', hint: '是否特殊药品 0否 1是', options: ['', '0', '1'] },
             { key: 'startTime', label: 'startTime', hint: 'yyyy-MM-dd HH:mm:ss' },
@@ -65,7 +65,7 @@ var MSUN_PARAM_SCHEMA = {
             cursorParam: 'drugId',
             cursorField: 'drugId',
             delayMs: 300,
-            hint: 'limitCount 为每页条数；翻页时传入本页最大 drugId 作为游标'
+            hint: 'limitCount 选填（当前请求不传）；翻页以 drugId 游标'
         },
         fetchAll: {
             materialOrDrug: '1',
@@ -82,7 +82,7 @@ var MSUN_PARAM_SCHEMA = {
         hint: '调用后 upsert SPD 表 fd_warehouse_category（耗材分类）',
         fields: [
             { key: 'keyWord', label: 'keyWord', hint: '分类名称模糊，留空拉全量' },
-            { key: 'limitCount', label: 'limitCount', hint: '查询条数', defaultValue: '20' }
+            { key: 'limitCount', label: 'limitCount', hint: '选填（当前请求不传）' }
         ],
         pagination: {
             pageSizeKey: 'limitCount',
@@ -91,7 +91,7 @@ var MSUN_PARAM_SCHEMA = {
             cursorParam: 'hisDictId',
             cursorField: 'hisDictId',
             delayMs: 300,
-            hint: 'limitCount 为每页条数；翻页时传入本页最大 hisDictId 作为游标'
+            hint: 'limitCount 选填（当前请求不传）；翻页以 hisDictId 游标'
         }
     },
     suppliers: {
@@ -103,7 +103,7 @@ var MSUN_PARAM_SCHEMA = {
         hint: '调用后 upsert SPD 表 fd_supplier',
         fields: [
             { key: 'keyWord', label: 'keyWord', hint: '名称/简拼模糊' },
-            { key: 'limitCount', label: 'limitCount', hint: '≥1', defaultValue: '20' },
+            { key: 'limitCount', label: 'limitCount', hint: '选填（当前请求不传）' },
             { key: 'materialOrDrug', label: 'materialOrDrug', hint: '0药品 1或2材料', defaultValue: '0', options: ['0', '1', '2'] },
             { key: 'hospitalId', label: 'hospitalId', hint: '留空用服务端' },
             { key: 'orgId', label: 'orgId', hint: '留空用服务端' }
@@ -115,7 +115,7 @@ var MSUN_PARAM_SCHEMA = {
             cursorParam: 'supplierId',
             cursorField: 'supplierId',
             delayMs: 300,
-            hint: 'limitCount 为每页条数；翻页时传入本页最大 supplierId 作为游标'
+            hint: 'limitCount 选填（当前请求不传）；翻页以 supplierId 游标'
         },
         fetchAll: { materialOrDrug: '1', pageSize: 100 }
     },
@@ -128,7 +128,7 @@ var MSUN_PARAM_SCHEMA = {
         hint: '调用后 upsert SPD 表 fd_factory（生产厂家）',
         fields: [
             { key: 'keyWord', label: 'keyWord', hint: '名称/简拼模糊' },
-            { key: 'limitCount', label: 'limitCount', hint: '≥1', defaultValue: '20' },
+            { key: 'limitCount', label: 'limitCount', hint: '选填（当前请求不传）' },
             { key: 'materialOrDrug', label: 'materialOrDrug', hint: '0药品 1或2材料', defaultValue: '0', options: ['0', '1', '2'] },
             { key: 'hospitalId', label: 'hospitalId', hint: '留空用服务端' },
             { key: 'orgId', label: 'orgId', hint: '留空用服务端' }
@@ -140,7 +140,7 @@ var MSUN_PARAM_SCHEMA = {
             cursorParam: 'producerId',
             cursorField: 'producerId',
             delayMs: 300,
-            hint: 'limitCount 为每页条数；翻页时传入本页最大 producerId 作为游标'
+            hint: 'limitCount 选填（当前请求不传）；翻页以 producerId 游标'
         },
         fetchAll: { materialOrDrug: '1', pageSize: 100 }
     },

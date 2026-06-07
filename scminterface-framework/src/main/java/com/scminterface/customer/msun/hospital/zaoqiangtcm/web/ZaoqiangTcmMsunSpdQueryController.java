@@ -27,7 +27,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "众阳HIS-枣强县中医院-SPD查询探针")
 @RestController
 @ConditionalOnProperty(prefix = ZaoqiangTcmHospitalConstants.CONFIG_PREFIX, name = "enabled", havingValue = "true")
-@RequestMapping(ZaoqiangTcmHospitalConstants.SPD_QUERY_API_PREFIX)
+@RequestMapping({
+        ZaoqiangTcmHospitalConstants.SPD_QUERY_API_PREFIX,
+        ZaoqiangTcmHospitalConstants.SPD_API_PREFIX + "/query"
+})
 public class ZaoqiangTcmMsunSpdQueryController
 {
     private final MsunSpdQueryService spdQueryService;

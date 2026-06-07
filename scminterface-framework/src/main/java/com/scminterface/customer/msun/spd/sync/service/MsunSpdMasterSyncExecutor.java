@@ -231,8 +231,6 @@ public class MsunSpdMasterSyncExecutor
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
             count += syncMapper.upsertFdWarehouseCategory(spd);
         }
-        syncMapper.purgeFdWarehouseCategoryOutsideHisIds(
-                tenantId, MsunSpdMasterSyncConstants.ALLOWED_MATERIAL_CATEGORY_HIS_IDS);
         return count;
     }
 
@@ -299,8 +297,6 @@ public class MsunSpdMasterSyncExecutor
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
             count += syncMapper.upsertFdMaterial(spd);
         }
-        syncMapper.purgeFdMaterialOutsideCategoryHisIds(
-                tenantId, MsunSpdMasterSyncConstants.ALLOWED_MATERIAL_CATEGORY_HIS_IDS);
         return count;
     }
 

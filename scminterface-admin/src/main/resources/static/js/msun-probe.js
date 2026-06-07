@@ -26,8 +26,6 @@ var zqRunningAll = false;
 var zqFetchingAllPages = false;
 var zqFetchingAllRoles = false;
 var zqRunningFetchAll = false;
-/** 获取全部数据：耗材字典翻页每页条数 */
-var ZQ_FETCH_ALL_DICT_PAGE_SIZE = 50;
 
 var ZQ_API_RESP_ORDER = ['env', 'depts', 'identities', 'drugDict', 'dictCategory', 'suppliers', 'producers', 'mergeStocks', 'batchStocks', 'ykInstock'];
 var ZQ_API_RESP_LABELS = { env: '当前环境' };
@@ -717,13 +715,20 @@ function zqSchemaHasField(schema, fieldKey) {
     return !!(schema && schema.fields && schema.fields.some(function (f) { return f.key === fieldKey; }));
 }
 
-/** 联调调用策略：含 materialOrDrug 时固定为 1（材料） */
+/** 联调调用策略：materialOrDrug 固定 1；limitCount 暂不传给 HIS（仅表单选填/翻页内部用 defaultPageSize） */
 function zqApplySchemaCallPolicy(schema, params) {
     const out = Object.assign({}, params || {});
     if (zqSchemaHasField(schema, 'materialOrDrug')) {
         out.materialOrDrug = '1';
     }
+    if (zqSchemaHasField(schema, 'limitCount')) {
+        delete out.limitCount;
+    }
     return out;
+}
+
+function zqShouldOmitLimitCountParam(schema) {
+    return zqSchemaHasField(schema, 'limitCount');
 }
 
 /** invalidFlag 未填时，分别请求 0 与 1 并合并 */
@@ -844,10 +849,8 @@ async function zqCallApiAllPages(apiKey) {
 
     const pag = schema.pagination;
     const pageSizeKey = pag.pageSizeKey || (pag.emptyPageBreak ? null : 'limitCount');
-    let pageSize = pageSizeKey ? parseInt(baseParams[pageSizeKey], 10) : (pag.defaultPageSize || 100);
-    if (isNaN(pageSize) || pageSize < 1) {
-        pageSize = pag.defaultPageSize || 100;
-    }
+    const omitLimitCount = zqShouldOmitLimitCountParam(schema);
+    let pageSize = pag.defaultPageSize || 100;
     const cursorParam = pag.cursorParam;
     const cursorField = pag.cursorField || cursorParam;
     const maxPages = pag.maxPages || 500;
@@ -872,7 +875,7 @@ async function zqCallApiAllPages(apiKey) {
         while (pageNum < maxPages) {
             pageNum++;
             const params = Object.assign({}, baseParams);
-            if (pageSizeKey) {
+            if (pageSizeKey && !(omitLimitCount && pageSizeKey === 'limitCount')) {
                 params[pageSizeKey] = String(pageSize);
             }
             if (cursor != null) {
@@ -923,10 +926,10 @@ async function zqCallApiAllPages(apiKey) {
             mode: 'allPages'
         };
         merged.data.requestParams = Object.assign({}, baseParams);
-        merged.data.requestParams[pageSizeKey] = pageSize;
 
         const title = schema.logTitle + '（全量 ' + pageNum + ' 页 / ' + allItems.length + ' 条）';
-        const requestLine = schema.method + ' ' + schema.path + ' [全量翻页 x' + pageNum + ', pageSize=' + pageSize
+        const requestLine = schema.method + ' ' + schema.path + ' [全量翻页 x' + pageNum
+            + (omitLimitCount ? ', 未传 limitCount' : ', pageSize=' + pageSize)
             + ', cursor=' + cursorParam + ']\n首屏参数: ' + zqFmtJson(baseParams);
         zqShowResult(apiKey, title, requestLine, merged, totalElapsed);
         zqSetMeta('全量拉取完成: ' + title);
@@ -1309,8 +1312,8 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
 
     const pag = schema.pagination;
     const pageSizeKey = pag.pageSizeKey || (pag.emptyPageBreak ? null : 'limitCount');
-    let pageSize = pageSizeKey ? parseInt(baseParams[pageSizeKey], 10) : (pag.defaultPageSize || 100);
-    if (isNaN(pageSize) || pageSize < 1) pageSize = pag.defaultPageSize || 100;
+    const omitLimitCount = zqShouldOmitLimitCountParam(schema);
+    let pageSize = pag.defaultPageSize || 100;
     const cursorParam = pag.cursorParam;
     const cursorField = pag.cursorField || cursorParam;
     const maxPages = options.maxPages || pag.maxPages || 500;
@@ -1328,7 +1331,9 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
     while (pageNum < maxPages) {
         pageNum++;
         const params = Object.assign({}, baseParams);
-        if (pageSizeKey) params[pageSizeKey] = String(pageSize);
+        if (pageSizeKey && !(omitLimitCount && pageSizeKey === 'limitCount')) {
+            params[pageSizeKey] = String(pageSize);
+        }
         if (cursor != null) params[cursorParam] = String(cursor);
         zqSetMeta('全量拉取: ' + schema.title + ' 第 ' + pageNum + ' 页…（已合并 ' + allItems.length + ' 条）');
 
@@ -1375,11 +1380,11 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
         truncated: truncated
     };
     merged.data.requestParams = Object.assign({}, baseParams);
-    if (pageSizeKey) merged.data.requestParams[pageSizeKey] = pageSize;
 
     let title = schema.logTitle + '（全量 ' + pageNum + ' 页 / ' + allItems.length + ' 条）';
     if (truncated) title += ' [可能未拉全，请检查游标或增大 maxPages]';
-    const requestLine = schema.method + ' ' + schema.path + ' [全量翻页 x' + pageNum + ', pageSize=' + pageSize
+    const requestLine = schema.method + ' ' + schema.path + ' [全量翻页 x' + pageNum
+        + (omitLimitCount ? ', 未传 limitCount' : ', pageSize=' + pageSize)
         + ', cursor=' + cursorParam + (truncated ? ', truncated' : '') + ']\n首屏参数: ' + zqFmtJson(baseParams);
     if (options.showResult !== false) {
         zqShowResult(apiKey, title, requestLine, merged, totalElapsed);
@@ -1407,7 +1412,7 @@ async function zqFetchAllData() {
     if (stockLimit > 200) stockLimit = 200;
 
     if (!confirm('将按顺序拉取全部数据（含自动翻页），出退库区间：\n' + times.startTime + ' ~ ' + times.endTime
-        + '\n供应商/厂商/耗材字典均 materialOrDrug=1（仅耗材）；字典每页 ' + ZQ_FETCH_ALL_DICT_PAGE_SIZE + ' 条；'
+        + '\n供应商/厂商/耗材字典均 materialOrDrug=1（仅耗材）；请求不传 limitCount；'
         + '库存最多查询 ' + stockLimit + ' 组。继续？')) {
         return;
     }
@@ -1422,9 +1427,9 @@ async function zqFetchAllData() {
     zqInitChecklist();
     zqRenderTestLog();
 
-    const materialMasterParams = { materialOrDrug: '1', limitCount: '100' };
+    const materialMasterParams = { materialOrDrug: '1' };
     const materialMasterFetchOpts = { useOverridesOnly: true, maxPages: 2000 };
-    const drugDictParams = { materialOrDrug: '1', limitCount: String(ZQ_FETCH_ALL_DICT_PAGE_SIZE) };
+    const drugDictParams = { materialOrDrug: '1' };
     const drugDictFetchOpts = { useOverridesOnly: true, maxPages: 2000 };
     let drugSpecLookup = {};
     let stockKeys = [];
@@ -1453,7 +1458,7 @@ async function zqFetchAllData() {
         await zqSleep(300);
 
         zqSetMeta('③ 分类字典（全量翻页，不传 keyWord）…');
-        const catRes = await zqFetchAllPagesSilent('dictCategory', { limitCount: '100' }, { useOverridesOnly: true });
+        const catRes = await zqFetchAllPagesSilent('dictCategory', {}, { useOverridesOnly: true });
         if (!catRes.ok) { alert('分类字典拉取失败，已中止'); return; }
         await zqSleep(300);
 
@@ -1467,7 +1472,7 @@ async function zqFetchAllData() {
         if (!prodRes.ok) { alert('生产厂商拉取失败，已中止'); return; }
         await zqSleep(300);
 
-        zqSetMeta('⑥ 耗材字典（materialOrDrug=1，每页 ' + ZQ_FETCH_ALL_DICT_PAGE_SIZE + ' 条翻页）…');
+        zqSetMeta('⑥ 耗材字典（materialOrDrug=1，不传 limitCount 翻页）…');
         const dictRes = await zqFetchAllPagesSilent('drugDict', drugDictParams, drugDictFetchOpts);
         if (!dictRes.ok) { alert('耗材字典拉取失败，已中止'); return; }
         if (dictRes.truncated) {

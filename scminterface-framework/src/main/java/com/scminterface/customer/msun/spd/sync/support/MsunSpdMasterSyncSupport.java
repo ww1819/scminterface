@@ -22,8 +22,8 @@ public final class MsunSpdMasterSyncSupport
         Map<String, String> hints = new LinkedHashMap<>(8);
         hints.put("2.1.9", "fd_department");
         hints.put("2.1.12", "sys_user、sys_user_department");
-        hints.put("2.5.44", "fd_material（仅 materialOrDrug=1 且分类在白名单内）；同步后清理白名单外档案");
-        hints.put("2.5.58", "fd_warehouse_category（仅分类白名单）；同步后清理白名单外分类");
+        hints.put("2.5.44", "fd_material（仅 materialOrDrug=1 且分类在白名单内；不逻辑删除既有档案）");
+        hints.put("2.5.58", "fd_warehouse_category（仅分类白名单；不逻辑删除既有分类）");
         hints.put("2.5.62", "fd_supplier");
         hints.put("2.5.63", "fd_factory");
         API_SPD_TABLE_HINTS = Collections.unmodifiableMap(hints);

@@ -25,7 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "众阳HIS-枣强县中医院-镜像查询")
 @RestController
 @ConditionalOnProperty(prefix = ZaoqiangTcmHospitalConstants.CONFIG_PREFIX, name = "enabled", havingValue = "true")
-@RequestMapping(ZaoqiangTcmHospitalConstants.API_PREFIX + "/mirror")
+@RequestMapping({
+        ZaoqiangTcmHospitalConstants.API_PREFIX + "/mirror",
+        ZaoqiangTcmHospitalConstants.SPD_API_PREFIX + "/mirror"
+})
 public class ZaoqiangTcmMsunMirrorQueryController
 {
     private final MsunHisMirrorQueryService mirrorQueryService;
