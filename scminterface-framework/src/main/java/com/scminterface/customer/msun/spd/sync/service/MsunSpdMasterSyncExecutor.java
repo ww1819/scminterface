@@ -93,7 +93,7 @@ public class MsunSpdMasterSyncExecutor
             spd.put("parentId", null);
             spd.put("createBy", MsunSpdFieldSupport.syncBy());
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
-            count += syncMapper.upsertFdDepartment(spd);
+            count += mergeFdDepartment(spd);
         }
         for (Map<String, Object> row : rows)
         {
@@ -151,7 +151,7 @@ public class MsunSpdMasterSyncExecutor
             spd.put("password", DEFAULT_USER_PASSWORD);
             spd.put("createBy", MsunSpdFieldSupport.syncBy());
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
-            count += syncMapper.upsertSysUser(spd);
+            count += mergeSysUser(spd);
         }
 
         int deptRelCount = syncMapper.insertSysUserDepartmentsFromMirrorBatch(
@@ -208,7 +208,7 @@ public class MsunSpdMasterSyncExecutor
             spd.put("taxNumber", MsunSpdFieldSupport.truncate(str(row, "social_credit_code"), 64));
             spd.put("createBy", MsunSpdFieldSupport.syncBy());
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
-            count += syncMapper.upsertFdSupplier(spd);
+            count += mergeFdSupplier(spd);
         }
         return count;
     }
@@ -236,9 +236,107 @@ public class MsunSpdMasterSyncExecutor
             spd.put("delFlag", MsunSpdFieldSupport.toFdDelFlag(str(row, "invalid_flag")));
             spd.put("createBy", MsunSpdFieldSupport.syncBy());
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
-            count += syncMapper.upsertFdFactory(spd);
+            count += mergeFdFactory(spd);
         }
         return count;
+    }
+
+    /** 按业务键合并：已存在则 UPDATE（含回填 tenant_id），否则 INSERT。 */
+    private int mergeFdDepartment(Map<String, Object> spd)
+    {
+        String tenantId = str(spd, "tenantId");
+        String hisId = str(spd, "hisId");
+        Long existingId = syncMapper.selectFdDepartmentIdByHisId(tenantId, hisId);
+        if (existingId != null)
+        {
+            spd.put("id", existingId);
+            return syncMapper.updateFdDepartmentById(spd);
+        }
+        return syncMapper.upsertFdDepartment(spd);
+    }
+
+    private int mergeSysUser(Map<String, Object> spd)
+    {
+        String customerId = str(spd, "customerId");
+        String hisId = str(spd, "hisId");
+        String hisIdentityId = str(spd, "hisIdentityId");
+        Long existingId = syncMapper.selectSysUserIdByHisIdentity(customerId, hisIdentityId);
+        if (existingId == null && StringUtils.isNotEmpty(hisId))
+        {
+            existingId = syncMapper.selectSysUserIdByHisId(customerId, hisId);
+        }
+        if (existingId != null)
+        {
+            spd.put("userId", existingId);
+            return syncMapper.updateSysUserById(spd);
+        }
+        return syncMapper.upsertSysUser(spd);
+    }
+
+    private int mergeFdSupplier(Map<String, Object> spd)
+    {
+        String tenantId = str(spd, "tenantId");
+        String hisId = str(spd, "hisId");
+        Long existingId = syncMapper.selectFdSupplierIdByHisId(tenantId, hisId);
+        if (existingId != null)
+        {
+            spd.put("id", existingId);
+            return syncMapper.updateFdSupplierById(spd);
+        }
+        return syncMapper.upsertFdSupplier(spd);
+    }
+
+    private int mergeFdFactory(Map<String, Object> spd)
+    {
+        String tenantId = str(spd, "tenantId");
+        String hisId = str(spd, "hisId");
+        Long existingId = syncMapper.selectFdFactoryIdByHisId(tenantId, hisId);
+        if (existingId != null)
+        {
+            spd.put("factoryId", existingId);
+            return syncMapper.updateFdFactoryById(spd);
+        }
+        return syncMapper.upsertFdFactory(spd);
+    }
+
+    private int mergeFdWarehouseCategory(Map<String, Object> spd)
+    {
+        String tenantId = str(spd, "tenantId");
+        String hisId = str(spd, "hisId");
+        Long existingId = syncMapper.selectFdWarehouseCategoryIdByHisId(tenantId, hisId);
+        if (existingId != null)
+        {
+            spd.put("warehouseCategoryId", existingId);
+            return syncMapper.updateFdWarehouseCategoryById(spd);
+        }
+        return syncMapper.upsertFdWarehouseCategory(spd);
+    }
+
+    private int mergeFdUnit(Map<String, Object> spd)
+    {
+        String tenantId = str(spd, "tenantId");
+        String hisUnitId = str(spd, "hisUnitId");
+        Long existingId = syncMapper.selectFdUnitIdByHisUnitId(tenantId, hisUnitId);
+        if (existingId != null)
+        {
+            spd.put("unitId", existingId);
+            return syncMapper.updateFdUnitById(spd);
+        }
+        return syncMapper.upsertFdUnit(spd);
+    }
+
+    private int mergeFdMaterial(Map<String, Object> spd)
+    {
+        String tenantId = str(spd, "tenantId");
+        String hisId = str(spd, "hisId");
+        String hisSpecPackingId = str(spd, "hisSpecPackingId");
+        Long existingId = syncMapper.selectFdMaterialIdByHisSpec(tenantId, hisId, hisSpecPackingId);
+        if (existingId != null)
+        {
+            spd.put("id", existingId);
+            return syncMapper.updateFdMaterialById(spd);
+        }
+        return syncMapper.upsertFdMaterial(spd);
     }
 
     private int syncCategories(MsunHospitalRuntime runtime, String batchNo)
@@ -262,7 +360,7 @@ public class MsunSpdMasterSyncExecutor
             spd.put("delFlag", 0);
             spd.put("createBy", MsunSpdFieldSupport.syncBy());
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
-            count += syncMapper.upsertFdWarehouseCategory(spd);
+            count += mergeFdWarehouseCategory(spd);
         }
         return count;
     }
@@ -337,7 +435,7 @@ public class MsunSpdMasterSyncExecutor
             spd.put("unitId", unitId);
             spd.put("createBy", MsunSpdFieldSupport.syncBy());
             spd.put("updateBy", MsunSpdFieldSupport.syncBy());
-            count += syncMapper.upsertFdMaterial(spd);
+            count += mergeFdMaterial(spd);
         }
         return count;
     }
@@ -388,7 +486,7 @@ public class MsunSpdMasterSyncExecutor
         spd.put("delFlag", 0);
         spd.put("createBy", MsunSpdFieldSupport.syncBy());
         spd.put("updateBy", MsunSpdFieldSupport.syncBy());
-        syncMapper.upsertFdUnit(spd);
+        mergeFdUnit(spd);
     }
 
     private void ensureSupplierFromDict(String tenantId, Map<String, Object> row)
@@ -438,7 +536,7 @@ public class MsunSpdMasterSyncExecutor
         spd.put("taxNumber", null);
         spd.put("createBy", MsunSpdFieldSupport.syncBy());
         spd.put("updateBy", MsunSpdFieldSupport.syncBy());
-        syncMapper.upsertFdSupplier(spd);
+        mergeFdSupplier(spd);
     }
 
     private void ensureFactoryFromDict(String tenantId, Map<String, Object> row)
@@ -485,7 +583,7 @@ public class MsunSpdMasterSyncExecutor
         spd.put("delFlag", 0);
         spd.put("createBy", MsunSpdFieldSupport.syncBy());
         spd.put("updateBy", MsunSpdFieldSupport.syncBy());
-        syncMapper.upsertFdFactory(spd);
+        mergeFdFactory(spd);
     }
 
     private void ensureWarehouseCategoryFromDict(String tenantId, Map<String, Object> row)
@@ -532,7 +630,7 @@ public class MsunSpdMasterSyncExecutor
         spd.put("delFlag", 0);
         spd.put("createBy", MsunSpdFieldSupport.syncBy());
         spd.put("updateBy", MsunSpdFieldSupport.syncBy());
-        syncMapper.upsertFdWarehouseCategory(spd);
+        mergeFdWarehouseCategory(spd);
     }
 
     private Long resolveDeptId(String tenantId, String hisDeptId)

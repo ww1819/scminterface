@@ -34,6 +34,8 @@ public interface MsunSpdMasterSyncMapper
 
     int upsertFdDepartment(Map<String, Object> row);
 
+    int updateFdDepartmentById(Map<String, Object> row);
+
     int updateFdDepartmentParent(
             @Param("tenantId") String tenantId,
             @Param("hisDeptId") String hisDeptId,
@@ -41,11 +43,24 @@ public interface MsunSpdMasterSyncMapper
 
     int upsertFdSupplier(Map<String, Object> row);
 
+    int updateFdSupplierById(Map<String, Object> row);
+
     int upsertFdFactory(Map<String, Object> row);
+
+    int updateFdFactoryById(Map<String, Object> row);
 
     int upsertFdWarehouseCategory(Map<String, Object> row);
 
+    int updateFdWarehouseCategoryById(Map<String, Object> row);
+
     int upsertFdUnit(Map<String, Object> row);
+
+    int updateFdUnitById(Map<String, Object> row);
+
+    Long selectFdMaterialIdByHisSpec(
+            @Param("tenantId") String tenantId,
+            @Param("hisId") String hisId,
+            @Param("hisSpecPackingId") String hisSpecPackingId);
 
     Integer selectFdMaterialDelFlagByHisSpec(
             @Param("tenantId") String tenantId,
@@ -54,7 +69,11 @@ public interface MsunSpdMasterSyncMapper
 
     int upsertFdMaterial(Map<String, Object> row);
 
+    int updateFdMaterialById(Map<String, Object> row);
+
     int upsertSysUser(Map<String, Object> row);
+
+    int updateSysUserById(Map<String, Object> row);
 
     int insertSysUserDepartmentIfAbsent(Map<String, Object> row);
 

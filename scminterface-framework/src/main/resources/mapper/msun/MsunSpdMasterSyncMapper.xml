@@ -16,31 +16,62 @@
 
     <select id="selectFdDepartmentIdByHisId" resultType="java.lang.Long">
         SELECT id FROM fd_department
-        WHERE tenant_id = #{tenantId} AND his_id = #{hisId} AND del_flag = 0
+        WHERE his_id = #{hisId}
+          AND (del_flag = 0 OR del_flag IS NULL)
+          AND (
+            tenant_id = #{tenantId}
+            OR tenant_id IS NULL OR TRIM(tenant_id) = ''
+          )
+        ORDER BY CASE WHEN tenant_id = #{tenantId} THEN 0 ELSE 1 END, id ASC
         LIMIT 1
     </select>
 
+    <!-- 含 tenant_id 为空的历史行，避免材料字典先写入、供应商/厂家镜像后查不到而重复插入 -->
     <select id="selectFdSupplierIdByHisId" resultType="java.lang.Long">
         SELECT id FROM fd_supplier
-        WHERE tenant_id = #{tenantId} AND his_id = #{hisId} AND del_flag = 0
+        WHERE his_id = #{hisId}
+          AND (del_flag = 0 OR del_flag IS NULL)
+          AND (
+            tenant_id = #{tenantId}
+            OR tenant_id IS NULL OR TRIM(tenant_id) = ''
+          )
+        ORDER BY CASE WHEN tenant_id = #{tenantId} THEN 0 ELSE 1 END, id ASC
         LIMIT 1
     </select>
 
     <select id="selectFdFactoryIdByHisId" resultType="java.lang.Long">
         SELECT factory_id FROM fd_factory
-        WHERE tenant_id = #{tenantId} AND his_id = #{hisId} AND del_flag = 0
+        WHERE his_id = #{hisId}
+          AND (del_flag = 0 OR del_flag IS NULL)
+          AND (
+            tenant_id = #{tenantId}
+            OR tenant_id IS NULL OR TRIM(tenant_id) = ''
+          )
+        ORDER BY CASE WHEN tenant_id = #{tenantId} THEN 0 ELSE 1 END, factory_id ASC
         LIMIT 1
     </select>
 
     <select id="selectFdWarehouseCategoryIdByHisId" resultType="java.lang.Long">
         SELECT warehouse_category_id FROM fd_warehouse_category
-        WHERE tenant_id = #{tenantId} AND his_id = #{hisId} AND del_flag = 0
+        WHERE his_id = #{hisId}
+          AND (del_flag = 0 OR del_flag IS NULL)
+          AND (
+            tenant_id = #{tenantId}
+            OR tenant_id IS NULL OR TRIM(tenant_id) = ''
+          )
+        ORDER BY CASE WHEN tenant_id = #{tenantId} THEN 0 ELSE 1 END, warehouse_category_id ASC
         LIMIT 1
     </select>
 
     <select id="selectFdUnitIdByHisUnitId" resultType="java.lang.Long">
         SELECT unit_id FROM fd_unit
-        WHERE tenant_id = #{tenantId} AND his_unit_id = #{hisUnitId} AND del_flag = 0
+        WHERE his_unit_id = #{hisUnitId}
+          AND (del_flag = 0 OR del_flag IS NULL)
+          AND (
+            tenant_id = #{tenantId}
+            OR tenant_id IS NULL OR TRIM(tenant_id) = ''
+          )
+        ORDER BY CASE WHEN tenant_id = #{tenantId} THEN 0 ELSE 1 END, unit_id ASC
         LIMIT 1
     </select>
 
@@ -67,10 +98,25 @@
             code = VALUES(code),
             name = VALUES(name),
             referred_name = VALUES(referred_name),
+            tenant_id = VALUES(tenant_id),
+            his_id = VALUES(his_id),
             del_flag = VALUES(del_flag),
             update_by = VALUES(update_by),
             update_time = NOW()
     </insert>
+
+    <update id="updateFdDepartmentById">
+        UPDATE fd_department SET
+            code = #{code},
+            name = #{name},
+            referred_name = #{referredName},
+            tenant_id = #{tenantId},
+            his_id = #{hisId},
+            del_flag = #{delFlag},
+            update_by = #{updateBy},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
 
     <update id="updateFdDepartmentParent">
         UPDATE fd_department child
@@ -98,6 +144,8 @@
             code = VALUES(code),
             name = VALUES(name),
             referred_code = VALUES(referred_code),
+            tenant_id = VALUES(tenant_id),
+            his_id = VALUES(his_id),
             del_flag = VALUES(del_flag),
             address = VALUES(address),
             phone = VALUES(phone),
@@ -107,6 +155,24 @@
             update_by = VALUES(update_by),
             update_time = NOW()
     </insert>
+
+    <update id="updateFdSupplierById">
+        UPDATE fd_supplier SET
+            code = #{code},
+            name = #{name},
+            referred_code = #{referredCode},
+            tenant_id = #{tenantId},
+            his_id = #{hisId},
+            del_flag = #{delFlag},
+            address = #{address},
+            phone = #{phone},
+            contacts = #{contacts},
+            contacts_phone = #{contactsPhone},
+            tax_number = #{taxNumber},
+            update_by = #{updateBy},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
 
     <insert id="upsertFdFactory">
         INSERT INTO fd_factory (
@@ -122,10 +188,27 @@
             factory_referred_code = VALUES(factory_referred_code),
             factory_address = VALUES(factory_address),
             factory_contact = VALUES(factory_contact),
+            tenant_id = VALUES(tenant_id),
+            his_id = VALUES(his_id),
             del_flag = VALUES(del_flag),
             update_by = VALUES(update_by),
             update_time = NOW()
     </insert>
+
+    <update id="updateFdFactoryById">
+        UPDATE fd_factory SET
+            factory_code = #{factoryCode},
+            factory_name = #{factoryName},
+            factory_referred_code = #{factoryReferredCode},
+            factory_address = #{factoryAddress},
+            factory_contact = #{factoryContact},
+            tenant_id = #{tenantId},
+            his_id = #{hisId},
+            del_flag = #{delFlag},
+            update_by = #{updateBy},
+            update_time = NOW()
+        WHERE factory_id = #{factoryId}
+    </update>
 
     <insert id="upsertFdWarehouseCategory">
         INSERT INTO fd_warehouse_category (
@@ -139,10 +222,25 @@
             warehouse_category_code = VALUES(warehouse_category_code),
             warehouse_category_name = VALUES(warehouse_category_name),
             referred_name = VALUES(referred_name),
+            tenant_id = VALUES(tenant_id),
+            his_id = VALUES(his_id),
             del_flag = VALUES(del_flag),
             update_by = VALUES(update_by),
             update_time = NOW()
     </insert>
+
+    <update id="updateFdWarehouseCategoryById">
+        UPDATE fd_warehouse_category SET
+            warehouse_category_code = #{warehouseCategoryCode},
+            warehouse_category_name = #{warehouseCategoryName},
+            referred_name = #{referredName},
+            tenant_id = #{tenantId},
+            his_id = #{hisId},
+            del_flag = #{delFlag},
+            update_by = #{updateBy},
+            update_time = NOW()
+        WHERE warehouse_category_id = #{warehouseCategoryId}
+    </update>
 
     <insert id="upsertFdUnit">
         INSERT INTO fd_unit (
@@ -154,16 +252,46 @@
         ON DUPLICATE KEY UPDATE
             unit_code = VALUES(unit_code),
             unit_name = VALUES(unit_name),
+            tenant_id = VALUES(tenant_id),
+            his_unit_id = VALUES(his_unit_id),
             del_flag = VALUES(del_flag),
             update_by = VALUES(update_by),
             update_time = NOW()
     </insert>
 
+    <update id="updateFdUnitById">
+        UPDATE fd_unit SET
+            unit_code = #{unitCode},
+            unit_name = #{unitName},
+            his_unit_id = #{hisUnitId},
+            tenant_id = #{tenantId},
+            del_flag = #{delFlag},
+            update_by = #{updateBy},
+            update_time = NOW()
+        WHERE unit_id = #{unitId}
+    </update>
+
+    <select id="selectFdMaterialIdByHisSpec" resultType="java.lang.Long">
+        SELECT id FROM fd_material
+        WHERE his_id = #{hisId}
+          AND his_spec_packing_id = #{hisSpecPackingId}
+          AND (
+            tenant_id = #{tenantId}
+            OR tenant_id IS NULL OR TRIM(tenant_id) = ''
+          )
+        ORDER BY CASE WHEN tenant_id = #{tenantId} THEN 0 ELSE 1 END, id ASC
+        LIMIT 1
+    </select>
+
     <select id="selectFdMaterialDelFlagByHisSpec" resultType="java.lang.Integer">
         SELECT del_flag FROM fd_material
-        WHERE tenant_id = #{tenantId}
-          AND his_id = #{hisId}
+        WHERE his_id = #{hisId}
           AND his_spec_packing_id = #{hisSpecPackingId}
+          AND (
+            tenant_id = #{tenantId}
+            OR tenant_id IS NULL OR TRIM(tenant_id) = ''
+          )
+        ORDER BY CASE WHEN tenant_id = #{tenantId} THEN 0 ELSE 1 END, id ASC
         LIMIT 1
     </select>
 
@@ -194,9 +322,34 @@
             factory_id = VALUES(factory_id),
             storeroom_id = VALUES(storeroom_id),
             unit_id = VALUES(unit_id),
+            tenant_id = VALUES(tenant_id),
             update_by = VALUES(update_by),
             update_time = NOW()
     </insert>
+
+    <update id="updateFdMaterialById">
+        UPDATE fd_material SET
+            code = #{code},
+            name = #{name},
+            speci = #{speci},
+            model = #{model},
+            price = #{price},
+            sale_price = #{salePrice},
+            referred_name = #{referredName},
+            register_no = #{registerNo},
+            medical_no = #{medicalNo},
+            tenant_id = #{tenantId},
+            his_id = #{hisId},
+            his_spec_packing_id = #{hisSpecPackingId},
+            is_use = #{isUse},
+            supplier_id = #{supplierId},
+            factory_id = #{factoryId},
+            storeroom_id = #{storeroomId},
+            unit_id = #{unitId},
+            update_by = #{updateBy},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
 
     <insert id="upsertSysUser">
         INSERT INTO sys_user (
@@ -213,9 +366,24 @@
             his_identity_id = VALUES(his_identity_id),
             status = VALUES(status),
             del_flag = VALUES(del_flag),
+            customer_id = VALUES(customer_id),
             update_by = VALUES(update_by),
             update_time = NOW()
     </insert>
+
+    <update id="updateSysUserById">
+        UPDATE sys_user SET
+            user_name = #{userName},
+            nick_name = #{nickName},
+            his_id = #{hisId},
+            his_identity_id = #{hisIdentityId},
+            customer_id = #{customerId},
+            status = #{status},
+            del_flag = #{delFlag},
+            update_by = #{updateBy},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+    </update>
 
     <insert id="insertSysUserDepartmentIfAbsent">
         INSERT INTO sys_user_department (user_id, department_id, status, tenant_id, create_by, create_time)
