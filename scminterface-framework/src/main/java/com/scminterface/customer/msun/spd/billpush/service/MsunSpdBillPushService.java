@@ -161,6 +161,7 @@ public class MsunSpdBillPushService
             }
             else if (billType == 401)
             {
+                backfillReturnEntryHisStockIds(tenantId, toPush);
                 Map<String, Object> body = buildReturnBody(runtime, bill, toPush);
                 pendingHisBody = stripLogMetaFromBody(body);
                 invoke = pushService.pushDrugStocksReturn(runtime, body, extractLogMeta(bill));
@@ -547,6 +548,97 @@ public class MsunSpdBillPushService
     }
 
     /**
+     * 退库推送前：若明细 HIS 库存三字段为空，从关联科室库存或原出库明细回填并落库。
+     */
+    private void backfillReturnEntryHisStockIds(String tenantId, List<Map<String, Object>> entries)
+    {
+        if (entries == null || entries.isEmpty())
+        {
+            return;
+        }
+        for (Map<String, Object> entry : entries)
+        {
+            if (entry == null || !needsReturnEntryHisStockBackfill(entry))
+            {
+                continue;
+            }
+            HisStockIds stockIds = HisStockIds.fromEntry(entry);
+            Long depId = resolveDepInventoryKey(entry);
+            Map<String, Object> dep = depId != null ? executor.selectDepInventoryById(tenantId, depId) : null;
+            stockIds = stockIds.mergeFrom(dep);
+
+            if (stockIds.needsBackfill() && dep != null)
+            {
+                Long outboundEntryId = toLong(dep.get("bill_entry_id"));
+                if (outboundEntryId != null)
+                {
+                    stockIds = stockIds.mergeFrom(executor.selectBillEntryHisStockById(tenantId, outboundEntryId));
+                }
+            }
+            if (stockIds.needsBackfill() && depId != null)
+            {
+                stockIds = stockIds.mergeFrom(
+                        executor.selectOutboundEntryHisStockByDepInventoryId(tenantId, depId));
+            }
+            String pharmacy = stockIds.pharmacy;
+            String storage = stockIds.storage;
+            String stockQuery = stockIds.stockQuery;
+            if (hasReturnEntryHisStockChanged(entry, pharmacy, storage, stockQuery))
+            {
+                Long entryId = toLong(entry.get("entry_id"));
+                entry.put("his_pharmacy_stock_id", pharmacy);
+                entry.put("his_storage_stock_id", storage);
+                entry.put("his_stock_query_id", stockQuery);
+                if (entryId != null)
+                {
+                    Map<String, Object> row = new HashMap<>(12);
+                    row.put("tenantId", tenantId);
+                    row.put("entryId", entryId);
+                    row.put("hisPharmacyStockId", pharmacy);
+                    row.put("hisStorageStockId", storage);
+                    row.put("hisStockQueryId", stockQuery);
+                    executor.updateEntryHisStockIds(row);
+                    log.info("退库明细回填HIS库存键 entryId={} depInventoryId={} stockQueryId={}",
+                            entryId, depId, stockQuery);
+                }
+            }
+        }
+    }
+
+    private static Long resolveDepInventoryKey(Map<String, Object> entry)
+    {
+        Long depId = toLong(entry.get("dep_inventory_id"));
+        if (depId == null)
+        {
+            depId = toLong(entry.get("kc_no"));
+        }
+        return depId;
+    }
+
+    private static boolean needsReturnEntryHisStockBackfill(Map<String, Object> entry)
+    {
+        return needsReturnEntryHisStockBackfill(
+                str(entry.get("his_pharmacy_stock_id")),
+                str(entry.get("his_storage_stock_id")),
+                str(entry.get("his_stock_query_id")));
+    }
+
+    private static boolean needsReturnEntryHisStockBackfill(String pharmacy, String storage, String stockQuery)
+    {
+        return StringUtils.isEmpty(pharmacy)
+                || StringUtils.isEmpty(storage)
+                || StringUtils.isEmpty(stockQuery);
+    }
+
+    private static boolean hasReturnEntryHisStockChanged(
+            Map<String, Object> entry, String pharmacy, String storage, String stockQuery)
+    {
+        return !StringUtils.equals(str(entry.get("his_pharmacy_stock_id")), pharmacy)
+                || !StringUtils.equals(str(entry.get("his_storage_stock_id")), storage)
+                || !StringUtils.equals(str(entry.get("his_stock_query_id")), stockQuery);
+    }
+
+    /**
      * 2.5.42 入参 {@code pharmacyStockId}：枣强现场对接传 {@code his_stock_query_id}（2.5.41 回参 stockQueryId）。
      */
     private String resolvePharmacyStockIdForPush(
@@ -779,6 +871,45 @@ public class MsunSpdBillPushService
         private String pharmacyStockId;
         private String storageStockId;
         private BigDecimal hisQty;
+    }
+
+    private static final class HisStockIds
+    {
+        private final String pharmacy;
+        private final String storage;
+        private final String stockQuery;
+
+        private HisStockIds(String pharmacy, String storage, String stockQuery)
+        {
+            this.pharmacy = pharmacy;
+            this.storage = storage;
+            this.stockQuery = stockQuery;
+        }
+
+        private static HisStockIds fromEntry(Map<String, Object> entry)
+        {
+            return new HisStockIds(
+                    str(entry.get("his_pharmacy_stock_id")),
+                    str(entry.get("his_storage_stock_id")),
+                    str(entry.get("his_stock_query_id")));
+        }
+
+        private HisStockIds mergeFrom(Map<String, Object> source)
+        {
+            if (source == null || source.isEmpty())
+            {
+                return this;
+            }
+            return new HisStockIds(
+                    firstNonEmpty(pharmacy, str(source.get("his_pharmacy_stock_id"))),
+                    firstNonEmpty(storage, str(source.get("his_storage_stock_id"))),
+                    firstNonEmpty(stockQuery, str(source.get("his_stock_query_id"))));
+        }
+
+        private boolean needsBackfill()
+        {
+            return needsReturnEntryHisStockBackfill(pharmacy, storage, stockQuery);
+        }
     }
 
     private String resolveWarehouseHisId(String tenantId, Long warehouseId)

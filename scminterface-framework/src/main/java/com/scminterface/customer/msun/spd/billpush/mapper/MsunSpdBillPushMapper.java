@@ -29,6 +29,12 @@ public interface MsunSpdBillPushMapper
 
     Map<String, Object> selectDepInventoryById(@Param("tenantId") String tenantId, @Param("id") Long id);
 
+    Map<String, Object> selectBillEntryHisStockById(
+            @Param("tenantId") String tenantId, @Param("entryId") Long entryId);
+
+    Map<String, Object> selectOutboundEntryHisStockByDepInventoryId(
+            @Param("tenantId") String tenantId, @Param("depInventoryId") Long depInventoryId);
+
     int updateEntryHisPrepare(Map<String, Object> row);
 
     int updateEntryHisPharmacyStock(Map<String, Object> row);

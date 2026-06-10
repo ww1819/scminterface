@@ -105,7 +105,8 @@
                e.begin_time, e.end_time, e.suppler_id AS entry_supplier_id,
                e.stk_inventory_id, e.dep_inventory_id, e.kc_no,
                e.his_push_status, e.his_push_msg, e.his_memo, e.his_spd_detail_id,
-               e.his_pharmacy_stock_id, e.his_stock_query_id, e.his_drug_id, e.his_drug_spec_packing_id,
+               e.his_pharmacy_stock_id, e.his_storage_stock_id, e.his_stock_query_id,
+               e.his_drug_id, e.his_drug_spec_packing_id,
                COALESCE(NULLIF(e.material_name, ''), m.name) AS material_name,
                m.his_id AS material_his_id, m.his_spec_packing_id AS material_his_spec_packing_id
         FROM stk_io_bill_entry e
@@ -136,9 +137,32 @@
     </select>
 
     <select id="selectDepInventoryById" resultType="java.util.HashMap">
-        SELECT id, his_pharmacy_stock_id, his_storage_stock_id, his_stock_query_id
+        SELECT id, bill_entry_id, his_pharmacy_stock_id, his_storage_stock_id, his_stock_query_id
         FROM stk_dep_inventory
         WHERE tenant_id = #{tenantId} AND id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectBillEntryHisStockById" resultType="java.util.HashMap">
+        SELECT id AS entry_id, his_pharmacy_stock_id, his_storage_stock_id, his_stock_query_id
+        FROM stk_io_bill_entry
+        WHERE tenant_id = #{tenantId} AND id = #{entryId}
+          AND (del_flag IS NULL OR del_flag != 1)
+        LIMIT 1
+    </select>
+
+    <select id="selectOutboundEntryHisStockByDepInventoryId" resultType="java.util.HashMap">
+        SELECT e.id AS entry_id, e.his_pharmacy_stock_id, e.his_storage_stock_id, e.his_stock_query_id
+        FROM stk_io_bill_entry e
+        INNER JOIN stk_io_bill b ON b.id = e.paren_id AND b.tenant_id = e.tenant_id
+        WHERE e.tenant_id = #{tenantId}
+          AND e.dep_inventory_id = #{depInventoryId}
+          AND b.bill_type = 201
+          AND (e.del_flag IS NULL OR e.del_flag != 1)
+          AND (b.del_flag IS NULL OR b.del_flag != 1)
+        ORDER BY
+            CASE WHEN e.his_stock_query_id IS NOT NULL AND e.his_stock_query_id != '' THEN 0 ELSE 1 END,
+            e.id DESC
+        LIMIT 1
     </select>
 
     <update id="updateEntryHisPrepare">

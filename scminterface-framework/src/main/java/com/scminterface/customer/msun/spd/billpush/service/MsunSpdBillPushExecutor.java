@@ -75,6 +75,18 @@ public class MsunSpdBillPushExecutor
     }
 
     @DataSource(DataSourceType.SPD)
+    public Map<String, Object> selectBillEntryHisStockById(String tenantId, Long entryId)
+    {
+        return billPushMapper.selectBillEntryHisStockById(tenantId, entryId);
+    }
+
+    @DataSource(DataSourceType.SPD)
+    public Map<String, Object> selectOutboundEntryHisStockByDepInventoryId(String tenantId, Long depInventoryId)
+    {
+        return billPushMapper.selectOutboundEntryHisStockByDepInventoryId(tenantId, depInventoryId);
+    }
+
+    @DataSource(DataSourceType.SPD)
     public int updateEntryHisPrepare(Map<String, Object> row)
     {
         return billPushMapper.updateEntryHisPrepare(row);
