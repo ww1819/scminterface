@@ -3,6 +3,7 @@ package com.scminterface.customer.msun.mirror.service;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
+import com.scminterface.customer.msun.support.MsunHisJsonSupport;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorPushLogRowSupport;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorRowSupport;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
@@ -48,7 +49,7 @@ public class MsunHisPushLogService
         row.put("tenant_id", runtime.getTenantId());
         row.put("active_env", runtime.getActiveEnv());
         row.put("api_code", apiCode);
-        row.put("request_json", requestBody == null ? null : JSON.toJSONString(requestBody));
+        row.put("request_json", requestBody == null ? null : MsunHisJsonSupport.toRequestJson(requestBody));
         row.put("response_json", wrappedResponse == null ? null : wrappedResponse.toJSONString());
         row.put("insert_time", new Date());
 

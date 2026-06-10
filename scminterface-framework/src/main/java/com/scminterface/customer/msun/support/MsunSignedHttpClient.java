@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
-import com.alibaba.fastjson2.JSON;
 import com.msun.util.OpenapiUtil;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -89,7 +88,7 @@ public class MsunSignedHttpClient
 
     public MsunSignedHttpResult postWithDebug(String url, Map<String, Object> body) throws Exception
     {
-        String paramsJsonStr = CollectionUtil.isNotEmpty(body) ? JSON.toJSONString(body) : "";
+        String paramsJsonStr = CollectionUtil.isNotEmpty(body) ? MsunHisJsonSupport.toRequestJson(body) : "";
         long timestamp = System.currentTimeMillis();
         String signatureStr = paramsJsonStr + timestamp;
         MessageDigest md = MessageDigest.getInstance("MD5");

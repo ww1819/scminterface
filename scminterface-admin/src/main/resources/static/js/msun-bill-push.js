@@ -196,6 +196,16 @@ function bpJsonPretty(obj) {
     }
 }
 
+function bpFormatRequestBodyRaw(raw) {
+    if (raw === null || raw === undefined) return '';
+    var s = String(raw);
+    try {
+        return JSON.stringify(JSON.parse(s), null, 2);
+    } catch (e) {
+        return s;
+    }
+}
+
 function bpCopyBlock(preId, btn) {
     var el = document.getElementById(preId);
     if (!el) return;
@@ -318,7 +328,7 @@ function bpBuildPushResultHtml(tab, res) {
                 prefix + 'Hdr'));
             html.push(bpRenderDebugBlock(
                 '入参 Request Body',
-                bpJsonPretty(inv.requestBody),
+                inv.requestBodyRaw != null ? bpFormatRequestBodyRaw(inv.requestBodyRaw) : bpJsonPretty(inv.requestBody),
                 prefix + 'Req'));
             var resp = inv.hisBody != null ? inv.hisBody : inv.responseRaw;
             html.push(bpRenderDebugBlock(

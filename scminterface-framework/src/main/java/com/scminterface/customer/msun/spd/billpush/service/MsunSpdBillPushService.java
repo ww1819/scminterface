@@ -7,6 +7,7 @@ import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.support.MsunHisDateTimeSupport;
 import com.scminterface.customer.msun.support.MsunHisBatchStockSupport;
+import com.scminterface.customer.msun.support.MsunHisJsonSupport;
 import com.scminterface.customer.msun.support.MsunHisResponseSupport;
 import com.scminterface.customer.msun.service.MsunSpdQueryService;
 import com.scminterface.customer.msun.spd.billpush.MsunSpdBillPushConstants;
@@ -363,9 +364,9 @@ public class MsunSpdBillPushService
         String supplierHisId = resolveSupplierHisId(tenantId, bill, entries);
 
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("supplierId", parseLongRequired(supplierHisId, "供应商HIS对照"));
-        body.put("storageDeptId", parseLongRequired(storageHisId, "仓库HIS药库科室"));
-        body.put("pharmacyDeptId", parseLongRequired(pharmacyHisId, "科室HIS对照"));
+        body.put("supplierId", MsunHisJsonSupport.requireSnowflakeId(supplierHisId, "供应商HIS对照"));
+        body.put("storageDeptId", MsunHisJsonSupport.requireSnowflakeId(storageHisId, "仓库HIS药库科室"));
+        body.put("pharmacyDeptId", MsunHisJsonSupport.requireSnowflakeId(pharmacyHisId, "科室HIS对照"));
         body.put("invoiceCode", bill.get("bill_no"));
         body.put("inStockStatus", MsunSpdBillPushConstants.IN_STOCK_STATUS_PHARMACY);
         body.put("spdMainId", bill.get("bill_no"));
@@ -386,8 +387,9 @@ public class MsunSpdBillPushService
             String memo = MsunSpdBillPushConstants.buildEntryMemo(tenantId, entryId);
             String spdDetailId = MsunSpdBillPushConstants.buildSpdDetailId(billId, entryId);
             Map<String, Object> line = new LinkedHashMap<>();
-            line.put("drugId", parseLongRequired(str(material.get("his_id")), "耗材HIS drugId"));
-            line.put("drugSpecPackingId", parseLongRequired(str(material.get("his_spec_packing_id")), "耗材HIS规格"));
+            line.put("drugId", MsunHisJsonSupport.requireSnowflakeId(str(material.get("his_id")), "耗材HIS drugId"));
+            line.put("drugSpecPackingId",
+                    MsunHisJsonSupport.requireSnowflakeId(str(material.get("his_spec_packing_id")), "耗材HIS规格"));
             line.put("quantity", entry.get("qty"));
             line.put("buyPrice", entry.get("unit_price"));
             line.put("retailPrice", entry.get("unit_price"));
@@ -415,8 +417,8 @@ public class MsunSpdBillPushService
         String pharmacyHisId = resolveDepartmentHisId(tenantId, toLong(bill.get("department_id")));
 
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("storageDeptId", parseLongRequired(storageHisId, "仓库HIS药库科室"));
-        body.put("pharmacyDeptId", parseLongRequired(pharmacyHisId, "科室HIS对照"));
+        body.put("storageDeptId", MsunHisJsonSupport.requireSnowflakeId(storageHisId, "仓库HIS药库科室"));
+        body.put("pharmacyDeptId", MsunHisJsonSupport.requireSnowflakeId(pharmacyHisId, "科室HIS对照"));
         body.put("isReturnToSupplier", MsunSpdBillPushConstants.RETURN_TO_SUPPLIER_YES);
         body.put("memo", str(bill.get("bill_no")));
 
@@ -428,7 +430,7 @@ public class MsunSpdBillPushService
             String pharmacyStockId = resolvePharmacyStockIdForPush(runtime, bill, entry, pharmacyDeptHisId);
             String detailMemo = MsunSpdBillPushConstants.buildSpdDetailId(billId, entryId);
             Map<String, Object> line = new LinkedHashMap<>();
-            line.put("pharmacyStockId", parseLongRequired(pharmacyStockId, "pharmacyStockId"));
+            line.put("pharmacyStockId", MsunHisJsonSupport.requireSnowflakeId(pharmacyStockId, "pharmacyStockId"));
             line.put("quantity", entry.get("qty"));
             line.put("memo", detailMemo);
             details.add(line);

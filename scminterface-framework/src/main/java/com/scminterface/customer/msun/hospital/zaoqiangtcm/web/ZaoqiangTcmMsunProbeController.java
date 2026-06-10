@@ -7,6 +7,7 @@ import com.scminterface.customer.msun.hospital.zaoqiangtcm.config.ZaoqiangTcmMsu
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.customer.msun.mirror.service.MsunHisMirrorSyncService;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorSyncOutcome;
+import com.scminterface.customer.msun.service.MsunProbeInvokeService;
 import com.scminterface.customer.msun.service.MsunProbeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,6 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,17 +35,50 @@ import org.springframework.web.bind.annotation.RestController;
 public class ZaoqiangTcmMsunProbeController
 {
     private final MsunProbeService probeService;
+    private final MsunProbeInvokeService probeInvokeService;
     private final ZaoqiangTcmMsunProperties msunProperties;
     private final MsunHisMirrorSyncService mirrorSyncService;
 
     public ZaoqiangTcmMsunProbeController(
             MsunProbeService probeService,
+            MsunProbeInvokeService probeInvokeService,
             ZaoqiangTcmMsunProperties msunProperties,
             MsunHisMirrorSyncService mirrorSyncService)
     {
         this.probeService = probeService;
+        this.probeInvokeService = probeInvokeService;
         this.msunProperties = msunProperties;
         this.mirrorSyncService = mirrorSyncService;
+    }
+
+    @ApiOperation("联调探针统一调用：前端仅传字符串参数，服务端组包调 HIS（避免 JS 大整数精度丢失）")
+    @PostMapping("/invoke")
+    public AjaxResult invoke(@RequestBody Map<String, Object> body)
+    {
+        try
+        {
+            String apiKey = body != null ? stringVal(body.get("apiKey")) : null;
+            Map<String, String> params = toStringParamMap(body != null ? body.get("params") : null);
+            String paramsJsonOverride = body != null ? stringVal(body.get("paramsJsonOverride")) : null;
+            Map<String, Object> payload = probeInvokeService.invoke(
+                    msunProperties, apiKey, params, paramsJsonOverride);
+            Object data = payload.get("data");
+            AjaxResult result = AjaxResult.success(data);
+            if (payload.get("probeInvoke") != null)
+            {
+                result.put("probeInvoke", payload.get("probeInvoke"));
+            }
+            MsunHisMirrorSyncOutcome syncOutcome = (MsunHisMirrorSyncOutcome) payload.get("syncOutcome");
+            return enrichEnv(result, syncOutcome);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return AjaxResult.error(ex.getMessage());
+        }
+        catch (Exception ex)
+        {
+            return AjaxResult.error("探针调用失败: " + ex.getMessage());
+        }
     }
 
     @ApiOperation("当前众阳连接环境（不含密钥）")
@@ -144,6 +180,38 @@ public class ZaoqiangTcmMsunProbeController
         {
             return AjaxResult.error("人员身份探针失败: " + ex.getMessage());
         }
+    }
+
+    private static String stringVal(Object value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+        String text = String.valueOf(value).trim();
+        return text.isEmpty() ? null : text;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, String> toStringParamMap(Object raw)
+    {
+        Map<String, String> out = new LinkedHashMap<>();
+        if (!(raw instanceof Map))
+        {
+            return out;
+        }
+        ((Map<Object, Object>) raw).forEach((key, value) -> {
+            if (key == null || value == null)
+            {
+                return;
+            }
+            String text = String.valueOf(value).trim();
+            if (!text.isEmpty())
+            {
+                out.put(String.valueOf(key), text);
+            }
+        });
+        return out;
     }
 
     private AjaxResult enrichEnv(AjaxResult result)

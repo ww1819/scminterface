@@ -62,6 +62,91 @@ function zqFmtJson(obj) {
     try { return JSON.stringify(obj, null, 2); } catch (e) { return String(obj); }
 }
 
+function zqFmtRequestBodyRaw(raw) {
+    if (raw === null || raw === undefined) return '';
+    var s = String(raw);
+    try { return JSON.stringify(JSON.parse(s), null, 2); } catch (e) { return s; }
+}
+
+function zqIsSchemaApiKey(apiKey) {
+    return !!(apiKey && MSUN_PARAM_SCHEMA[apiKey]);
+}
+
+function zqCollectStringParams(apiKey) {
+    return zqCollectFromForm(apiKey);
+}
+
+function zqGetJsonOverrideRaw(apiKey) {
+    const ta = document.getElementById(zqJsonId(apiKey));
+    if (!ta || !ta.value.trim()) return null;
+    return ta.value.trim();
+}
+
+function zqValidateJsonOverrideSyntax(apiKey) {
+    const raw = zqGetJsonOverrideRaw(apiKey);
+    if (raw === null) return true;
+    try {
+        JSON.parse(raw);
+        return true;
+    } catch (e) {
+        alert('JSON 入参格式错误: ' + e.message);
+        return false;
+    }
+}
+
+function zqToStringParams(src) {
+    const out = {};
+    if (!src) return out;
+    Object.keys(src).forEach(function (key) {
+        const val = src[key];
+        if (val !== null && val !== undefined && String(val).trim() !== '') {
+            out[key] = String(val);
+        }
+    });
+    return out;
+}
+
+async function zqInvokeProbeBackend(apiKey, stringParams, paramsJsonOverride) {
+    const url = msunHospitalApi() + '/probe/invoke';
+    const params = zqToStringParams(stringParams);
+    const payload = {
+        apiKey: apiKey,
+        params: params,
+        paramsJsonOverride: paramsJsonOverride || null
+    };
+    const requestLine = 'POST ' + url + '\nBody: ' + zqFmtJson(payload);
+    const t0 = Date.now();
+    let result;
+    try {
+        result = await post(url, payload);
+    } catch (e) {
+        result = { code: 500, msg: e.message };
+    }
+    return { result: result, elapsed: Date.now() - t0, requestLine: requestLine };
+}
+
+async function zqFetchFirstDeptIdFromMirror() {
+    try {
+        const mirror = await get(msunHospitalApi() + '/mirror/data/depts?limit=1&offset=0');
+        const tables = mirror && mirror.data && mirror.data.tables;
+        if (!tables || !tables.length) return null;
+        const rows = tables[0].rows;
+        if (!rows || !rows.length) return null;
+        const row = rows[0];
+        if (row.dept_id != null && String(row.dept_id).trim()) return String(row.dept_id);
+        if (row.deptId != null && String(row.deptId).trim()) return String(row.deptId);
+    } catch (e) { /* ignore */ }
+    return null;
+}
+
+function zqApplyDeptIdToForms(deptId) {
+    if (!deptId) return;
+    zqSetField('identities', 'deptId', deptId);
+    zqSetField('mergeStocks', 'deptId', deptId);
+    zqSetField('batchStocks', 'deptId', deptId);
+    zqSetField('ykInstock', 'deptId', deptId);
+}
+
 function zqSetMeta(text) {
     document.getElementById('metaInfo').textContent = text;
 }
@@ -167,13 +252,14 @@ function zqBuildDebugPanelsHtml(apiKey, result, requestLine) {
         zqFmtJson(headers || {}),
         prefix + 'Hdr'));
 
+    var reqBodyRaw = inv && inv.requestBodyRaw;
     var reqBody = inv && (inv.requestBody != null ? inv.requestBody : inv.requestParams);
     if (reqBody == null && result && result.data && result.data.requestParams) {
         reqBody = result.data.requestParams;
     }
     html.push(zqRenderDebugBlock(
         '入参 Request' + (inv && inv.method === 'GET' ? '（Query / Body）' : ' Body'),
-        zqFmtJson(reqBody),
+        reqBodyRaw != null ? zqFmtRequestBodyRaw(reqBodyRaw) : zqFmtJson(reqBody),
         prefix + 'Req'));
 
     var resp = inv && (inv.hisBody != null ? inv.hisBody : inv.responseRaw);
@@ -185,6 +271,15 @@ function zqBuildDebugPanelsHtml(apiKey, result, requestLine) {
     }
     html.push(zqRenderDebugBlock('回参 Response（HIS hisBody 或完整 JSON）', zqFmtJson(resp), prefix + 'Resp'));
 
+    if (result && result.probeInvoke) {
+        html.push(zqRenderDebugBlock(
+            '服务端合并参数 resolvedParams（雪花 ID 以字符串传入）',
+            zqFmtJson(result.probeInvoke.resolvedParams || {}),
+            prefix + 'ResP'));
+        if (result.probeInvoke.note) {
+            html.push('<p class="hint">' + zqEscapeHtml(result.probeInvoke.note) + '</p>');
+        }
+    }
     if (result && result.mirrorSync) {
         html.push(zqRenderDebugBlock('镜像落库 mirrorSync', zqFmtJson(result.mirrorSync), prefix + 'Mir'));
     }
@@ -664,7 +759,11 @@ function zqReplayLog(idx) {
     zqShowResult(apiKey, item.api, '历史记录 · ' + item.time, item.raw, item.elapsedMs || 0);
 }
 
-async function zqInvokeRaw(method, path, queryParams, body) {
+async function zqInvokeRaw(method, path, queryParams, body, apiKey) {
+    if (apiKey && zqIsSchemaApiKey(apiKey)) {
+        const src = body || queryParams || {};
+        return zqInvokeProbeBackend(apiKey, src, zqGetJsonOverrideRaw(apiKey));
+    }
     const qs = queryParams ? zqBuildQuery(queryParams) : '';
     const url = msunHospitalApi() + path + qs;
     const requestLine = method + ' ' + url + (body ? '\nBody: ' + zqFmtJson(body) : '');
@@ -681,7 +780,16 @@ async function zqInvokeRaw(method, path, queryParams, body) {
 async function zqInvoke(apiKey, title, method, path, queryParams, body) {
     if (!zqCheckLogin()) return null;
     zqSetMeta('请求中: ' + title + '…');
-    const pack = await zqInvokeRaw(method, path, queryParams, body);
+    let pack;
+    if (zqIsSchemaApiKey(apiKey)) {
+        if (!zqValidateJsonOverrideSyntax(apiKey)) return null;
+        pack = await zqInvokeProbeBackend(
+            apiKey,
+            body || queryParams || zqCollectStringParams(apiKey),
+            zqGetJsonOverrideRaw(apiKey));
+    } else {
+        pack = await zqInvokeRaw(method, path, queryParams, body);
+    }
     zqShowResult(apiKey, title, pack.requestLine, pack.result, pack.elapsed);
     zqSetMeta('完成: ' + title);
     return pack.result;
@@ -698,17 +806,26 @@ function zqIsHisOk(result) {
 }
 
 function zqMaxCursorFromPage(items, field) {
-    let max = null;
+    let maxStr = null;
+    let maxBi = null;
     items.forEach(function (item) {
         if (!item || item[field] === undefined || item[field] === null) return;
         const text = String(item[field]).trim();
         if (!text) return;
-        const num = Number(text);
-        if (!isNaN(num)) {
-            if (max === null || num > max) max = num;
+        try {
+            const bi = BigInt(text.replace(/\.\d+$/, ''));
+            if (maxBi === null || bi > maxBi) {
+                maxBi = bi;
+                maxStr = text;
+            }
+        } catch (e) {
+            const num = Number(text);
+            if (!isNaN(num) && (maxStr === null || num > Number(maxStr))) {
+                maxStr = text;
+            }
         }
     });
-    return max;
+    return maxStr;
 }
 
 function zqSchemaHasField(schema, fieldKey) {
@@ -758,7 +875,7 @@ function zqBuildInvalidFlagSweepShell(r0, r1) {
     return out;
 }
 
-function zqMergeInvalidFlagSweepResults(schema, baseParams, r0, r1) {
+function zqMergeInvalidFlagSweepResults(apiKey, schema, baseParams, r0, r1) {
     let items0 = [];
     let items1 = [];
     if (r0 && r0.result && zqIsHisOk(r0.result)) {
@@ -782,9 +899,10 @@ function zqMergeInvalidFlagSweepResults(schema, baseParams, r0, r1) {
     };
     out.data.requestParams = Object.assign({}, baseParams, { materialOrDrug: '1', invalidFlag: '0+1' });
     const elapsed = ((r0 && r0.elapsed) || 0) + ((r1 && r1.elapsed) || 0);
-    const requestLine = schema.method + ' ' + schema.path
-        + ' [invalidFlag=0+1 合并]\n参数0: ' + zqFmtJson(Object.assign({}, baseParams, { invalidFlag: '0' }))
-        + '\n参数1: ' + zqFmtJson(Object.assign({}, baseParams, { invalidFlag: '1' }));
+    const invokeUrl = msunHospitalApi() + '/probe/invoke';
+    const requestLine = 'POST ' + invokeUrl
+        + ' [invalidFlag=0+1 合并]\n参数0: ' + zqFmtJson({ apiKey: apiKey, params: Object.assign({}, baseParams, { invalidFlag: '0' }) })
+        + '\n参数1: ' + zqFmtJson({ apiKey: apiKey, params: Object.assign({}, baseParams, { invalidFlag: '1' }) });
     return { result: out, elapsed: elapsed, requestLine: requestLine, rows: merged.length };
 }
 
@@ -840,11 +958,13 @@ async function zqCallApiAllPages(apiKey) {
         alert(schema ? schema.title + ' 无翻页逻辑，请使用单页调用' : '未知接口');
         return null;
     }
-    let baseParams = zqMergeJsonOverride(apiKey, zqCollectFromForm(apiKey));
-    if (!baseParams || !zqValidateRequired(apiKey, baseParams)) return null;
-    baseParams = zqApplySchemaCallPolicy(schema, baseParams);
+    const formParams = zqCollectStringParams(apiKey);
+    const jsonOverride = zqGetJsonOverrideRaw(apiKey);
+    if (!zqValidateRequired(apiKey, formParams)) return null;
+    if (!zqValidateJsonOverrideSyntax(apiKey)) return null;
+    let baseParams = zqApplySchemaCallPolicy(schema, formParams);
     if (zqNeedsInvalidFlagSweep(schema, baseParams)) {
-        return zqCallApiAllPagesInvalidFlagSweep(apiKey, baseParams, schema);
+        return zqCallApiAllPagesInvalidFlagSweep(apiKey, baseParams, schema, jsonOverride);
     }
 
     const pag = schema.pagination;
@@ -883,9 +1003,7 @@ async function zqCallApiAllPages(apiKey) {
             }
             zqSetMeta('全量拉取: ' + schema.title + ' 第 ' + pageNum + ' 页…（已合并 ' + allItems.length + ' 条）');
 
-            const pack = schema.bodyMode
-                ? await zqInvokeRaw(schema.method, schema.path, null, params)
-                : await zqInvokeRaw(schema.method, schema.path, params, null);
+            const pack = await zqInvokeProbeBackend(apiKey, params, jsonOverride);
             totalElapsed += pack.elapsed;
             lastPack = pack;
 
@@ -925,12 +1043,15 @@ async function zqCallApiAllPages(apiKey) {
             cursorParam: cursorParam,
             mode: 'allPages'
         };
+        if (lastPack.result && lastPack.result.probeInvoke) {
+            merged.probeInvoke = lastPack.result.probeInvoke;
+        }
         merged.data.requestParams = Object.assign({}, baseParams);
 
         const title = schema.logTitle + '（全量 ' + pageNum + ' 页 / ' + allItems.length + ' 条）';
-        const requestLine = schema.method + ' ' + schema.path + ' [全量翻页 x' + pageNum
+        const requestLine = 'POST ' + msunHospitalApi() + '/probe/invoke [全量翻页 x' + pageNum
             + (omitLimitCount ? ', 未传 limitCount' : ', pageSize=' + pageSize)
-            + ', cursor=' + cursorParam + ']\n首屏参数: ' + zqFmtJson(baseParams);
+            + ', cursor=' + cursorParam + ']\n首屏参数: ' + zqFmtJson({ apiKey: apiKey, params: baseParams, paramsJsonOverride: jsonOverride || undefined });
         zqShowResult(apiKey, title, requestLine, merged, totalElapsed);
         zqSetMeta('全量拉取完成: ' + title);
         return merged;
@@ -940,16 +1061,16 @@ async function zqCallApiAllPages(apiKey) {
     }
 }
 
-async function zqCallApiAllPagesInvalidFlagSweep(apiKey, baseParams, schema) {
+async function zqCallApiAllPagesInvalidFlagSweep(apiKey, baseParams, schema, jsonOverride) {
     zqFetchingAllPages = true;
     zqSetBlockBusy(apiKey, true);
     try {
         zqSetMeta('全量拉取: ' + schema.title + '（invalidFlag 0+1）…');
         const r0 = await zqFetchAllPagesSilent(apiKey, Object.assign({}, baseParams, { invalidFlag: '0' }),
-            { _skipInvalidFlagSweep: true, showResult: false });
+            { _skipInvalidFlagSweep: true, showResult: false, jsonOverride: jsonOverride });
         const r1 = await zqFetchAllPagesSilent(apiKey, Object.assign({}, baseParams, { invalidFlag: '1' }),
-            { _skipInvalidFlagSweep: true, showResult: false });
-        const merged = zqMergeInvalidFlagSweepResults(schema, baseParams, r0, r1);
+            { _skipInvalidFlagSweep: true, showResult: false, jsonOverride: jsonOverride });
+        const merged = zqMergeInvalidFlagSweepResults(apiKey, schema, baseParams, r0, r1);
         const title = schema.logTitle + '（invalidFlag 0+1 全量 / ' + merged.rows + ' 条）';
         zqShowResult(apiKey, title, merged.requestLine, merged.result, merged.elapsed);
         zqSetMeta('全量拉取完成: ' + title);
@@ -1057,7 +1178,7 @@ function zqRenderApiForm(apiKey, schema) {
         '<h3>' + zqEscapeHtml(schema.title) + '</h3>' +
         (schema.hint ? '<p class="api-desc">' + zqEscapeHtml(schema.hint) + '</p>' : '') +
         '<div class="form-grid">' + fieldsHtml + '</div>' +
-        '<details class="json-editor-wrap"><summary>高级：JSON 入参编辑（覆盖表单，POST 接口可直接编辑）</summary>' +
+        '<details class="json-editor-wrap"><summary>高级：JSON 入参编辑（原文提交服务端合并，避免 JS 解析大整数丢精度）</summary>' +
         '<textarea id="' + zqJsonId(apiKey) + '" class="json-editor" rows="6" placeholder="{}"></textarea>' +
         '<button type="button" class="btn-call secondary" onclick="zqSyncFormFromJson(\'' + apiKey + '\')">JSON→表单</button></details>' +
         '<div class="tool-row">' + actions + '</div>' +
@@ -1264,12 +1385,18 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
     const schema = MSUN_PARAM_SCHEMA[apiKey];
     if (!schema) return { ok: false, result: null, rows: 0, message: '未知接口' };
 
-    let baseParams = options.useOverridesOnly
-        ? Object.assign({}, paramOverrides || {})
-        : Object.assign({}, zqCollectFromForm(apiKey), paramOverrides || {});
-    const jsonMerged = options.useOverridesOnly ? baseParams : zqMergeJsonOverride(apiKey, baseParams);
-    if (!jsonMerged) return { ok: false, result: null, rows: 0, message: 'JSON 入参错误' };
-    baseParams = zqApplySchemaCallPolicy(schema, jsonMerged);
+    let jsonOverride = options.jsonOverride != null ? options.jsonOverride : null;
+    let baseParams;
+    if (options.useOverridesOnly) {
+        baseParams = Object.assign({}, paramOverrides || {});
+    } else {
+        if (!zqValidateJsonOverrideSyntax(apiKey)) {
+            return { ok: false, result: null, rows: 0, message: 'JSON 入参错误' };
+        }
+        baseParams = Object.assign({}, zqCollectStringParams(apiKey), paramOverrides || {});
+        jsonOverride = zqGetJsonOverrideRaw(apiKey);
+    }
+    baseParams = zqApplySchemaCallPolicy(schema, baseParams);
     Object.keys(baseParams).forEach(function (k) {
         const v = baseParams[k];
         if (v === undefined || v === null || String(v).trim() === '') delete baseParams[k];
@@ -1280,7 +1407,7 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
             Object.assign({}, options, { useOverridesOnly: true, _skipInvalidFlagSweep: true, showResult: false }));
         const r1 = await zqFetchAllPagesSilent(apiKey, Object.assign({}, baseParams, { invalidFlag: '1' }),
             Object.assign({}, options, { useOverridesOnly: true, _skipInvalidFlagSweep: true, showResult: false }));
-        const merged = zqMergeInvalidFlagSweepResults(schema, baseParams, r0, r1);
+        const merged = zqMergeInvalidFlagSweepResults(apiKey, schema, baseParams, r0, r1);
         const title = schema.logTitle + '（invalidFlag 0+1 全量 / ' + merged.rows + ' 条）';
         if (options.showResult !== false) {
             zqShowResult(apiKey, title, merged.requestLine, merged.result, merged.elapsed);
@@ -1296,9 +1423,7 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
     }
 
     if (!schema.pagination) {
-        const pack = schema.bodyMode
-            ? await zqInvokeRaw(schema.method, schema.path, null, baseParams)
-            : await zqInvokeRaw(schema.method, schema.path, baseParams, null);
+        const pack = await zqInvokeProbeBackend(apiKey, baseParams, jsonOverride);
         const rows = (zqExtractHisDataArray(pack.result) || []).length;
         if (options.showResult !== false) {
             zqShowResult(apiKey, schema.logTitle + '（全量 1 页 / ' + rows + ' 条）', pack.requestLine, pack.result, pack.elapsed);
@@ -1340,9 +1465,7 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
         if (cursor != null) params[cursorParam] = String(cursor);
         zqSetMeta('全量拉取: ' + schema.title + ' 第 ' + pageNum + ' 页…（已合并 ' + allItems.length + ' 条）');
 
-        const pack = schema.bodyMode
-            ? await zqInvokeRaw(schema.method, schema.path, null, params)
-            : await zqInvokeRaw(schema.method, schema.path, params, null);
+        const pack = await zqInvokeProbeBackend(apiKey, params, jsonOverride);
         totalElapsed += pack.elapsed;
         lastPack = pack;
 
@@ -1382,13 +1505,16 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
         mode: 'allPages',
         truncated: truncated
     };
+    if (lastPack.result && lastPack.result.probeInvoke) {
+        merged.probeInvoke = lastPack.result.probeInvoke;
+    }
     merged.data.requestParams = Object.assign({}, baseParams);
 
     let title = schema.logTitle + '（全量 ' + pageNum + ' 页 / ' + allItems.length + ' 条）';
     if (truncated) title += ' [可能未拉全，请检查游标或增大 maxPages]';
-    const requestLine = schema.method + ' ' + schema.path + ' [全量翻页 x' + pageNum
+    const requestLine = 'POST ' + msunHospitalApi() + '/probe/invoke [全量翻页 x' + pageNum
         + (omitLimitCount ? ', 未传 limitCount' : ', pageSize=' + pageSize)
-        + ', cursor=' + cursorParam + (truncated ? ', truncated' : '') + ']\n首屏参数: ' + zqFmtJson(baseParams);
+        + ', cursor=' + cursorParam + (truncated ? ', truncated' : '') + ']\n首屏参数: ' + zqFmtJson({ apiKey: apiKey, params: baseParams, paramsJsonOverride: jsonOverride || undefined });
     if (options.showResult !== false) {
         zqShowResult(apiKey, title, requestLine, merged, totalElapsed);
     }
@@ -1439,15 +1565,15 @@ async function zqFetchAllData() {
 
     try {
         zqSetMeta('① 科室…');
-        const deptPack = await zqInvokeRaw('GET', '/depts', { invalidFlag: '-1' }, null);
+        const deptPack = await zqInvokeProbeBackend('depts', { invalidFlag: '-1' }, null);
         zqShowResult('depts', '2.1.9 科室（全量 invalidFlag=-1）', deptPack.requestLine, deptPack.result, deptPack.elapsed);
         if (!zqIsHisOk(deptPack.result)) {
             alert('科室查询失败，已中止');
             return;
         }
-        const deptList = zqExtractHisDataArray(deptPack.result) || [];
-        if (deptList.length && deptList[0].deptId != null) {
-            zqSetField('ykInstock', 'deptId', deptList[0].deptId);
+        const mirrorDeptId = await zqFetchFirstDeptIdFromMirror();
+        if (mirrorDeptId) {
+            zqApplyDeptIdToForms(mirrorDeptId);
         }
         await zqSleep(300);
 
@@ -1495,7 +1621,7 @@ async function zqFetchAllData() {
         if (ykType) ykBody.type = ykType;
         const ykCode = zqGetFieldValue('ykInstock', { key: 'instockCode' });
         if (ykCode) ykBody.instockCode = ykCode;
-        const ykPack = await zqInvokeRaw('POST', '/spd/query/yk-instock', null, ykBody);
+        const ykPack = await zqInvokeProbeBackend('ykInstock', ykBody, null);
         zqShowResult('ykInstock', '2.5.102 一级库入退库（获取全部数据）', ykPack.requestLine, ykPack.result, ykPack.elapsed);
         if (!zqIsHisOk(ykPack.result)) {
             alert('出退库查询失败，已中止');
@@ -1540,7 +1666,7 @@ async function zqFetchAllData() {
                 zqSetField('batchStocks', 'drugId', key.drugId);
                 zqSetField('batchStocks', 'drugSpecPackingId', key.drugSpecPackingId);
                 zqSetMeta('⑨ 明细库存 ' + (i + 1) + '/' + toQuery.length + '…');
-                const batchPack = await zqInvokeRaw('GET', '/spd/query/drug-batch-stocks', {
+                const batchPack = await zqInvokeProbeBackend('batchStocks', {
                     deptId: key.deptId,
                     drugId: key.drugId,
                     drugSpecPackingId: key.drugSpecPackingId
@@ -1629,29 +1755,28 @@ async function zqViewMirrorData(apiKey) {
 }
 
 async function zqCallApi(apiKey) {
+    if (!zqCheckLogin()) return null;
     const schema = MSUN_PARAM_SCHEMA[apiKey];
-    let params = zqMergeJsonOverride(apiKey, zqCollectFromForm(apiKey));
-    if (!params || !zqValidateRequired(apiKey, params)) return null;
-    params = zqApplySchemaCallPolicy(schema, params);
+    const formParams = zqCollectStringParams(apiKey);
+    const jsonOverride = zqGetJsonOverrideRaw(apiKey);
+    if (!zqValidateRequired(apiKey, formParams)) return null;
+    if (!zqValidateJsonOverrideSyntax(apiKey)) return null;
+    let params = zqApplySchemaCallPolicy(schema, formParams);
     if (zqNeedsInvalidFlagSweep(schema, params)) {
-        if (!zqCheckLogin()) return null;
         zqSetMeta('请求中: ' + schema.logTitle + '（invalidFlag 0+1）…');
-        const pack0 = schema.bodyMode
-            ? await zqInvokeRaw(schema.method, schema.path, null, Object.assign({}, params, { invalidFlag: '0' }))
-            : await zqInvokeRaw(schema.method, schema.path, Object.assign({}, params, { invalidFlag: '0' }), null);
-        const pack1 = schema.bodyMode
-            ? await zqInvokeRaw(schema.method, schema.path, null, Object.assign({}, params, { invalidFlag: '1' }))
-            : await zqInvokeRaw(schema.method, schema.path, Object.assign({}, params, { invalidFlag: '1' }), null);
-        const merged = zqMergeInvalidFlagSweepResults(schema, params, pack0, pack1);
+        const pack0 = await zqInvokeProbeBackend(apiKey, Object.assign({}, params, { invalidFlag: '0' }), jsonOverride);
+        const pack1 = await zqInvokeProbeBackend(apiKey, Object.assign({}, params, { invalidFlag: '1' }), jsonOverride);
+        const merged = zqMergeInvalidFlagSweepResults(apiKey, schema, params, pack0, pack1);
         const title = schema.logTitle + '（invalidFlag 0+1 / ' + merged.rows + ' 条）';
         zqShowResult(apiKey, title, merged.requestLine, merged.result, merged.elapsed);
         zqSetMeta('完成: ' + title);
         return merged.result;
     }
-    if (schema.bodyMode) {
-        return zqInvoke(apiKey, schema.logTitle, schema.method, schema.path, null, params);
-    }
-    return zqInvoke(apiKey, schema.logTitle, schema.method, schema.path, params, null);
+    zqSetMeta('请求中: ' + schema.logTitle + '…');
+    const pack = await zqInvokeProbeBackend(apiKey, params, jsonOverride);
+    zqShowResult(apiKey, schema.logTitle, pack.requestLine, pack.result, pack.elapsed);
+    zqSetMeta('完成: ' + schema.logTitle);
+    return pack.result;
 }
 
 async function zqLoadEnv() {
@@ -1700,20 +1825,14 @@ function zqFillFromLastDict() {
     alert('已填充 batchStocks 的 drugId / drugSpecPackingId');
 }
 
-function zqFillDeptFromLast() {
-    for (let i = zqTestLog.length - 1; i >= 0; i--) {
-        const raw = zqTestLog[i].raw;
-        const list = raw && raw.data && raw.data.hisBody && raw.data.hisBody.data;
-        if (!Array.isArray(list) || !list.length || !list[0].deptId) continue;
-        const deptId = list[0].deptId;
-        zqSetField('identities', 'deptId', deptId);
-        zqSetField('mergeStocks', 'deptId', deptId);
-        zqSetField('batchStocks', 'deptId', deptId);
-        zqSetField('ykInstock', 'deptId', deptId);
-        alert('已填充 deptId=' + deptId);
+async function zqFillDeptFromLast() {
+    const mirrorDeptId = await zqFetchFirstDeptIdFromMirror();
+    if (mirrorDeptId) {
+        zqApplyDeptIdToForms(mirrorDeptId);
+        alert('已从镜像库填充 deptId=' + mirrorDeptId);
         return;
     }
-    alert('请先调用 2.1.9 科室接口');
+    alert('请先调用 2.1.9 科室接口（镜像库暂无科室数据）');
 }
 
 function zqFillFromLastDictSilent(dictRes) {
@@ -1750,11 +1869,10 @@ async function zqRunAllTests() {
     if (btnFetch) btnFetch.disabled = true;
     try {
         await zqLoadEnv(); await zqSleep(400);
-        const deptRes = await zqCallDepts(); await zqSleep(400);
-        if (deptRes && deptRes.data && deptRes.data.hisBody && deptRes.data.hisBody.data && deptRes.data.hisBody.data[0]) {
-            zqSetField('identities', 'deptId', deptRes.data.hisBody.data[0].deptId);
-            zqSetField('mergeStocks', 'deptId', deptRes.data.hisBody.data[0].deptId);
-            zqSetField('batchStocks', 'deptId', deptRes.data.hisBody.data[0].deptId);
+        await zqCallDepts(); await zqSleep(400);
+        const mirrorDeptId = await zqFetchFirstDeptIdFromMirror();
+        if (mirrorDeptId) {
+            zqApplyDeptIdToForms(mirrorDeptId);
         }
         await zqCallIdentitiesSample(); await zqSleep(400);
         const dictRes = await zqCallDrugDict(); await zqSleep(400);

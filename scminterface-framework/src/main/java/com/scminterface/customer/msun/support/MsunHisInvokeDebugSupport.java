@@ -38,7 +38,12 @@ public final class MsunHisInvokeDebugSupport
             debug.put("url", http.getUrl());
             debug.put("httpStatus", http.getHttpStatus());
             debug.put("requestHeaders", maskSensitiveHeaders(http.getRequestHeaders()));
-            Object reqBody = parseRequestBodyForDebug(http.getRequestBody());
+            String requestBodyRaw = http.getRequestBody();
+            if (StringUtils.isNotEmpty(requestBodyRaw))
+            {
+                debug.put("requestBodyRaw", requestBodyRaw);
+            }
+            Object reqBody = parseRequestBodyForDebug(requestBodyRaw);
             if (reqBody != null)
             {
                 debug.put("requestBody", reqBody);

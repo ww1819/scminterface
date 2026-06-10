@@ -264,7 +264,7 @@ async function dsCallSelectedProbes() {
     for (var i = 0; i < rows.length; i++) {
         dsUpdateProbeFields(rows[i]);
         var params = dsCollectProbeParams();
-        lastPack = await zqInvokeRaw('GET', DS_BATCH_PATH, params, null);
+        lastPack = await zqInvokeProbeBackend('batchStocks', params, null);
         dsShowProbeCard(
             DS_PROBE_API_KEY,
             '2.5.43 药房批次库存（选中 ' + (i + 1) + '/' + rows.length + '）',
@@ -290,7 +290,7 @@ async function dsCallProbe() {
     var params = dsCollectProbeParams();
     if (!dsValidateProbeParams(params)) return;
     dsSetMeta('调用 2.5.43…');
-    var pack = await zqInvokeRaw('GET', DS_BATCH_PATH, params, null);
+    var pack = await zqInvokeProbeBackend('batchStocks', params, null);
     dsShowProbeCard(DS_PROBE_API_KEY, '2.5.43 药房批次库存', pack.requestLine, pack.result, pack.elapsed);
     dsSetMeta('2.5.43 调用完成');
     return pack.result;
