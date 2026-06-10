@@ -418,6 +418,7 @@ public class MsunSpdBillPushService
         body.put("storageDeptId", parseLongRequired(storageHisId, "仓库HIS药库科室"));
         body.put("pharmacyDeptId", parseLongRequired(pharmacyHisId, "科室HIS对照"));
         body.put("isReturnToSupplier", MsunSpdBillPushConstants.RETURN_TO_SUPPLIER_YES);
+        body.put("memo", str(bill.get("bill_no")));
 
         List<Map<String, Object>> details = new ArrayList<>();
         Long pharmacyDeptHisId = parseLongRequired(pharmacyHisId, "科室HIS对照");
@@ -425,16 +426,11 @@ public class MsunSpdBillPushService
         {
             Long entryId = toLong(entry.get("entry_id"));
             String pharmacyStockId = resolvePharmacyStockIdForPush(runtime, bill, entry, pharmacyDeptHisId);
-            String memo = StringUtils.isNotEmpty(str(entry.get("his_memo")))
-                    ? str(entry.get("his_memo"))
-                    : MsunSpdBillPushConstants.buildEntryMemo(tenantId, entryId);
-            String spdDetailId = StringUtils.isNotEmpty(str(entry.get("his_spd_detail_id")))
-                    ? str(entry.get("his_spd_detail_id"))
-                    : MsunSpdBillPushConstants.buildSpdDetailId(billId, entryId);
+            String detailMemo = MsunSpdBillPushConstants.buildSpdDetailId(billId, entryId);
             Map<String, Object> line = new LinkedHashMap<>();
             line.put("pharmacyStockId", parseLongRequired(pharmacyStockId, "pharmacyStockId"));
             line.put("quantity", entry.get("qty"));
-            line.put("memo", memo);
+            line.put("memo", detailMemo);
             details.add(line);
             String drugId = str(entry.get("his_drug_id"));
             String specId = str(entry.get("his_drug_spec_packing_id"));
@@ -455,7 +451,7 @@ public class MsunSpdBillPushService
                     }
                 }
             }
-            markEntryPrepare(tenantId, entryId, memo, spdDetailId, drugId, specId);
+            markEntryPrepare(tenantId, entryId, detailMemo, detailMemo, drugId, specId);
         }
         body.put("outStockDetailDTOList", details);
         body.put("_spdLogMeta", extractLogMeta(bill));
@@ -639,7 +635,7 @@ public class MsunSpdBillPushService
     }
 
     /**
-     * 2.5.42 入参 {@code pharmacyStockId}：枣强现场对接传 {@code his_stock_query_id}（2.5.41 回参 stockQueryId）。
+     * 2.5.42 入参 {@code pharmacyStockId}：传 {@code his_pharmacy_stock_id}（2.5.41 回参 pharmacyStockId；入药库时可兜底 storageStockId）。
      */
     private String resolvePharmacyStockIdForPush(
             MsunHospitalRuntime runtime,
@@ -674,7 +670,9 @@ public class MsunSpdBillPushService
 
     private String resolveReturnPushStockIdLocal(String tenantId, Map<String, Object> entry)
     {
-        String fromEntry = str(entry.get("his_stock_query_id"));
+        String fromEntry = firstNonEmpty(
+                str(entry.get("his_pharmacy_stock_id")),
+                str(entry.get("his_storage_stock_id")));
         if (StringUtils.isNotEmpty(fromEntry))
         {
             return fromEntry;
@@ -687,9 +685,11 @@ public class MsunSpdBillPushService
         if (depId != null)
         {
             Map<String, Object> dep = executor.selectDepInventoryById(tenantId, depId);
-            if (dep != null && StringUtils.isNotEmpty(str(dep.get("his_stock_query_id"))))
+            if (dep != null)
             {
-                return str(dep.get("his_stock_query_id"));
+                return firstNonEmpty(
+                        str(dep.get("his_pharmacy_stock_id")),
+                        str(dep.get("his_storage_stock_id")));
             }
         }
         return null;
@@ -760,6 +760,7 @@ public class MsunSpdBillPushService
             match.returnStockId = returnStockId;
             match.pharmacyStockId = row.getString("pharmacyStockId");
             match.storageStockId = row.getString("storageStockId");
+            match.stockQueryId = MsunHisBatchStockSupport.resolveStockQueryId(row);
             BigDecimal amt = MsunHisBatchStockSupport.resolveStockAmount(row);
             if (amt != null)
             {
@@ -772,7 +773,7 @@ public class MsunSpdBillPushService
         }
         if (StringUtils.isEmpty(match.returnStockId))
         {
-            throw new IllegalArgumentException("HIS 批次库存未匹配 stockQueryId，entryId="
+            throw new IllegalArgumentException("HIS 批次库存未匹配 pharmacyStockId，entryId="
                     + entry.get("entry_id") + "，批号=" + batchNumber);
         }
         match.hisQty = hisQty;
@@ -816,7 +817,7 @@ public class MsunSpdBillPushService
             row.put("entryId", entryId);
             row.put("hisPharmacyStockId", match.pharmacyStockId);
             row.put("hisStorageStockId", match.storageStockId);
-            row.put("hisStockQueryId", match.returnStockId);
+            row.put("hisStockQueryId", match.stockQueryId);
             executor.updateEntryHisStockIds(row);
         }
         Long depId = toLong(entry.get("dep_inventory_id"));
@@ -831,7 +832,7 @@ public class MsunSpdBillPushService
             depRow.put("depInventoryId", depId);
             depRow.put("hisPharmacyStockId", match.pharmacyStockId);
             depRow.put("hisStorageStockId", match.storageStockId);
-            depRow.put("hisStockQueryId", match.returnStockId);
+            depRow.put("hisStockQueryId", match.stockQueryId);
             executor.updateDepInventoryHisStock(depRow);
         }
     }
@@ -866,10 +867,11 @@ public class MsunSpdBillPushService
 
     private static final class HisBatchStockMatch
     {
-        /** 2.5.42 入参 pharmacyStockId，取 stockQueryId 优先 */
+        /** 2.5.42 入参 pharmacyStockId（药房批次 ID，入药库时可为 storageStockId） */
         private String returnStockId;
         private String pharmacyStockId;
         private String storageStockId;
+        private String stockQueryId;
         private BigDecimal hisQty;
     }
 

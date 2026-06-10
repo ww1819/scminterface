@@ -29,16 +29,14 @@ public final class MsunHisBatchStockSupport
         return row.getString("stockQueryId");
     }
 
-    /** 2.5.42 入参 pharmacyStockId：枣强现场传 stockQueryId/ycStockQueryId 优先。 */
+    /** 2.5.42 入参 pharmacyStockId：2.5.41 回参 pharmacyStockId；入药库时可用 storageStockId。 */
     public static String resolveReturnPushStockId(JSONObject row)
     {
         if (row == null)
         {
             return null;
         }
-        String stockQueryId = resolveStockQueryId(row);
-        String pharmacyStockId = row.getString("pharmacyStockId");
-        return firstNonEmpty(stockQueryId, pharmacyStockId);
+        return firstNonEmpty(row.getString("pharmacyStockId"), row.getString("storageStockId"));
     }
 
     public static BigDecimal resolveStockAmount(JSONObject row)
@@ -69,9 +67,9 @@ public final class MsunHisBatchStockSupport
         {
             return true;
         }
-        String stockQueryId = resolveStockQueryId(row);
         String pharmacyStockId = row.getString("pharmacyStockId");
-        return returnStockId.equals(stockQueryId) || returnStockId.equals(pharmacyStockId);
+        String storageStockId = row.getString("storageStockId");
+        return returnStockId.equals(pharmacyStockId) || returnStockId.equals(storageStockId);
     }
 
     private static String firstNonEmpty(String a, String b)

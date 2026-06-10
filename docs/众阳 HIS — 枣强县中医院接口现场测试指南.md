@@ -155,15 +155,16 @@ SPD 前端/Controller（MsunHisBillPushController）
 | `spdDetailId` | `{billId}:{entryId}` | `stk_io_bill_entry.his_spd_detail_id` |
 | `memo` | `ZQ-{tenantId}-{entryId}` | `his_memo` |
 
-**组包对照键（2.5.42 退库明细）**
+**组包对照键（2.5.42 退库）**
 
-| 接口字段 | 枣强现场取值 | SPD 来源 |
-|----------|--------------|----------|
-| `outStockDetailDTOList[].pharmacyStockId` | **传 `his_stock_query_id`** | 2.5.41 回参 `stockQueryId` → 落库；无则 2.5.43 按 `ycBatchNo` 解析 |
-| `quantity` | 退库数量 | `stk_io_bill_entry.qty` |
-| `memo` | `ZQ-{tenantId}-{entryId}` | 退库明细自身 `entryId` |
+| 接口字段 | 规则 | SPD 来源 |
+|----------|------|----------|
+| `memo`（主单） | 退库单号 | `stk_io_bill.bill_no` |
+| `outStockDetailDTOList[].pharmacyStockId` | 2.5.41 回参 `pharmacyStockId`（入药库可兜底 `storageStockId`） | `his_pharmacy_stock_id` / `his_storage_stock_id`；无则 2.5.43 按批号解析 |
+| `outStockDetailDTOList[].quantity` | 退库数量 | `stk_io_bill_entry.qty` |
+| `outStockDetailDTOList[].memo` | `{billId}:{entryId}` | 同出库 `spdDetailId` 规则，落库 `his_memo` / `his_spd_detail_id` |
 
-> 2.5.41 出库回参字段为 **`stockQueryId`**；2.5.43 批次库存回参字段为 **`ycStockQueryId`**，二者值相同、字段名不同，匹配逻辑见 `MsunHisBatchStockSupport`。
+> 2.5.41 出库回参 **`stockQueryId`** 落库为 `his_stock_query_id`（对账/2.5.43 匹配用），**不作为** 2.5.42 入参 `pharmacyStockId`。
 
 **SPD 本地校验（`MsunHisBillPushServiceImpl.validateReturnGate`）**
 
@@ -547,11 +548,12 @@ WHERE id = <dep_inventory_id> AND tenant_id = 'zaoqiang-tcm-001';
   "storageDeptId": 8837823902808417000,
   "pharmacyDeptId": 8837863243411958000,
   "isReturnToSupplier": "1",
+  "memo": "TK2026060600001",
   "outStockDetailDTOList": [
     {
-      "pharmacyStockId": 8837866950089530760,
+      "pharmacyStockId": 8837866950092152196,
       "quantity": 100,
-      "memo": "ZQ-zaoqiang-tcm-001-4"
+      "memo": "5:4"
     }
   ]
 }
@@ -562,11 +564,12 @@ WHERE id = <dep_inventory_id> AND tenant_id = 'zaoqiang-tcm-001';
 | `storageDeptId` | 药库科室 HIS ID | `fd_warehouse` → `his_id` |
 | `pharmacyDeptId` | 退库科室 HIS ID | `fd_department` → `his_id` |
 | `isReturnToSupplier` | `"1"` | 退供应商 |
-| `pharmacyStockId` | `8837866950089530760` | **`his_stock_query_id`**（非 `his_pharmacy_stock_id`） |
+| `memo`（主单） | `TK2026060600001` | `stk_io_bill.bill_no` |
+| `pharmacyStockId` | `8837866950092152196` | **`his_pharmacy_stock_id`**（入药库可兜底 `his_storage_stock_id`） |
 | `quantity` | 退库数量 | `stk_io_bill_entry.qty` |
-| `memo` | `ZQ-zaoqiang-tcm-001-4` | `ZQ-{tenantId}-{entryId}` |
+| `memo`（明细） | `5:4` | `{billId}:{entryId}`，同出库 `spdDetailId` |
 
-推送前会经 2.5.43 校验 `qty ≤ stockAmount`（字段 `ycStockQueryId` 参与匹配）。
+推送前会经 2.5.43 校验 `qty ≤ stockAmount`（按 `pharmacyStockId` / `storageStockId` 匹配批次行）。
 
 **hisBody 成功回参**（2.5.42 与 2.5.41 类似，成功时 `data` 常为空数组）：
 
@@ -606,7 +609,7 @@ WHERE id = <dep_inventory_id> AND tenant_id = 'zaoqiang-tcm-001';
 | `msg` 为「已跳过」、`pushedCount=0` | 查 `stk_io_bill_entry.his_push_status` 是否已为 `2`；属防重复，非失败 |
 | 无 `hisInvoke` 块 | 仅 `status=skipped` 时出现；`status=pushed` 时应有 Headers/入参/回参 |
 | 报「退库数量超过HIS可退量」 | 调 2.5.43 核对 `stockAmount`；匹配键用 `ycStockQueryId`（见 §2.4） |
-| `pharmacyStockId` 入参错误 | 枣强须传 `his_stock_query_id`，勿传 `his_pharmacy_stock_id` |
+| `pharmacyStockId` 入参错误 | 须传 `his_pharmacy_stock_id`（2.5.41 回参 `pharmacyStockId`），勿误传 `his_stock_query_id` |
 | 认为未推过但显示已跳过 | 查是否手工改过 `his_push_status`；查 `m_msun_push_log` 是否有 2.5.42 记录 |
 
 ---
