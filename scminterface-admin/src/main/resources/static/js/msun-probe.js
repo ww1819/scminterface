@@ -107,7 +107,7 @@ function zqToStringParams(src) {
 }
 
 async function zqInvokeProbeBackend(apiKey, stringParams, paramsJsonOverride) {
-    const url = msunHospitalApi() + '/probe/invoke';
+    const url = msunHospitalApi() + '/invoke';
     const params = zqToStringParams(stringParams);
     const payload = {
         apiKey: apiKey,
@@ -899,7 +899,7 @@ function zqMergeInvalidFlagSweepResults(apiKey, schema, baseParams, r0, r1) {
     };
     out.data.requestParams = Object.assign({}, baseParams, { materialOrDrug: '1', invalidFlag: '0+1' });
     const elapsed = ((r0 && r0.elapsed) || 0) + ((r1 && r1.elapsed) || 0);
-    const invokeUrl = msunHospitalApi() + '/probe/invoke';
+    const invokeUrl = msunHospitalApi() + '/invoke';
     const requestLine = 'POST ' + invokeUrl
         + ' [invalidFlag=0+1 合并]\n参数0: ' + zqFmtJson({ apiKey: apiKey, params: Object.assign({}, baseParams, { invalidFlag: '0' }) })
         + '\n参数1: ' + zqFmtJson({ apiKey: apiKey, params: Object.assign({}, baseParams, { invalidFlag: '1' }) });
@@ -1049,7 +1049,7 @@ async function zqCallApiAllPages(apiKey) {
         merged.data.requestParams = Object.assign({}, baseParams);
 
         const title = schema.logTitle + '（全量 ' + pageNum + ' 页 / ' + allItems.length + ' 条）';
-        const requestLine = 'POST ' + msunHospitalApi() + '/probe/invoke [全量翻页 x' + pageNum
+        const requestLine = 'POST ' + msunHospitalApi() + '/invoke [全量翻页 x' + pageNum
             + (omitLimitCount ? ', 未传 limitCount' : ', pageSize=' + pageSize)
             + ', cursor=' + cursorParam + ']\n首屏参数: ' + zqFmtJson({ apiKey: apiKey, params: baseParams, paramsJsonOverride: jsonOverride || undefined });
         zqShowResult(apiKey, title, requestLine, merged, totalElapsed);
@@ -1512,7 +1512,7 @@ async function zqFetchAllPagesSilent(apiKey, paramOverrides, options) {
 
     let title = schema.logTitle + '（全量 ' + pageNum + ' 页 / ' + allItems.length + ' 条）';
     if (truncated) title += ' [可能未拉全，请检查游标或增大 maxPages]';
-    const requestLine = 'POST ' + msunHospitalApi() + '/probe/invoke [全量翻页 x' + pageNum
+    const requestLine = 'POST ' + msunHospitalApi() + '/invoke [全量翻页 x' + pageNum
         + (omitLimitCount ? ', 未传 limitCount' : ', pageSize=' + pageSize)
         + ', cursor=' + cursorParam + (truncated ? ', truncated' : '') + ']\n首屏参数: ' + zqFmtJson({ apiKey: apiKey, params: baseParams, paramsJsonOverride: jsonOverride || undefined });
     if (options.showResult !== false) {

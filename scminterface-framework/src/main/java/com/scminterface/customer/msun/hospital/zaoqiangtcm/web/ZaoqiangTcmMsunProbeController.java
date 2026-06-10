@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @ConditionalOnProperty(prefix = ZaoqiangTcmHospitalConstants.CONFIG_PREFIX, name = "enabled", havingValue = "true")
 @RequestMapping({
         ZaoqiangTcmHospitalConstants.API_PREFIX,
+        ZaoqiangTcmHospitalConstants.API_PREFIX + "/probe",
         ZaoqiangTcmHospitalConstants.SPD_API_PREFIX + "/probe"
 })
 public class ZaoqiangTcmMsunProbeController
