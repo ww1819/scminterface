@@ -258,8 +258,8 @@ async function dsCallSelectedProbes() {
         alert('请先勾选含 HIS 三要素的行');
         return;
     }
-    if (!confirm('对 ' + rows.length + ' 条选中行依次调用 2.5.43？')) return;
-    dsSetMeta('批量调用 2.5.43…');
+    if (!confirm('对 ' + rows.length + ' 条选中明细依次调用 2.5.43 并刷新 HIS 库存数量？')) return;
+    dsSetMeta('调用并刷新选中明细 HIS 库存…');
     var lastPack = null;
     for (var i = 0; i < rows.length; i++) {
         dsUpdateProbeFields(rows[i]);
@@ -274,7 +274,8 @@ async function dsCallSelectedProbes() {
         );
         if (i < rows.length - 1) await new Promise(function (r) { setTimeout(r, 200); });
     }
-    dsSetMeta('批量调用完成 · 共 ' + rows.length + ' 条');
+    await dsSearch(dsState.pageNum);
+    dsSetMeta('已调用并刷新 · 共 ' + rows.length + ' 条选中明细');
 }
 
 function dsClearProbeForm() {
