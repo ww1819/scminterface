@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.customer.msun.spd.deptstock.mapper.MsunDeptStockCompareMapper">
+
+    <sql id="deptStockCompareFromWhere">
+        FROM stk_dep_inventory stk
+        INNER JOIN fd_department d
+            ON d.id = stk.department_id
+           AND d.tenant_id = stk.tenant_id
+           AND (d.del_flag = 0 OR d.del_flag IS NULL)
+        LEFT JOIN fd_material m
+            ON m.id = stk.material_id
+           AND m.tenant_id = stk.tenant_id
+           AND (m.del_flag = 0 OR m.del_flag IS NULL)
+        LEFT JOIN m_msun_drug_batch_stock bs
+            ON bs.tenant_id = stk.tenant_id
+           AND bs.active_env = #{activeEnv}
+           AND d.his_id IS NOT NULL AND TRIM(d.his_id) != ''
+           AND m.his_id IS NOT NULL AND TRIM(m.his_id) != ''
+           AND m.his_spec_packing_id IS NOT NULL AND TRIM(m.his_spec_packing_id) != ''
+           AND TRIM(bs.dept_id) = TRIM(d.his_id)
+           AND TRIM(bs.drug_id) = TRIM(m.his_id)
+           AND TRIM(bs.drug_spec_packing_id) = TRIM(m.his_spec_packing_id)
+           AND stk.batch_number IS NOT NULL AND TRIM(stk.batch_number) != ''
+           AND (
+                TRIM(bs.batch_number) = TRIM(stk.batch_number)
+                OR TRIM(bs.yc_batch_no) = TRIM(stk.batch_number)
+           )
+        LEFT JOIN m_msun_merge_stock ms
+            ON ms.tenant_id = stk.tenant_id
+           AND ms.active_env = #{activeEnv}
+           AND d.his_id IS NOT NULL AND TRIM(d.his_id) != ''
+           AND m.his_id IS NOT NULL AND TRIM(m.his_id) != ''
+           AND m.his_spec_packing_id IS NOT NULL AND TRIM(m.his_spec_packing_id) != ''
+           AND TRIM(ms.dept_id) = TRIM(d.his_id)
+           AND TRIM(ms.drug_id) = TRIM(m.his_id)
+           AND TRIM(ms.drug_spec_packing_id) = TRIM(m.his_spec_packing_id)
+        WHERE (stk.del_flag = 0 OR stk.del_flag IS NULL)
+          AND stk.tenant_id = #{tenantId}
+          AND IFNULL(stk.qty, 0) &gt; 0
+        <if test="departmentId != null">
+          AND stk.department_id = #{departmentId}
+        </if>
+        <if test="departmentKeyword != null and departmentKeyword != ''">
+          AND (
+              d.code LIKE CONCAT('%', #{departmentKeyword}, '%')
+              OR d.name LIKE CONCAT('%', #{departmentKeyword}, '%')
+              OR d.referred_name LIKE CONCAT('%', #{departmentKeyword}, '%')
+          )
+        </if>
+        <if test="materialKeyword != null and materialKeyword != ''">
+          AND (
+              m.name LIKE CONCAT('%', #{materialKeyword}, '%')
+              OR m.code LIKE CONCAT('%', #{materialKeyword}, '%')
+              OR m.referred_name LIKE CONCAT('%', #{materialKeyword}, '%')
+          )
+        </if>
+        <if test="specKeyword != null and specKeyword != ''">
+          AND (
+              m.speci LIKE CONCAT('%', #{specKeyword}, '%')
+              OR stk.material_speci LIKE CONCAT('%', #{specKeyword}, '%')
+          )
+        </if>
+    </sql>
+
+    <select id="selectDeptStockCompareRows" resultType="java.util.HashMap">
+        SELECT
+            stk.id AS dep_inventory_id,
+            stk.department_id AS department_id,
+            d.code AS department_code,
+            d.name AS department_name,
+            d.his_id AS department_his_id,
+            stk.material_id AS material_id,
+            m.code AS material_code,
+            m.name AS material_name,
+            COALESCE(NULLIF(TRIM(stk.material_speci), ''), m.speci) AS material_spec,
+            m.his_id AS material_his_id,
+            m.his_spec_packing_id AS material_his_spec_packing_id,
+            stk.batch_number AS batch_number,
+            IFNULL(stk.qty, 0) AS spd_qty,
+            COALESCE(bs.stock_amount, bs.quantity) AS his_batch_qty,
+            ms.stock_amount AS his_merge_qty
+        <include refid="deptStockCompareFromWhere"/>
+        ORDER BY d.code, m.code, stk.batch_number, stk.id
+    </select>
+
+    <select id="countDeptStockCompareRows" resultType="long">
+        SELECT COUNT(1)
+        <include refid="deptStockCompareFromWhere"/>
+    </select>
+</mapper>

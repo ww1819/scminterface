@@ -246,6 +246,32 @@
         .tag-1 { background: #fef3c7; color: #92400e; }
         .tag-2 { background: #d1fae5; color: #065f46; }
         .tag-3 { background: #fee2e2; color: #991b1b; }
+        .ds-diff-ok { color: #059669; }
+        .ds-diff-warn { color: #dc2626; font-weight: 600; }
+        .chk-table.ds-stock-table { font-size: 12px; width: 100%; border-collapse: collapse; }
+        .chk-table.ds-stock-table th, .chk-table.ds-stock-table td { padding: 6px 8px; }
+        .ds-table-wrap {
+            max-height: min(52vh, 520px);
+            overflow: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .ds-table-wrap thead th {
+            position: sticky;
+            top: 0;
+            background: #f9fafb;
+            z-index: 1;
+            box-shadow: 0 1px 0 #e5e7eb;
+        }
+        .ds-pager-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .ds-sel-bar {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            margin-bottom: 10px; font-size: 12px; color: #4b5563;
+        }
+        .ds-sel-count { font-weight: 600; color: #0f766e; }
+        .ds-probe-block { margin-top: 8px; border-top: 2px dashed #cbd5e1; padding-top: 16px; }
+        .ds-probe-block .api-resp-card { border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -278,6 +304,7 @@
                 <button type="button" class="tab-btn active" data-tab="tab-guide" onclick="zqSwitchTab('tab-guide', this)">环境与清单</button>
                 <button type="button" class="tab-btn" data-tab="tab-base" onclick="zqSwitchTab('tab-base', this)">科室/人员</button>
                 <button type="button" class="tab-btn" data-tab="tab-spd" onclick="zqSwitchTab('tab-spd', this)">SPD 查询</button>
+                <button type="button" class="tab-btn" data-tab="tab-dept-stock" onclick="zqSwitchTab('tab-dept-stock', this)">科室库存核对</button>
                 <button type="button" class="tab-btn" data-tab="tab-bill-push" onclick="zqSwitchTab('tab-bill-push', this)">出退库推送</button>
             </div>
             <div class="panel-body-scroll">
@@ -372,8 +399,112 @@
                 <div id="form-producers"></div>
                 <div id="form-mergeStocks"></div>
                 <div id="form-batchStocks"></div>
+                <p class="hint report-tab-hint">
+                    需要按科室批量核对 SPD/HIS 库存、并一键填充本接口入参？请切换到页签
+                    <button type="button" class="btn-call secondary" style="padding:2px 10px;font-size:12px;vertical-align:middle"
+                        onclick="zqSwitchTab('tab-dept-stock', document.querySelector('.tab-btn[data-tab=tab-dept-stock]'))">科室库存核对</button>
+                    （在「SPD 查询」右侧）。
+                </p>
                 <div id="form-ykInstock"></div>
                 <p class="hint">出退库单据推送请切换到「出退库推送」页签（出库在上、退库在下；2.5.41 / 2.5.42，回写 SPD 标志）。</p>
+            </div>
+
+            <div id="tab-dept-stock" class="tab-panel">
+                <div class="api-block">
+                    <h3>科室库存核对报表 <span class="api-badge">SPD stk_dep_inventory vs HIS 镜像</span></h3>
+                    <p class="api-desc">
+                        展示科室全部库存明细：SPD 本地数量 vs 众阳 HIS 镜像数量。
+                        HIS 数量优先取 <strong>2.5.43 批次</strong>（批号匹配），否则展示 <strong>2.5.82 合并库存</strong>。
+                        行末可一键填充/调用 <code>2.5.43 药房批次库存</code> 三要素入参。
+                    </p>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>科室</label>
+                            <input id="ds_departmentKeyword" placeholder="编码/名称/首拼模糊">
+                        </div>
+                        <div class="field">
+                            <label>耗材</label>
+                            <input id="ds_materialKeyword" placeholder="编码/名称/首拼模糊">
+                        </div>
+                        <div class="field">
+                            <label>规格</label>
+                            <input id="ds_specKeyword" placeholder="规格模糊">
+                        </div>
+                    </div>
+                    <div class="tool-row ds-pager-bar">
+                        <button type="button" class="btn-call" onclick="dsSearch(1)">搜索</button>
+                        <button type="button" class="btn-call secondary" onclick="dsReset()">重置</button>
+                        <button type="button" class="btn-call warn" onclick="dsRefreshMergeStock()">刷新HIS合并库存</button>
+                        <span class="hint" style="margin:0">每页</span>
+                        <select id="dsPageSize" onchange="dsChangePageSize()" style="padding:4px 8px;border-radius:6px;font-size:12px">
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                        </select>
+                        <button type="button" class="btn-call secondary" onclick="dsGoPage(1)">首页</button>
+                        <button type="button" class="btn-call secondary" onclick="dsPrevPage()">上一页</button>
+                        <span id="dsPagerInfo" class="hint" style="margin:0">第 1 页</span>
+                        <button type="button" class="btn-call secondary" onclick="dsNextPage()">下一页</button>
+                        <button type="button" class="btn-call secondary" onclick="dsGoLastPage()">末页</button>
+                        <input id="dsPageJump" type="number" min="1" placeholder="页码" style="width:56px;padding:4px 6px;font-size:12px;border:1px solid #d1d5db;border-radius:6px">
+                        <button type="button" class="btn-call secondary" onclick="dsJumpPage()">跳转</button>
+                    </div>
+                    <div class="ds-sel-bar">
+                        <span>已选 <span id="dsSelCount" class="ds-sel-count">0</span> 条（跨页缓存）</span>
+                        <button type="button" class="btn-call secondary" style="margin:0;padding:4px 10px;font-size:12px" onclick="dsClearSelection()">清空选择</button>
+                        <button type="button" class="btn-call secondary" style="margin:0;padding:4px 10px;font-size:12px" onclick="dsFillProbeFromSelection()">填充探针入参</button>
+                        <button type="button" class="btn-call" style="margin:0;padding:4px 10px;font-size:12px" onclick="dsCallSelectedProbes()">调用选中(2.5.43)</button>
+                    </div>
+                    <div class="ds-table-wrap">
+                        <table class="chk-table ds-stock-table">
+                            <thead><tr>
+                                <th style="width:32px"><input type="checkbox" id="dsChkAllPage" title="全选本页" onchange="dsToggleAllPage(this)"></th>
+                                <th>#</th><th>科室编码</th><th>科室</th><th>耗材编码</th><th>耗材</th><th>规格</th>
+                                <th>批号</th><th>SPD数量</th><th>HIS数量</th><th>差异</th><th>HIS三要素</th><th>操作</th>
+                            </tr></thead>
+                            <tbody id="dsDataBody">
+                                <tr><td colspan="13" style="text-align:center;color:#9ca3af;">切换至此页签后自动加载</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="hint" id="dsMetaInfo">就绪</p>
+
+                    <div class="api-block ds-probe-block">
+                        <h3>2.5.43 科室批次库存查询探针</h3>
+                        <p class="api-desc">deptId←2.1.9；drugId/drugSpecPackingId←2.5.44。从报表行填充或手工编辑后调用，下方展示 Headers / 入参 / 回参 / 镜像落库。</p>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label>deptId <span class="req">*</span></label>
+                                <input id="ds_probe_deptId" placeholder="药房科室ID">
+                            </div>
+                            <div class="field">
+                                <label>drugId <span class="req">*</span></label>
+                                <input id="ds_probe_drugId" placeholder="药品材料ID">
+                            </div>
+                            <div class="field">
+                                <label>drugSpecPackingId <span class="req">*</span></label>
+                                <input id="ds_probe_drugSpecPackingId" placeholder="规格包装ID">
+                            </div>
+                        </div>
+                        <div class="tool-row">
+                            <button type="button" class="btn-call" onclick="dsCallProbe()">调用</button>
+                            <button type="button" class="btn-call secondary" onclick="dsViewProbeMirror()">查看镜像数据</button>
+                            <button type="button" class="btn-call secondary" onclick="dsClearProbeForm()">重置入参</button>
+                        </div>
+                        <p class="inline-resp-label">排错：Headers / 入参 / 回参</p>
+                        <div id="resp-slot-dsBatchStocks" class="api-inline-resp">
+                            <div class="api-resp-card empty" id="resp-card-dsBatchStocks">
+                                <div class="resp-head"><div class="resp-head-row"><div class="resp-head-body"><strong>2.5.43 药房批次库存</strong> · 尚未调用</div></div></div>
+                            </div>
+                        </div>
+                        <p class="inline-resp-label mirror">镜像库数据</p>
+                        <div id="resp-slot-dsBatchStocksMirror" class="api-inline-resp">
+                            <div class="api-resp-card empty" id="resp-card-mirror_dsBatchStocks">
+                                <div class="resp-head"><div class="resp-head-row"><div class="resp-head-body"><strong>[镜像] 2.5.43 药房批次库存</strong> · 尚未调用</div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-bill-push" class="tab-panel">
@@ -451,6 +582,7 @@
     <script src="/js/common.js"></script>
     <script src="/js/msun-param-schema.js"></script>
     <script src="/js/msun-bill-push.js"></script>
-    <script src="/js/msun-probe.js"></script>
+    <script src="/js/msun-dept-stock.js?v=20260605b"></script>
+    <script src="/js/msun-probe.js?v=20260605"></script>
 </body>
 </html>

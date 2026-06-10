@@ -282,7 +282,7 @@ function zqTabIdForApiKey(apiKey) {
 
 function zqSwitchTabForApiKey(apiKey) {
     const tabId = zqTabIdForApiKey(apiKey);
-    const idx = { 'tab-guide': 0, 'tab-base': 1, 'tab-spd': 2, 'tab-bill-push': 3 }[tabId];
+    const idx = { 'tab-guide': 0, 'tab-base': 1, 'tab-spd': 2, 'tab-dept-stock': 3, 'tab-bill-push': 4 }[tabId];
     const btn = document.querySelectorAll('.tabs .tab-btn')[idx];
     zqSwitchTab(tabId, btn);
 }
@@ -967,6 +967,9 @@ function zqSwitchTab(tabId, btn) {
     if (btn) btn.classList.add('active');
     if (tabId === 'tab-bill-push' && typeof bpInitBillPushTab === 'function') {
         bpInitBillPushTab();
+    }
+    if (tabId === 'tab-dept-stock' && typeof dsInitDeptStockTab === 'function') {
+        dsInitDeptStockTab();
     }
 }
 

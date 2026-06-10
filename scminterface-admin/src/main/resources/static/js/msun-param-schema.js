@@ -177,7 +177,7 @@ var MSUN_PARAM_SCHEMA = {
         method: 'GET',
         path: '/spd/query/drug-batch-stocks',
         logTitle: '2.5.43 药房批次库存',
-        hint: 'deptId←2.1.9；drugId/drugSpecPackingId←2.5.44',
+        hint: 'deptId←2.1.9；drugId/drugSpecPackingId←2.5.44。批量核对请用页签「科室库存核对」',
         fields: [
             { key: 'deptId', label: 'deptId', required: true, hint: '药房科室ID' },
             { key: 'drugId', label: 'drugId', required: true, hint: '药品材料ID' },
