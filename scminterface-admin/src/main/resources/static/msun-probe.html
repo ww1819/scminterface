@@ -77,6 +77,23 @@
         .api-block .api-resp-card .resp-head { position: static; }
         .api-block h3 { font-size: 14px; color: #111827; margin-bottom: 4px; }
         .api-desc { font-size: 12px; color: #6b7280; margin-bottom: 12px; line-height: 1.5; }
+        .api-links {
+            margin: 0 0 12px; padding: 10px 12px; background: #f0fdfa; border: 1px solid #99f6e4;
+            border-radius: 8px; font-size: 12px; line-height: 1.55;
+        }
+        .api-links-title { font-weight: 600; color: #0f766e; margin-bottom: 6px; }
+        .api-links-sub { font-weight: normal; color: #6b7280; font-size: 11px; }
+        .api-links-list { margin: 0; padding-left: 1.1em; color: #374151; }
+        .api-links-list li { margin: 4px 0; }
+        .api-links-k { display: inline-block; min-width: 7.5em; color: #6b7280; }
+        .api-links-list code {
+            font-family: Consolas, 'Courier New', monospace; font-size: 11px;
+            background: #fff; padding: 1px 5px; border-radius: 4px; border: 1px solid #d1d5db;
+            word-break: break-all;
+        }
+        .api-links-note { color: #9ca3af; font-size: 11px; }
+        .api-links-list a { color: #0d9488; text-decoration: none; }
+        .api-links-list a:hover { text-decoration: underline; }
         .form-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px;
             align-items: start;
@@ -512,6 +529,7 @@
                     <h3>出库单推送 <span class="api-badge">201 · 2.5.41</span></h3>
                     <p class="api-desc">查询已审核出库明细，推送众阳 HIS 药库→药房入库；成功后回写 <code>stk_io_bill</code> / <code>stk_io_bill_entry</code> 及科室库存 HIS 键。</p>
                     <p class="hint">仅查已审核出库单（bill_type=201）。</p>
+                    <div class="api-links" id="bpApiLinks201"></div>
                         <div class="form-grid">
                             <div class="field"><label>出库单号</label><input id="q201_billNo" placeholder="模糊"></div>
                             <div class="field"><label>产品名称</label><input id="q201_materialName" placeholder="模糊"></div>
@@ -543,8 +561,9 @@
 
                 <div class="api-block bill-section" id="block-bill-return">
                     <h3>退库单推送 <span class="api-badge return">401 · 2.5.42</span></h3>
-                    <p class="api-desc">查询已审核退库明细，推送众阳 HIS 退库；<code>pharmacyStockId</code> 传 <code>his_stock_query_id</code>（见测试指南 §2.4）。</p>
+                    <p class="api-desc">查询已审核退库明细，推送众阳 HIS 退库；<code>pharmacyStockId</code> 传 <code>his_pharmacy_stock_id</code>（见测试指南 §2.4）。</p>
                     <p class="hint">仅查已审核退库单（bill_type=401）。</p>
+                    <div class="api-links" id="bpApiLinks401"></div>
                         <div class="form-grid">
                             <div class="field"><label>退库单号</label><input id="q401_billNo" placeholder="模糊"></div>
                             <div class="field"><label>产品名称</label><input id="q401_materialName" placeholder="模糊"></div>

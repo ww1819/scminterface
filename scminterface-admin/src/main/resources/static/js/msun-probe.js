@@ -1985,6 +1985,9 @@ function msunSelectHospital(hospitalKey, reloadEnv) {
             + ' · 医院 ' + msunSelectedHospital.hospitalKey
             + ' · API ' + msunHospitalApi();
     }
+    if (typeof bpInitApiLinkPanels === 'function') {
+        bpInitApiLinkPanels();
+    }
     if (reloadEnv !== false) {
         zqLoadAllParams();
         zqLoadEnv();

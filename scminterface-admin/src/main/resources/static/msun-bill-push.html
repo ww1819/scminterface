@@ -70,6 +70,23 @@
             font-family: Consolas, 'Courier New', monospace; line-height: 1.45;
         }
         .push-debug-pre.empty { color: #94a3b8; font-style: italic; }
+        .api-links {
+            margin: 0 0 14px; padding: 10px 12px; background: #f0fdfa; border: 1px solid #99f6e4;
+            border-radius: 8px; font-size: 12px; line-height: 1.55;
+        }
+        .api-links-title { font-weight: 600; color: #0f766e; margin-bottom: 6px; }
+        .api-links-sub { font-weight: normal; color: #6b7280; font-size: 11px; }
+        .api-links-list { margin: 0; padding-left: 1.1em; color: #374151; }
+        .api-links-list li { margin: 4px 0; }
+        .api-links-k { display: inline-block; min-width: 7.5em; color: #6b7280; }
+        .api-links-list code {
+            font-family: Consolas, 'Courier New', monospace; font-size: 11px;
+            background: #fff; padding: 1px 5px; border-radius: 4px; border: 1px solid #d1d5db;
+            word-break: break-all;
+        }
+        .api-links-note { color: #9ca3af; font-size: 11px; }
+        .api-links-list a { color: #0d9488; text-decoration: none; }
+        .api-links-list a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -91,6 +108,7 @@
                 <div class="panel-title">出库单推送 <span class="api-badge">201 · 2.5.41</span></div>
                 <div class="panel-body">
                     <p class="hint">仅查已审核出库单（bill_type=201）。推送药库→药房入库。</p>
+                    <div class="api-links" id="bpApiLinks201"></div>
                     <div class="form-grid">
                         <div class="field"><label>出库单号</label><input id="q201_billNo" placeholder="模糊匹配"></div>
                         <div class="field"><label>产品名称</label><input id="q201_materialName" placeholder="模糊匹配"></div>
@@ -143,7 +161,8 @@
             <div class="bill-section" id="block-bill-return">
                 <div class="panel-title">退库单推送 <span class="api-badge return">401 · 2.5.42</span></div>
                 <div class="panel-body">
-                    <p class="hint">仅查已审核退库单（bill_type=401）。pharmacyStockId 传 his_stock_query_id。</p>
+                    <p class="hint">仅查已审核退库单（bill_type=401）。pharmacyStockId 传 his_pharmacy_stock_id（入药库可兜底 his_storage_stock_id）。</p>
+                    <div class="api-links" id="bpApiLinks401"></div>
                     <div class="form-grid">
                         <div class="field"><label>退库单号</label><input id="q401_billNo" placeholder="模糊匹配"></div>
                         <div class="field"><label>产品名称</label><input id="q401_materialName" placeholder="模糊匹配"></div>

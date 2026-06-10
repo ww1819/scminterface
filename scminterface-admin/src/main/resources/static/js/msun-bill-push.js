@@ -5,11 +5,65 @@ const BP_PAGE_SIZE = 20;
 var bpProbeInited = false;
 var bpStandalonePage = false;
 
+/** 众阳 HIS 写库路径（与 MsunSpdApiPaths 一致） */
+var BP_HIS_API = {
+    '201': {
+        code: '2.5.41',
+        name: '药品材料入库（药库→药房）',
+        method: 'POST',
+        path: '/msun-middle-base-resource/v1/drug-stocks-new'
+    },
+    '401': {
+        code: '2.5.42',
+        name: '按批次退库',
+        method: 'POST',
+        path: '/msun-middle-base-resource/v1/drug-stocks-new/d'
+    }
+};
+
 function bpApiBase() {
     if (typeof msunHospitalApi === 'function') {
         return msunHospitalApi() + '/spd/bill-push';
     }
     return '/api/vendor/msun/hospitals/zaoqiang-tcm-001/spd/bill-push';
+}
+
+function bpSpdJwtApiBase() {
+    var vendor = bpApiBase();
+    return vendor.replace('/api/vendor/msun/hospitals/', '/api/spd/msun/hospitals/').replace('/spd/bill-push', '/bill-push');
+}
+
+function bpEscapeLinkText(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function bpRenderApiLinks(tab) {
+    var el = document.getElementById('bpApiLinks' + tab);
+    if (!el) return;
+    var his = BP_HIS_API[tab];
+    if (!his) return;
+    var scm = bpApiBase();
+    var spdJwt = bpSpdJwtApiBase();
+    var related = tab === '401'
+        ? '<li><span class="api-links-k">关联探针</span> <a href="/msun-probe.html#tab-spd" target="_blank" rel="noopener">2.5.43 药房批次库存</a>（补全 pharmacyStockId）</li>'
+        : '<li><span class="api-links-k">关联探针</span> <a href="/msun-probe.html#tab-base" target="_blank" rel="noopener">2.1.9 科室</a>、<a href="/msun-probe.html#tab-spd" target="_blank" rel="noopener">2.5.44 耗材字典</a></li>';
+    el.innerHTML =
+        '<div class="api-links-title">接口链接 <span class="api-links-sub">（组包与调 HIS 由 MsunSpdBillPushService 统一处理）</span></div>' +
+        '<ul class="api-links-list">' +
+        '<li><span class="api-links-k">前置机·查询明细</span> <code>GET ' + bpEscapeLinkText(scm) + '/entries?billType=' + tab + '</code></li>' +
+        '<li><span class="api-links-k">前置机·单条推送</span> <code>POST ' + bpEscapeLinkText(scm) + '/push/{billId}</code></li>' +
+        '<li><span class="api-links-k">前置机·批量推送</span> <code>POST ' + bpEscapeLinkText(scm) + '/push</code> <span class="api-links-note">body: { billIds: [] }</span></li>' +
+        '<li><span class="api-links-k">SPD 白名单</span> <code>POST ' + bpEscapeLinkText(spdJwt) + '/push/{billId}</code></li>' +
+        '<li><span class="api-links-k">众阳HIS·' + his.code + '</span> <code>' + his.method + ' {baseUrl}' + bpEscapeLinkText(his.path) + '</code>' +
+        ' <span class="api-links-note">' + bpEscapeLinkText(his.name) + '（baseUrl 见探针「连接环境」）</span></li>' +
+        related +
+        '</ul>';
+}
+
+function bpInitApiLinkPanels() {
+    bpRenderApiLinks('201');
+    bpRenderApiLinks('401');
 }
 
 var BP_PUSH_LABELS = { '0': '未推送', '1': '推送中', '2': '成功', '3': '失败' };
@@ -394,6 +448,7 @@ async function bpBatchPush(tab) {
 
 /** 探针页「出退库推送」主 Tab 首次打开时加载（出库在上、退库在下，同时初始化） */
 function bpInitBillPushTab() {
+    bpInitApiLinkPanels();
     if (bpProbeInited) return;
     bpProbeInited = true;
     if (bpCheckLogin()) {
@@ -404,6 +459,7 @@ function bpInitBillPushTab() {
 
 document.addEventListener('DOMContentLoaded', function () {
     bpStandalonePage = !!document.getElementById('bill-push-standalone');
+    bpInitApiLinkPanels();
     if (!bpStandalonePage && document.getElementById('tab-bill-push')) {
         return;
     }
