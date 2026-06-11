@@ -79,7 +79,7 @@ public class MsunSpdMasterPullService
         JSONObject data = MsunHisPaginationSupport.pullAllPages(
                 cursor -> spdQueryService.queryDrugDictInfos(
                         runtime, null, cursor, null, null, null, 100,
-                        MATERIAL_ONLY_INT, null, "0", null, null),
+                        MATERIAL_ONLY_INT, null, null, null, null),
                 "drugId");
         return finish(runtime, "2.5.44", "耗材档案(材料)", data);
     }

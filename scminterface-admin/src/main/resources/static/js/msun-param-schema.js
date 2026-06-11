@@ -43,12 +43,12 @@ var MSUN_PARAM_SCHEMA = {
         path: '/spd/query/drug-dict-infos',
         logTitle: '2.5.44 药品材料字典',
         spdMasterSync: true,
-        hint: '调用时 materialOrDrug 固定为 1（材料）；invalidFlag 未填时自动分别请求 0/1 并合并；仅同步分类白名单内耗材至 SPD',
+        hint: 'materialOrDrug 选填（0药品 1材料），按表单填写传参；invalidFlag 未填时自动分别请求 0/1 并合并；仅同步分类白名单内耗材至 SPD',
         fields: [
             { key: 'drugCode', label: 'drugCode', hint: '药品编码' },
             { key: 'drugId', label: 'drugId', hint: '药品/材料字典ID' },
             { key: 'drugName', label: 'drugName', hint: '名称或拼音模糊' },
-            { key: 'materialOrDrug', label: 'materialOrDrug', hint: '调用时固定为 1（材料）', options: ['0', '1'] },
+            { key: 'materialOrDrug', label: 'materialOrDrug', hint: '选填：0药品 1材料，不填则不传', options: ['', '0', '1'] },
             { key: 'limitCount', label: 'limitCount', hint: '选填（当前请求不传）' },
             { key: 'invalidFlag', label: 'invalidFlag', hint: '选填：0启用 1作废；未填时自动 0+1 各调一次', options: ['', '0', '1'] },
             { key: 'specialFlag', label: 'specialFlag', hint: '是否特殊药品 0否 1是', options: ['', '0', '1'] },
@@ -100,6 +100,7 @@ var MSUN_PARAM_SCHEMA = {
         path: '/spd/query/drug-suppliers',
         logTitle: '2.5.62 供应商',
         spdMasterSync: true,
+        forceMaterialOrDrug: true,
         hint: '调用后 upsert SPD 表 fd_supplier',
         fields: [
             { key: 'keyWord', label: 'keyWord', hint: '名称/简拼模糊' },
@@ -125,6 +126,7 @@ var MSUN_PARAM_SCHEMA = {
         path: '/spd/query/drug-producers',
         logTitle: '2.5.63 生产厂商',
         spdMasterSync: true,
+        forceMaterialOrDrug: true,
         hint: '调用后 upsert SPD 表 fd_factory（生产厂家）',
         fields: [
             { key: 'keyWord', label: 'keyWord', hint: '名称/简拼模糊' },

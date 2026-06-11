@@ -832,10 +832,10 @@ function zqSchemaHasField(schema, fieldKey) {
     return !!(schema && schema.fields && schema.fields.some(function (f) { return f.key === fieldKey; }));
 }
 
-/** 联调调用策略：materialOrDrug 固定 1；limitCount 暂不传给 HIS（仅表单选填/翻页内部用 defaultPageSize） */
+/** 联调调用策略：部分接口 forceMaterialOrDrug 固定 1；limitCount 暂不传给 HIS（仅表单选填/翻页内部用 defaultPageSize） */
 function zqApplySchemaCallPolicy(schema, params) {
     const out = Object.assign({}, params || {});
-    if (zqSchemaHasField(schema, 'materialOrDrug')) {
+    if (schema && schema.forceMaterialOrDrug) {
         out.materialOrDrug = '1';
     }
     if (zqSchemaHasField(schema, 'limitCount')) {
@@ -897,7 +897,7 @@ function zqMergeInvalidFlagSweepResults(apiKey, schema, baseParams, r0, r1) {
         rows0: items0.length,
         rows1: items1.length
     };
-    out.data.requestParams = Object.assign({}, baseParams, { materialOrDrug: '1', invalidFlag: '0+1' });
+    out.data.requestParams = Object.assign({}, baseParams, { invalidFlag: '0+1' });
     const elapsed = ((r0 && r0.elapsed) || 0) + ((r1 && r1.elapsed) || 0);
     const invokeUrl = msunHospitalApi() + '/invoke';
     const requestLine = 'POST ' + invokeUrl
