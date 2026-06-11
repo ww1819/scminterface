@@ -5,6 +5,8 @@ import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.hospital.zaoqiangtcm.ZaoqiangTcmHospitalConstants;
+import com.scminterface.customer.msun.mirror.mapper.MsunHisMirrorMapper;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorRowSupport;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
 import com.scminterface.customer.msun.spd.sync.mapper.MsunSpdMasterSyncMapper;
 import com.scminterface.customer.msun.spd.sync.support.MsunSpdFieldSupport;
@@ -41,10 +43,12 @@ public class MsunSpdMasterSyncExecutor
     }
 
     private final MsunSpdMasterSyncMapper syncMapper;
+    private final MsunHisMirrorMapper mirrorMapper;
 
-    public MsunSpdMasterSyncExecutor(MsunSpdMasterSyncMapper syncMapper)
+    public MsunSpdMasterSyncExecutor(MsunSpdMasterSyncMapper syncMapper, MsunHisMirrorMapper mirrorMapper)
     {
         this.syncMapper = syncMapper;
+        this.mirrorMapper = mirrorMapper;
     }
 
     @DataSource(DataSourceType.SPD)
@@ -376,6 +380,7 @@ public class MsunSpdMasterSyncExecutor
     private int syncMaterials(MsunHospitalRuntime runtime, String batchNo)
     {
         List<Map<String, Object>> rows = listMirror(MsunHisMirrorTableNames.DRUG_DICT, runtime, batchNo);
+        backfillDrugDictMaterialOrDrugForBatch(runtime, batchNo, rows);
         String tenantId = runtime.getTenantId();
         boolean zaoqiang = isZaoqiangHospital(runtime);
         int count = 0;
@@ -494,13 +499,9 @@ public class MsunSpdMasterSyncExecutor
                 && ZaoqiangTcmHospitalConstants.HOSPITAL_KEY.equals(runtime.getHospitalKey());
     }
 
-    /** 2.5.44：仅材料行且分类在白名单内 */
+    /** 2.5.44：分类在白名单内即同步至 fd_material（不再校验 material_or_drug） */
     private static boolean isAllowedMaterialDictRow(Map<String, Object> row)
     {
-        if (!isMaterialRow(row))
-        {
-            return false;
-        }
         return MsunSpdMasterSyncConstants.isAllowedMaterialCategory(str(row, "drug_catagory_id"));
     }
 
@@ -706,6 +707,44 @@ public class MsunSpdMasterSyncExecutor
         return syncMapper.selectFdUnitIdByHisUnitId(tenantId, resolvedId);
     }
 
+    /**
+     * 同步至 SPD 前：若批次 request_params_json 含 materialOrDrug 且镜像列仍为空，按查询条件回填。
+     */
+    private void backfillDrugDictMaterialOrDrugForBatch(
+            MsunHospitalRuntime runtime,
+            String batchNo,
+            List<Map<String, Object>> rows)
+    {
+        if (rows == null || rows.isEmpty())
+        {
+            return;
+        }
+        String queryMod = null;
+        for (Map<String, Object> row : rows)
+        {
+            queryMod = MsunHisMirrorRowSupport.resolveQueryMaterialOrDrug(str(row, "request_params_json"));
+            if (StringUtils.isNotEmpty(queryMod))
+            {
+                break;
+            }
+        }
+        if (StringUtils.isEmpty(queryMod))
+        {
+            return;
+        }
+        Map<String, Object> params = new HashMap<>(6);
+        params.put("hospitalKey", runtime.getHospitalKey());
+        params.put("tenantId", runtime.getTenantId());
+        params.put("activeEnv", runtime.getActiveEnv());
+        params.put("syncBatchNo", batchNo);
+        params.put("materialOrDrug", queryMod);
+        mirrorMapper.backfillDrugDictMaterialOrDrug(params);
+        for (Map<String, Object> row : rows)
+        {
+            MsunHisMirrorRowSupport.enrichDrugDictRow(row, str(row, "request_params_json"));
+        }
+    }
+
     private List<Map<String, Object>> listMirror(String table, MsunHospitalRuntime runtime, String batchNo)
     {
         if (!MIRROR_TABLES.contains(table))
@@ -718,23 +757,6 @@ public class MsunSpdMasterSyncExecutor
                 runtime.getTenantId(),
                 runtime.getActiveEnv(),
                 batchNo);
-    }
-
-    /**
-     * 仅同步材料：material_or_drug=1；回参未带时从 request_params_json.materialOrDrug=1 推断。
-     */
-    private static boolean isMaterialRow(Map<String, Object> row)
-    {
-        String flag = str(row, "material_or_drug");
-        if ("1".equals(flag))
-        {
-            return true;
-        }
-        if ("0".equals(flag))
-        {
-            return false;
-        }
-        return MsunSpdFieldSupport.inferMaterialFromDrugDictRequest(str(row, "request_params_json"));
     }
 
     private static String str(Map<String, Object> row, String key)

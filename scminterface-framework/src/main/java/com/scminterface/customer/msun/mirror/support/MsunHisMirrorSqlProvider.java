@@ -81,6 +81,13 @@ public final class MsunHisMirrorSqlProvider
         return sql.toString();
     }
 
+    public static String backfillDrugDictMaterialOrDrug(Map<String, Object> params)
+    {
+        return "UPDATE `" + MsunHisMirrorTableNames.DRUG_DICT + "` SET material_or_drug = #{materialOrDrug}, "
+                + "update_time = NOW() WHERE hospital_key = #{hospitalKey} AND tenant_id = #{tenantId} "
+                + "AND active_env = #{activeEnv} AND sync_batch_no = #{syncBatchNo}";
+    }
+
     public static String deleteYkInstockDetails(Map<String, Object> params)
     {
         return "DELETE FROM " + MsunHisMirrorTableNames.YK_INSTOCK_DETAIL

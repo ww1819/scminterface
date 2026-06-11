@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.InsertProvider;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectProvider;
+import org.apache.ibatis.annotations.UpdateProvider;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorSqlProvider;
 
 /**
@@ -17,6 +18,9 @@ public interface MsunHisMirrorMapper
 {
     @InsertProvider(type = MsunHisMirrorSqlProvider.class, method = "upsertMirrorRow")
     int upsertMirrorRow(@Param("table") String table, @Param("row") Map<String, Object> row);
+
+    @UpdateProvider(type = MsunHisMirrorSqlProvider.class, method = "backfillDrugDictMaterialOrDrug")
+    int backfillDrugDictMaterialOrDrug(Map<String, Object> params);
 
     @DeleteProvider(type = MsunHisMirrorSqlProvider.class, method = "deleteYkInstockDetails")
     int deleteYkInstockDetails(

@@ -22,7 +22,7 @@ public final class MsunSpdMasterSyncSupport
         Map<String, String> hints = new LinkedHashMap<>(8);
         hints.put("2.1.9", "fd_department");
         hints.put("2.1.12", "sys_user（按 user_id 聚合；admin/super_01 登录名自动加 his_ 前缀）、sys_user_department");
-        hints.put("2.5.44", "fd_material（仅 materialOrDrug=1 且分类在白名单内；invalidFlag→is_use；已逻辑删除档案跳过）");
+        hints.put("2.5.44", "fd_material（仅分类在白名单内；invalidFlag→is_use；已逻辑删除档案跳过）");
         hints.put("2.5.58", "fd_warehouse_category（仅分类白名单；不逻辑删除既有分类）");
         hints.put("2.5.62", "fd_supplier");
         hints.put("2.5.63", "fd_factory");
@@ -51,7 +51,7 @@ public final class MsunSpdMasterSyncSupport
         }
         if ("2.5.44".equals(apiCode))
         {
-            return "镜像 " + mirrorRows + " 行但 SPD=0：仅同步 material_or_drug=1 且含 drug_spec_packing_id 的耗材行；外键将按字典补全供应商/厂商/库房分类/最小包装单位";
+            return "镜像 " + mirrorRows + " 行但 SPD=0：仅同步分类在白名单内且含 drug_spec_packing_id 的行；外键将按字典补全供应商/厂商/库房分类/最小包装单位";
         }
         String target = spdTableHint(apiCode);
         if (target.isEmpty())

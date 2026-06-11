@@ -3,6 +3,7 @@ package com.scminterface.customer.msun.mirror.support;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.framework.util.ZsUuid7;
 import java.math.BigDecimal;
@@ -133,28 +134,56 @@ public final class MsunHisMirrorRowSupport
         }
     }
 
+    /**
+     * 2.5.44 回参无 materialOrDrug：查询入参有值时回填至镜像列 material_or_drug（0 药品 / 1 材料）。
+     */
     public static void enrichDrugDictRow(Map<String, Object> row, String requestParamsJson)
     {
-        if (row == null || requestParamsJson == null || requestParamsJson.isEmpty())
+        if (row == null)
         {
             return;
+        }
+        String queryMod = resolveQueryMaterialOrDrug(requestParamsJson);
+        if (StringUtils.isNotEmpty(queryMod))
+        {
+            row.put("material_or_drug", queryMod);
+        }
+        // invalidFlag 为查询过滤条件，非行级启停用；勿用请求参数回填 invalid_flag（避免 0+1 双拉时误标整批作废）
+    }
+
+    /**
+     * 从镜像 request_params_json / 探针查询入参解析 materialOrDrug（支持 camelCase 与 snake_case）。
+     *
+     * @return 非空时返回 "0" 或 "1" 等字符串；无有效查询条件时返回 null
+     */
+    public static String resolveQueryMaterialOrDrug(String requestParamsJson)
+    {
+        if (StringUtils.isEmpty(requestParamsJson))
+        {
+            return null;
         }
         try
         {
             JSONObject req = JSON.parseObject(requestParamsJson);
-            if (row.get("material_or_drug") == null)
+            Object mod = req.get("materialOrDrug");
+            if (mod == null)
             {
-                Object mod = req.get("materialOrDrug");
-                if (mod != null)
-                {
-                    row.put("material_or_drug", normalizeValue(mod));
-                }
+                mod = req.get("material_or_drug");
             }
-            // invalidFlag 为查询过滤条件，非行级启停用；勿用请求参数回填 invalid_flag（避免 0+1 双拉时误标整批作废）
+            if (mod == null)
+            {
+                return null;
+            }
+            Object normalized = normalizeValue(mod);
+            if (normalized == null)
+            {
+                return null;
+            }
+            return String.valueOf(normalized).trim();
         }
         catch (Exception ignored)
         {
-            // 请求 JSON 解析失败时保持为空，由 SPD 同步侧再推断
+            return null;
         }
     }
 

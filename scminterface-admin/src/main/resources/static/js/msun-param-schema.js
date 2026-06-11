@@ -43,7 +43,7 @@ var MSUN_PARAM_SCHEMA = {
         path: '/spd/query/drug-dict-infos',
         logTitle: '2.5.44 药品材料字典',
         spdMasterSync: true,
-        hint: 'materialOrDrug 选填（0药品 1材料），按表单填写传参；invalidFlag 未填时自动分别请求 0/1 并合并；仅同步分类白名单内耗材至 SPD',
+        hint: 'materialOrDrug 选填（0药品 1材料），按表单填写传参；有值且有回参时镜像 material_or_drug 自动回填；invalidFlag 未填时自动 0+1 合并；同步至 SPD 按分类白名单过滤',
         fields: [
             { key: 'drugCode', label: 'drugCode', hint: '药品编码' },
             { key: 'drugId', label: 'drugId', hint: '药品/材料字典ID' },

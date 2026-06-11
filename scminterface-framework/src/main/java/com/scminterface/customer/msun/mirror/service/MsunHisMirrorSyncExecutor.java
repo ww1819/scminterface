@@ -173,6 +173,11 @@ public class MsunHisMirrorSyncExecutor
             String table)
     {
         int count = 0;
+        String queryMaterialOrDrug = null;
+        if (MsunHisMirrorTableNames.DRUG_DICT.equals(table))
+        {
+            queryMaterialOrDrug = MsunHisMirrorRowSupport.resolveQueryMaterialOrDrug(requestJson);
+        }
         for (int i = 0; i < data.size(); i++)
         {
             JSONObject item = data.getJSONObject(i);
@@ -189,7 +194,26 @@ public class MsunHisMirrorSyncExecutor
             upsertRow(table, row);
             count++;
         }
+        if (MsunHisMirrorTableNames.DRUG_DICT.equals(table) && count > 0
+                && StringUtils.isNotEmpty(queryMaterialOrDrug))
+        {
+            backfillDrugDictMaterialOrDrug(runtime, batchNo, queryMaterialOrDrug);
+        }
         return count;
+    }
+
+    private void backfillDrugDictMaterialOrDrug(
+            MsunHospitalRuntime runtime,
+            String syncBatchNo,
+            String materialOrDrug)
+    {
+        Map<String, Object> params = new HashMap<>(6);
+        params.put("hospitalKey", runtime.getHospitalKey());
+        params.put("tenantId", runtime.getTenantId());
+        params.put("activeEnv", runtime.getActiveEnv());
+        params.put("syncBatchNo", syncBatchNo);
+        params.put("materialOrDrug", materialOrDrug);
+        mirrorMapper.backfillDrugDictMaterialOrDrug(params);
     }
 
     private int syncYkInstock(
