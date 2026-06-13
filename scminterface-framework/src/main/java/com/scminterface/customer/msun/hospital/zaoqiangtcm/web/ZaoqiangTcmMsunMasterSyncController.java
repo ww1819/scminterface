@@ -10,8 +10,11 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 /**
  * 众阳 HIS — 枣强县中医院：SPD 一键同步主数据（系统间调用，JWT 白名单）。
@@ -33,6 +36,29 @@ public class ZaoqiangTcmMsunMasterSyncController
         this.msunProperties = msunProperties;
     }
 
+    @ApiOperation("单条耗材档案同步（2.5.44，按 drugId / drugSpecPackingId）")
+    @PostMapping("/materials/single")
+    public AjaxResult syncMaterialSingle(@RequestBody Map<String, Object> body)
+    {
+        try
+        {
+            Long drugId = parseLong(body != null ? body.get("drugId") : null);
+            String drugSpecPackingId = parseString(body != null ? body.get("drugSpecPackingId") : null);
+            JSONObject result = pullService.pullMaterialSingle(msunProperties, drugId, drugSpecPackingId);
+            return AjaxResult.success(
+                    "单条同步完成: " + result.getString("label") + "，共 " + result.getInteger("rows") + " 条",
+                    result);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return AjaxResult.error(ex.getMessage());
+        }
+        catch (Exception ex)
+        {
+            return AjaxResult.error("众阳HIS单条同步失败: " + ex.getMessage());
+        }
+    }
+
     @ApiOperation("一键同步：depts|identities|suppliers|producers|categories|materials")
     @PostMapping("/{syncType}")
     public AjaxResult sync(@PathVariable String syncType)
@@ -50,5 +76,29 @@ public class ZaoqiangTcmMsunMasterSyncController
         {
             return AjaxResult.error("众阳HIS同步失败: " + ex.getMessage());
         }
+    }
+
+    private static Long parseLong(Object value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+        String text = String.valueOf(value).trim();
+        if (text.isEmpty())
+        {
+            return null;
+        }
+        return Long.valueOf(text);
+    }
+
+    private static String parseString(Object value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+        String text = String.valueOf(value).trim();
+        return text.isEmpty() ? null : text;
     }
 }
