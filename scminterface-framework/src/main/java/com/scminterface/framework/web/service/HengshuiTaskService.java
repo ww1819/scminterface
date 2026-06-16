@@ -771,7 +771,10 @@ public class HengshuiTaskService
         r.setChargeDate(HisChargeMirrorSyncSupport.parseHisDateTime(m.get("chargeDate")));
         r.setQuantity(HisChargeMirrorSyncSupport.toBigDecimal(m.get("quantity")));
         r.setUnitPrice(HisChargeMirrorSyncSupport.toBigDecimal(m.get("unitPrice")));
-        r.setTotalAmount(HisChargeMirrorSyncSupport.toBigDecimal(m.get("totalAmount")));
+        BigDecimal inQty = r.getQuantity();
+        BigDecimal inUp = r.getUnitPrice();
+        r.setTotalAmount(HisChargeMirrorSyncSupport.resolveDetailLineAmount(
+            inQty, inUp, HisChargeMirrorSyncSupport.toBigDecimal(m.get("totalAmount"))));
         r.setChargeOperator(strTrim(m.get("chargeOperator")));
         r.setRemark(strTrim(m.get("remark")));
         r.setProcessStatus("PENDING_CONSUME");
@@ -814,7 +817,10 @@ public class HengshuiTaskService
         r.setChargeDate(chargeDisp);
         r.setQuantity(HisChargeMirrorSyncSupport.toBigDecimal(m.get("quantity")));
         r.setUnitPrice(HisChargeMirrorSyncSupport.toBigDecimal(m.get("unitPrice")));
-        r.setTotalAmount(HisChargeMirrorSyncSupport.toBigDecimal(m.get("totalAmount")));
+        BigDecimal outQty = r.getQuantity();
+        BigDecimal outUp = r.getUnitPrice();
+        r.setTotalAmount(HisChargeMirrorSyncSupport.resolveDetailLineAmount(
+            outQty, outUp, HisChargeMirrorSyncSupport.toBigDecimal(m.get("totalAmount"))));
         r.setChargeOperator(strTrim(m.get("chargeOperator")));
         r.setPaymentType(strTrim(m.get("paymentType")));
         r.setReceiptNo(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("receiptNo"))));

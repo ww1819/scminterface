@@ -1,6 +1,7 @@
 package com.scminterface.customer.hengsuiThird.his.support;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -20,6 +21,7 @@ public final class HisChargeMirrorSyncSupport
 {
     private static final DateTimeFormatter PARSE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final String DATE_DISPLAY_FMT = "yyyy-MM-dd HH:mm:ss";
+    private static final int LINE_AMOUNT_SCALE = 6;
 
     private HisChargeMirrorSyncSupport()
     {
@@ -128,6 +130,18 @@ public final class HisChargeMirrorSyncSupport
             return null;
         }
         return new SimpleDateFormat(DATE_DISPLAY_FMT).format(chargeDate);
+    }
+
+    /**
+     * 明细行金额：组套收费时 HIS {@code total_amount} 常为汇总额，镜像以单价×数量为准（对齐 SPD）。
+     */
+    public static BigDecimal resolveDetailLineAmount(BigDecimal quantity, BigDecimal unitPrice, BigDecimal hisTotalAmount)
+    {
+        if (quantity != null && unitPrice != null)
+        {
+            return quantity.multiply(unitPrice).setScale(LINE_AMOUNT_SCALE, RoundingMode.HALF_UP);
+        }
+        return hisTotalAmount;
     }
 
     public static String fingerprintInpatient(HisInpatientChargeMirrorRow e)
