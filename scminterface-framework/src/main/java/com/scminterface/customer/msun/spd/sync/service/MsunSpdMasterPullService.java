@@ -24,8 +24,7 @@ public class MsunSpdMasterPullService
     private static final String MATERIAL_ONLY = "1";
     private static final Integer MATERIAL_ONLY_INT = 1;
 
-    /** 单条耗材同步：按 drugId 查询，避免全量翻页 */
-    private static final int SINGLE_MATERIAL_PAGE_SIZE = 20;
+    /** 单条耗材同步：按 drugId 精确查询，不传 limitCount（由 HIS 返回完整规格） */
 
     private final MsunProbeService probeService;
     private final MsunSpdQueryService spdQueryService;
@@ -81,11 +80,13 @@ public class MsunSpdMasterPullService
 
     public JSONObject pullMaterials(MsunHospitalRuntime runtime) throws Exception
     {
+        log.info("众阳HIS 耗材档案全量下载开始 hospital={} materialOrDrug={} limitCount=不传",
+                runtime.getHospitalKey(), MATERIAL_ONLY_INT);
         JSONObject data = MsunHisPaginationSupport.pullAllPages(
                 cursor -> spdQueryService.queryDrugDictInfos(
-                        runtime, null, cursor, null, null, null, 100,
+                        runtime, null, cursor, null, null, null, null,
                         MATERIAL_ONLY_INT, null, null, null, null),
-                "drugId");
+                "drugId", null);
         return finish(runtime, "2.5.44", "耗材档案(材料)", data);
     }
 
@@ -99,8 +100,10 @@ public class MsunSpdMasterPullService
         {
             throw new IllegalArgumentException("drugId 必填");
         }
+        log.info("众阳HIS 耗材档案单条下载开始 hospital={} drugId={} drugSpecPackingId={} materialOrDrug={}",
+                runtime.getHospitalKey(), drugId, drugSpecPackingId, MATERIAL_ONLY_INT);
         JSONObject data = spdQueryService.queryDrugDictInfos(
-                runtime, null, drugId, null, null, null, SINGLE_MATERIAL_PAGE_SIZE,
+                runtime, null, drugId, null, null, null, null,
                 MATERIAL_ONLY_INT, null, null, null, null);
         if (!MsunHisPaginationSupport.isHisOk(data))
         {
@@ -149,13 +152,38 @@ public class MsunSpdMasterPullService
         mirrorSyncService.syncQueryResult(runtime, apiCode, data);
         int rows = MsunHisPaginationSupport.extractData(data) != null
                 ? MsunHisPaginationSupport.extractData(data).size() : 0;
-        log.info("众阳主数据拉取完成 hospital={} type={} rows={}", runtime.getHospitalKey(), label, rows);
+        String hisUrl = resolveHisUrl(data);
+        log.info("众阳主数据拉取完成 hospital={} api={} type={} hisUrl={} archiveRows={}",
+                runtime.getHospitalKey(), apiCode, label, hisUrl, rows);
         JSONObject result = new JSONObject();
         result.put("label", label);
         result.put("apiCode", apiCode);
         result.put("rows", rows);
         result.put("hisBody", data.getJSONObject("hisBody"));
         return result;
+    }
+
+    private static String resolveHisUrl(JSONObject data)
+    {
+        if (data == null)
+        {
+            return null;
+        }
+        JSONObject invoke = data.getJSONObject("hisInvoke");
+        if (invoke != null && StringUtils.isNotEmpty(invoke.getString("url")))
+        {
+            return invoke.getString("url");
+        }
+        JSONObject hisBody = data.getJSONObject("hisBody");
+        if (hisBody != null)
+        {
+            JSONObject merged = hisBody.getJSONObject("_probeMerged");
+            if (merged != null && merged.getInteger("pages") != null && merged.getInteger("pages") > 1)
+            {
+                return "(分页合并 " + merged.getInteger("pages") + " 页，见分页日志)";
+            }
+        }
+        return null;
     }
 
     private static JSONObject filterDrugDictBySpecPacking(JSONObject wrapped, String drugSpecPackingId)

@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.spd.MsunSpdApiPaths;
+import com.scminterface.customer.msun.spd.sync.support.MsunHisPaginationSupport;
 import com.scminterface.customer.msun.support.MsunHisInvokeDebugSupport;
 import com.scminterface.customer.msun.support.MsunOpenApiSupport;
 import com.scminterface.customer.msun.support.MsunSignedHttpResult;
@@ -170,12 +171,10 @@ public class MsunSpdQueryService
     {
         String url = MsunOpenApiSupport.buildUrl(runtime, path);
         MsunSignedHttpResult http = MsunOpenApiSupport.createClient(runtime).getWithDebug(url, params);
-        log.info("众阳HIS 医院 {} SPD查询 {} [{}] env={} url={}",
-                runtime.getHospitalKey(), apiNo,
-                runtime.getActiveEnvLabel(), runtime.getActiveEnv(), url);
         JSONObject wrapped = MsunOpenApiSupport.wrapRawResponse(http.getResponseBody(), params);
         MsunHisInvokeDebugSupport.attachInvokeDebug(wrapped,
                 MsunHisInvokeDebugSupport.buildDebug(runtime, apiNo, path, http, wrapped));
+        logHisQuery(runtime, apiNo, http.getUrl(), params, wrapped);
         return wrapped;
     }
 
@@ -187,13 +186,35 @@ public class MsunSpdQueryService
     {
         String url = MsunOpenApiSupport.buildUrl(runtime, path);
         MsunSignedHttpResult http = MsunOpenApiSupport.createClient(runtime).postWithDebug(url, body);
-        log.info("众阳HIS 医院 {} SPD查询 {} [{}] env={} url={}",
-                runtime.getHospitalKey(), apiNo,
-                runtime.getActiveEnvLabel(), runtime.getActiveEnv(), url);
         JSONObject wrapped = MsunOpenApiSupport.wrapRawResponse(http.getResponseBody(), body);
         MsunHisInvokeDebugSupport.attachInvokeDebug(wrapped,
                 MsunHisInvokeDebugSupport.buildDebug(runtime, apiNo, path, http, wrapped));
+        logHisQuery(runtime, apiNo, http.getUrl(), body, wrapped);
         return wrapped;
+    }
+
+    private static void logHisQuery(
+            MsunHospitalRuntime runtime,
+            String apiNo,
+            String requestUrl,
+            Map<String, Object> params,
+            JSONObject wrapped)
+    {
+        int rowCount = countHisRows(wrapped);
+        if ("2.5.44".equals(apiNo))
+        {
+            log.info("众阳HIS 耗材档案下载 hospital={} api={} env={} url={} params={} archiveRows={}",
+                    runtime.getHospitalKey(), apiNo, runtime.getActiveEnv(), requestUrl, params, rowCount);
+            return;
+        }
+        log.info("众阳HIS 医院 {} SPD查询 {} env={} url={} params={} rows={}",
+                runtime.getHospitalKey(), apiNo, runtime.getActiveEnv(), requestUrl, params, rowCount);
+    }
+
+    private static int countHisRows(JSONObject wrapped)
+    {
+        com.alibaba.fastjson2.JSONArray items = MsunHisPaginationSupport.extractData(wrapped);
+        return items != null ? items.size() : 0;
     }
 
     private static void putIfPresent(Map<String, Object> params, String key, Object value)

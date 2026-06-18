@@ -7,6 +7,8 @@ import com.scminterface.customer.msun.hospital.zaoqiangtcm.config.ZaoqiangTcmMsu
 import com.scminterface.customer.msun.spd.sync.service.MsunSpdMasterPullService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +27,8 @@ import java.util.Map;
 @RequestMapping(ZaoqiangTcmHospitalConstants.SPD_API_PREFIX + "/sync")
 public class ZaoqiangTcmMsunMasterSyncController
 {
+    private static final Logger log = LoggerFactory.getLogger(ZaoqiangTcmMsunMasterSyncController.class);
+
     private final MsunSpdMasterPullService pullService;
     private final ZaoqiangTcmMsunProperties msunProperties;
 
@@ -44,6 +48,8 @@ public class ZaoqiangTcmMsunMasterSyncController
         {
             Long drugId = parseLong(body != null ? body.get("drugId") : null);
             String drugSpecPackingId = parseString(body != null ? body.get("drugSpecPackingId") : null);
+            log.info("SPD 耗材档案单条同步入口 tenant={} drugId={} drugSpecPackingId={}",
+                    ZaoqiangTcmHospitalConstants.TENANT_ID, drugId, drugSpecPackingId);
             JSONObject result = pullService.pullMaterialSingle(msunProperties, drugId, drugSpecPackingId);
             return AjaxResult.success(
                     "单条同步完成: " + result.getString("label") + "，共 " + result.getInteger("rows") + " 条",
@@ -65,6 +71,7 @@ public class ZaoqiangTcmMsunMasterSyncController
     {
         try
         {
+            log.info("SPD 主数据同步入口 tenant={} syncType={}", ZaoqiangTcmHospitalConstants.TENANT_ID, syncType);
             JSONObject result = pullService.pullByType(msunProperties, syncType);
             return AjaxResult.success("同步完成: " + result.getString("label") + "，共 " + result.getInteger("rows") + " 条", result);
         }

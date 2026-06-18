@@ -4,12 +4,16 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.scminterface.common.utils.StringUtils;
 import java.util.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 众阳 HIS 分页查询合并（游标翻页，供 SPD 一键同步使用）。
  */
 public final class MsunHisPaginationSupport
 {
+    private static final Logger log = LoggerFactory.getLogger(MsunHisPaginationSupport.class);
+
     private static final int DEFAULT_PAGE_SIZE = 100;
     private static final int MAX_PAGES = 500;
     private static final long DELAY_MS = 300L;
@@ -26,6 +30,14 @@ public final class MsunHisPaginationSupport
 
     public static JSONObject pullAllPages(PageFetcher fetcher, String cursorField) throws Exception
     {
+        return pullAllPages(fetcher, cursorField, DEFAULT_PAGE_SIZE);
+    }
+
+    /**
+     * @param pageSizeHint 与请求 limitCount 一致时用于判断末页；null 表示不按条数截断（如 2.5.44 不传 limitCount）
+     */
+    public static JSONObject pullAllPages(PageFetcher fetcher, String cursorField, Integer pageSizeHint) throws Exception
+    {
         JSONArray allItems = new JSONArray();
         Long cursor = null;
         JSONObject lastPage = null;
@@ -41,12 +53,15 @@ public final class MsunHisPaginationSupport
                 throw new IllegalStateException("HIS 第 " + pageNum + " 页调用失败: " + hisMessage(page));
             }
             JSONArray items = extractData(page);
+            int pageRows = items != null ? items.size() : 0;
+            log.info("众阳HIS 档案分页拉取 page={} cursor={} pageRows={} totalRows={} hisUrl={}",
+                    pageNum, cursor, pageRows, allItems.size() + pageRows, resolveHisUrl(page));
             if (items == null || items.isEmpty())
             {
                 break;
             }
             allItems.addAll(items);
-            if (items.size() < DEFAULT_PAGE_SIZE)
+            if (pageSizeHint != null && items.size() < pageSizeHint)
             {
                 break;
             }
@@ -77,10 +92,26 @@ public final class MsunHisPaginationSupport
         probeMerged.put("mode", "allPages");
         probeMerged.put("pages", pageNum);
         probeMerged.put("totalRows", allItems.size());
-        probeMerged.put("pageSize", DEFAULT_PAGE_SIZE);
+        probeMerged.put("pageSize", pageSizeHint);
         probeMerged.put("cursorField", cursorField);
         hisBody.put("_probeMerged", probeMerged);
+        log.info("众阳HIS 档案分页拉取完成 pages={} totalArchiveRows={} cursorField={}",
+                pageNum, allItems.size(), cursorField);
         return merged;
+    }
+
+    private static String resolveHisUrl(JSONObject wrapped)
+    {
+        if (wrapped == null)
+        {
+            return null;
+        }
+        JSONObject invoke = wrapped.getJSONObject("hisInvoke");
+        if (invoke != null && StringUtils.isNotEmpty(invoke.getString("url")))
+        {
+            return invoke.getString("url");
+        }
+        return null;
     }
 
     public static boolean isHisOk(JSONObject wrapped)
