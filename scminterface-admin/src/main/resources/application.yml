@@ -98,7 +98,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.scminterface: debug
+    com.scminterface: info
     org.springframework: warn
 
 # MyBatis
