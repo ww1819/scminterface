@@ -18,6 +18,8 @@ public class HisOutpatientChargeMirrorRow
     private String outpatientNo;
     private String clinicCode;
     private String clinicName;
+    private String execDeptId;
+    private String execDeptName;
     private String doctorId;
     private String doctorName;
     private String chargeItemId;
@@ -136,6 +138,26 @@ public class HisOutpatientChargeMirrorRow
     public void setClinicName(String clinicName)
     {
         this.clinicName = clinicName;
+    }
+
+    public String getExecDeptId()
+    {
+        return execDeptId;
+    }
+
+    public void setExecDeptId(String execDeptId)
+    {
+        this.execDeptId = execDeptId;
+    }
+
+    public String getExecDeptName()
+    {
+        return execDeptName;
+    }
+
+    public void setExecDeptName(String execDeptName)
+    {
+        this.execDeptName = execDeptName;
     }
 
     public String getDoctorId()

@@ -454,6 +454,12 @@ public class HengshuiTaskService
                         case "dept_name":
                             item.put("deptName", value != null ? value.toString().trim() : null);
                             break;
+                        case "exec_dept_id":
+                            item.put("execDeptId", value != null ? value.toString().trim() : null);
+                            break;
+                        case "exec_dept_name":
+                            item.put("execDeptName", value != null ? value.toString().trim() : null);
+                            break;
                         case "doctor_id":
                             item.put("doctorId", value != null ? value.toString().trim() : null);
                             break;
@@ -636,6 +642,12 @@ public class HengshuiTaskService
                         case "clinic_name":
                             item.put("clinicName", value != null ? value.toString().trim() : null);
                             break;
+                        case "exec_dept_id":
+                            item.put("execDeptId", value != null ? value.toString().trim() : null);
+                            break;
+                        case "exec_dept_name":
+                            item.put("execDeptName", value != null ? value.toString().trim() : null);
+                            break;
                         case "doctor_id":
                             item.put("doctorId", value != null ? value.toString().trim() : null);
                             break;
@@ -761,6 +773,8 @@ public class HengshuiTaskService
         r.setInpatientNo(strTrim(m.get("inpatientNo")));
         r.setDeptCode(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("deptCode"))));
         r.setDeptName(strTrim(m.get("deptName")));
+        r.setExecDeptId(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("execDeptId"))));
+        r.setExecDeptName(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("execDeptName"))));
         r.setDoctorId(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("doctorId"))));
         r.setDoctorName(strTrim(m.get("doctorName")));
         r.setChargeItemId(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("chargeItemId"))));
@@ -803,6 +817,8 @@ public class HengshuiTaskService
         r.setOutpatientNo(strTrim(m.get("outpatientNo")));
         r.setClinicCode(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("clinicCode"))));
         r.setClinicName(strTrim(m.get("clinicName")));
+        r.setExecDeptId(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("execDeptId"))));
+        r.setExecDeptName(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("execDeptName"))));
         r.setDoctorId(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("doctorId"))));
         r.setDoctorName(strTrim(m.get("doctorName")));
         r.setChargeItemId(HisChargeMirrorSyncSupport.trimToNull(strTrim(m.get("chargeItemId"))));

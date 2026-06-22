@@ -24,6 +24,8 @@ public class HisPatientChargeMirrorUnifiedRow
     private String deptName;
     private String clinicCode;
     private String clinicName;
+    private String execDeptId;
+    private String execDeptName;
     private String doctorId;
     private String doctorName;
     private String chargeItemId;
@@ -207,6 +209,26 @@ public class HisPatientChargeMirrorUnifiedRow
     public void setClinicName(String clinicName)
     {
         this.clinicName = clinicName;
+    }
+
+    public String getExecDeptId()
+    {
+        return execDeptId;
+    }
+
+    public void setExecDeptId(String execDeptId)
+    {
+        this.execDeptId = execDeptId;
+    }
+
+    public String getExecDeptName()
+    {
+        return execDeptName;
+    }
+
+    public void setExecDeptName(String execDeptName)
+    {
+        this.execDeptName = execDeptName;
     }
 
     public String getDoctorId()

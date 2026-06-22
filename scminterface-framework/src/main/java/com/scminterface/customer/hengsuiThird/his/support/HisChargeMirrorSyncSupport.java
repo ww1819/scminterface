@@ -155,7 +155,7 @@ public final class HisChargeMirrorSyncSupport
             nz(e.getUnitPrice()),
             nz(e.getTotalAmount()),
             nz(e.getChargeDate()),
-            nz(e.getDeptCode()));
+            nz(e.getExecDeptId()));
         return DigestUtils.md5DigestAsHex(raw.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -170,7 +170,7 @@ public final class HisChargeMirrorSyncSupport
             nz(e.getUnitPrice()),
             nz(e.getTotalAmount()),
             nz(e.getChargeDate()),
-            nz(e.getClinicCode()));
+            nz(e.getExecDeptId()));
         return DigestUtils.md5DigestAsHex(raw.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -208,6 +208,8 @@ public final class HisChargeMirrorSyncSupport
         m.setOutpatientNo(null);
         m.setDeptCode(e.getDeptCode());
         m.setDeptName(e.getDeptName());
+        m.setExecDeptId(e.getExecDeptId());
+        m.setExecDeptName(e.getExecDeptName());
         m.setClinicCode(null);
         m.setClinicName(null);
         m.setDoctorId(e.getDoctorId());
@@ -260,6 +262,8 @@ public final class HisChargeMirrorSyncSupport
         m.setDeptName(null);
         m.setClinicCode(e.getClinicCode());
         m.setClinicName(e.getClinicName());
+        m.setExecDeptId(e.getExecDeptId());
+        m.setExecDeptName(e.getExecDeptName());
         m.setDoctorId(e.getDoctorId());
         m.setDoctorName(e.getDoctorName());
         m.setChargeItemId(e.getChargeItemId());
