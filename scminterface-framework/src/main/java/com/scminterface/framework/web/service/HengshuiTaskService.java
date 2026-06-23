@@ -15,6 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +29,7 @@ import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.customer.hengsuiThird.his.mapper.HisInpatientChargeMirrorSyncMapper;
 import com.scminterface.customer.hengsuiThird.his.mapper.HisOutpatientChargeMirrorSyncMapper;
 import com.scminterface.customer.hengsuiThird.his.mapper.HisPatientChargeMirrorUnifiedSyncMapper;
+import com.scminterface.customer.hengsuiThird.his.model.HisExecDeptBackfillResult;
 import com.scminterface.customer.hengsuiThird.his.model.HisIdFingerprintRow;
 import com.scminterface.customer.hengsuiThird.his.model.HisInpatientChargeMirrorRow;
 import com.scminterface.customer.hengsuiThird.his.model.HisOutpatientChargeMirrorRow;
@@ -895,6 +901,10 @@ public class HengshuiTaskService
             {
                 skipped++;
             }
+            else if (applyInpatientExecDeptBackfill(tenantId, r))
+            {
+                skipped++;
+            }
             else
             {
                 drift++;
@@ -947,6 +957,10 @@ public class HengshuiTaskService
                 existing.put(hid, fp);
             }
             else if (HisChargeMirrorSyncSupport.fingerprintEquals(old, fp))
+            {
+                skipped++;
+            }
+            else if (applyOutpatientExecDeptBackfill(tenantId, r))
             {
                 skipped++;
             }
@@ -1066,6 +1080,422 @@ public class HengshuiTaskService
         {
             log.warn("触发 SPD 计费自动处理失败 batch={} visitKind={} err={}", fetchBatchId, visitKind, e.toString());
         }
+    }
+
+    private static final int EXEC_DEPT_BACKFILL_MAX_DAYS = 31;
+    private static final int EXEC_DEPT_BACKFILL_CHUNK_DAYS = 7;
+    private static final DateTimeFormatter HIS_RANGE_TIME_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    /**
+     * 从 HIS 按计费时间区间补全历史住院镜像缺失的执行科室（仅更新 exec_dept_id/name，不新增行）。
+     */
+    @DataSource(DataSourceType.SPD)
+    public Map<String, Object> backfillInpatientExecDept(String beginDate, String endDate)
+    {
+        Map<String, Object> result = new HashMap<>();
+        Connection hisConnection = null;
+        try
+        {
+            LocalDateTime[] win = parseBackfillWindow(beginDate, endDate);
+            String tenantId = resolveChargeMirrorTenantId();
+            hisConnection = openHisConnection();
+            HisExecDeptBackfillResult stats = new HisExecDeptBackfillResult();
+            LocalDateTime cursor = win[0];
+            while (cursor.isBefore(win[1]))
+            {
+                LocalDateTime next = cursor.plusDays(EXEC_DEPT_BACKFILL_CHUNK_DAYS);
+                if (next.isAfter(win[1]))
+                {
+                    next = win[1];
+                }
+                List<Map<String, Object>> dataList = queryInpatientRangeFromHis(
+                    hisConnection, cursor.format(HIS_RANGE_TIME_FMT), next.format(HIS_RANGE_TIME_FMT));
+                mergeBackfillInpatientExecDept(tenantId, dataList, stats);
+                cursor = next;
+            }
+            stats.setUnifiedSyncedCount(hisPatientChargeMirrorUnifiedSyncMapper.syncInpatientExecDeptFromMirror(tenantId));
+            result.put("success", true);
+            result.put("message", String.format("住院执行科室补全完成，更新 %d 条", stats.getUpdatedCount()));
+            result.put("updatedCount", stats.getUpdatedCount());
+            result.put("skippedCount", stats.getSkippedCount());
+            result.put("hisMissingExecCount", stats.getHisMissingExecCount());
+            result.put("notFoundCount", stats.getNotFoundCount());
+            result.put("unifiedSyncedCount", stats.getUnifiedSyncedCount());
+        }
+        catch (Exception e)
+        {
+            log.error("住院执行科室补全异常", e);
+            result.put("success", false);
+            result.put("message", "补全失败: " + e.getMessage());
+        }
+        finally
+        {
+            closeQuietly(hisConnection);
+        }
+        return result;
+    }
+
+    /**
+     * 从 HIS 按计费时间区间补全历史门诊镜像缺失的执行科室。
+     */
+    @DataSource(DataSourceType.SPD)
+    public Map<String, Object> backfillOutpatientExecDept(String beginDate, String endDate)
+    {
+        Map<String, Object> result = new HashMap<>();
+        Connection hisConnection = null;
+        try
+        {
+            LocalDateTime[] win = parseBackfillWindow(beginDate, endDate);
+            String tenantId = resolveChargeMirrorTenantId();
+            hisConnection = openHisConnection();
+            HisExecDeptBackfillResult stats = new HisExecDeptBackfillResult();
+            LocalDateTime cursor = win[0];
+            while (cursor.isBefore(win[1]))
+            {
+                LocalDateTime next = cursor.plusDays(EXEC_DEPT_BACKFILL_CHUNK_DAYS);
+                if (next.isAfter(win[1]))
+                {
+                    next = win[1];
+                }
+                List<Map<String, Object>> dataList = queryOutpatientRangeFromHis(
+                    hisConnection, cursor.format(HIS_RANGE_TIME_FMT), next.format(HIS_RANGE_TIME_FMT));
+                mergeBackfillOutpatientExecDept(tenantId, dataList, stats);
+                cursor = next;
+            }
+            stats.setUnifiedSyncedCount(hisPatientChargeMirrorUnifiedSyncMapper.syncOutpatientExecDeptFromMirror(tenantId));
+            result.put("success", true);
+            result.put("message", String.format("门诊执行科室补全完成，更新 %d 条", stats.getUpdatedCount()));
+            result.put("updatedCount", stats.getUpdatedCount());
+            result.put("skippedCount", stats.getSkippedCount());
+            result.put("hisMissingExecCount", stats.getHisMissingExecCount());
+            result.put("notFoundCount", stats.getNotFoundCount());
+            result.put("unifiedSyncedCount", stats.getUnifiedSyncedCount());
+        }
+        catch (Exception e)
+        {
+            log.error("门诊执行科室补全异常", e);
+            result.put("success", false);
+            result.put("message", "补全失败: " + e.getMessage());
+        }
+        finally
+        {
+            closeQuietly(hisConnection);
+        }
+        return result;
+    }
+
+    private Connection openHisConnection() throws Exception
+    {
+        String driver = spdSystemConfigMapper.selectValueByKey("his.jdbc.driver");
+        String url = spdSystemConfigMapper.selectValueByKey("his.jdbc.url");
+        String username = spdSystemConfigMapper.selectValueByKey("his.jdbc.username");
+        String password = spdSystemConfigMapper.selectValueByKey("his.jdbc.password");
+        if (driver == null || url == null || username == null || password == null)
+        {
+            throw new IllegalStateException("HIS数据库连接配置不完整，请检查系统参数配置");
+        }
+        Class.forName(driver);
+        return DriverManager.getConnection(
+            appendSqlServerSocketTimeout(url, HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS), username, password);
+    }
+
+    private static void closeQuietly(Connection conn)
+    {
+        if (conn == null)
+        {
+            return;
+        }
+        try
+        {
+            conn.close();
+        }
+        catch (Exception e)
+        {
+            log.warn("关闭HIS数据库连接异常", e);
+        }
+    }
+
+    private LocalDateTime[] parseBackfillWindow(String beginDate, String endDate)
+    {
+        if (HisChargeMirrorSyncSupport.isBlank(beginDate) || HisChargeMirrorSyncSupport.isBlank(endDate))
+        {
+            throw new IllegalArgumentException("请指定开始时间与结束时间");
+        }
+        LocalDateTime start = parseBackfillLowerBound(beginDate.trim());
+        LocalDateTime endInclusive = parseBackfillUpperBound(endDate.trim());
+        if (endInclusive.isBefore(start))
+        {
+            throw new IllegalArgumentException("结束时间不能早于开始时间");
+        }
+        long spanDays = ChronoUnit.DAYS.between(start.toLocalDate(), endInclusive.toLocalDate()) + 1;
+        if (spanDays > EXEC_DEPT_BACKFILL_MAX_DAYS)
+        {
+            throw new IllegalArgumentException("单次补全跨度不能超过 " + EXEC_DEPT_BACKFILL_MAX_DAYS + " 天");
+        }
+        return new LocalDateTime[] { start, endInclusive.plusSeconds(1) };
+    }
+
+    private static LocalDateTime parseBackfillLowerBound(String raw)
+    {
+        try
+        {
+            if (raw.length() <= 10)
+            {
+                return LocalDate.parse(raw).atStartOfDay();
+            }
+            return LocalDateTime.parse(raw, HIS_RANGE_TIME_FMT);
+        }
+        catch (DateTimeParseException e)
+        {
+            throw new IllegalArgumentException("开始时间格式须为 yyyy-MM-dd 或 yyyy-MM-dd HH:mm:ss");
+        }
+    }
+
+    private static LocalDateTime parseBackfillUpperBound(String raw)
+    {
+        try
+        {
+            if (raw.length() <= 10)
+            {
+                return LocalDate.parse(raw).atTime(23, 59, 59);
+            }
+            return LocalDateTime.parse(raw, HIS_RANGE_TIME_FMT);
+        }
+        catch (DateTimeParseException e)
+        {
+            throw new IllegalArgumentException("结束时间格式须为 yyyy-MM-dd 或 yyyy-MM-dd HH:mm:ss");
+        }
+    }
+
+    private List<Map<String, Object>> queryInpatientRangeFromHis(Connection hisConnection, String lo, String hi) throws Exception
+    {
+        PreparedStatement pstmt = hisConnection.prepareStatement(HisChargeMirrorFetchSql.SQLSERVER_INPATIENT_RANGE);
+        pstmt.setQueryTimeout(HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS);
+        pstmt.setString(1, lo);
+        pstmt.setString(2, hi);
+        ResultSet rs = pstmt.executeQuery();
+        List<Map<String, Object>> dataList = mapInpatientResultSet(rs);
+        rs.close();
+        pstmt.close();
+        return dataList;
+    }
+
+    private List<Map<String, Object>> queryOutpatientRangeFromHis(Connection hisConnection, String lo, String hi) throws Exception
+    {
+        PreparedStatement pstmt = hisConnection.prepareStatement(HisChargeMirrorFetchSql.SQLSERVER_OUTPATIENT_RANGE);
+        pstmt.setQueryTimeout(HIS_CHARGE_SYNC_QUERY_TIMEOUT_SECONDS);
+        pstmt.setString(1, lo);
+        pstmt.setString(2, hi);
+        ResultSet rs = pstmt.executeQuery();
+        List<Map<String, Object>> dataList = mapOutpatientResultSet(rs);
+        rs.close();
+        pstmt.close();
+        return dataList;
+    }
+
+    private List<Map<String, Object>> mapInpatientResultSet(ResultSet rs) throws Exception
+    {
+        ResultSetMetaData metaData = rs.getMetaData();
+        int columnCount = metaData.getColumnCount();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        while (rs.next())
+        {
+            Map<String, Object> item = new HashMap<>();
+            for (int i = 1; i <= columnCount; i++)
+            {
+                String columnName = metaData.getColumnName(i).toLowerCase();
+                Object value = rs.getObject(i);
+                putInpatientColumn(item, columnName, value, sdf);
+            }
+            dataList.add(item);
+        }
+        return dataList;
+    }
+
+    private List<Map<String, Object>> mapOutpatientResultSet(ResultSet rs) throws Exception
+    {
+        ResultSetMetaData metaData = rs.getMetaData();
+        int columnCount = metaData.getColumnCount();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        while (rs.next())
+        {
+            Map<String, Object> item = new HashMap<>();
+            for (int i = 1; i <= columnCount; i++)
+            {
+                String columnName = metaData.getColumnName(i).toLowerCase();
+                Object value = rs.getObject(i);
+                putOutpatientColumn(item, columnName, value, sdf);
+            }
+            dataList.add(item);
+        }
+        return dataList;
+    }
+
+    private void putInpatientColumn(Map<String, Object> item, String columnName, Object value, SimpleDateFormat sdf)
+    {
+        switch (columnName)
+        {
+            case "inpatient_charge_id": item.put("inpatientChargeId", value); break;
+            case "inpatient_charge_id_tf": item.put("inpatientChargeIdTf", value); break;
+            case "patient_id": item.put("patientId", value); break;
+            case "patient_name": item.put("patientName", value != null ? value.toString().trim() : null); break;
+            case "inpatient_no": item.put("inpatientNo", value != null ? value.toString().trim() : null); break;
+            case "dept_code": item.put("deptCode", value != null ? value.toString().trim() : null); break;
+            case "dept_name": item.put("deptName", value != null ? value.toString().trim() : null); break;
+            case "exec_dept_id": item.put("execDeptId", value != null ? value.toString().trim() : null); break;
+            case "exec_dept_name": item.put("execDeptName", value != null ? value.toString().trim() : null); break;
+            case "doctor_id": item.put("doctorId", value != null ? value.toString().trim() : null); break;
+            case "doctor_name": item.put("doctorName", value != null ? value.toString().trim() : null); break;
+            case "charge_item_id": item.put("chargeItemId", value != null ? value.toString().trim() : null); break;
+            case "item_name": item.put("itemName", value != null ? value.toString().trim() : null); break;
+            case "spec_model": item.put("specModel", value != null ? value.toString().trim() : null); break;
+            case "batch_no": item.put("batchNo", value != null ? value.toString().trim() : null); break;
+            case "expire_date": item.put("expireDate", processDateValue(value, sdf)); break;
+            case "use_date": item.put("useDate", value); break;
+            case "charge_date": item.put("chargeDate", value); break;
+            case "quantity": item.put("quantity", value); break;
+            case "unit_price": item.put("unitPrice", value); break;
+            case "total_amount": item.put("totalAmount", value); break;
+            case "charge_operator": item.put("chargeOperator", value != null ? value.toString().trim() : null); break;
+            case "remark": item.put("remark", value != null ? value.toString().trim() : null); break;
+            default: break;
+        }
+    }
+
+    private void putOutpatientColumn(Map<String, Object> item, String columnName, Object value, SimpleDateFormat sdf)
+    {
+        switch (columnName)
+        {
+            case "outpatient_charge_id": item.put("outpatientChargeId", value); break;
+            case "outpatient_charge_id_tf": item.put("outpatientChargeIdTf", value); break;
+            case "patient_id": item.put("patientId", value); break;
+            case "patient_name": item.put("patientName", value != null ? value.toString().trim() : null); break;
+            case "outpatient_no": item.put("outpatientNo", value != null ? value.toString().trim() : null); break;
+            case "clinic_code": item.put("clinicCode", value != null ? value.toString().trim() : null); break;
+            case "clinic_name": item.put("clinicName", value != null ? value.toString().trim() : null); break;
+            case "exec_dept_id": item.put("execDeptId", value != null ? value.toString().trim() : null); break;
+            case "exec_dept_name": item.put("execDeptName", value != null ? value.toString().trim() : null); break;
+            case "doctor_id": item.put("doctorId", value != null ? value.toString().trim() : null); break;
+            case "doctor_name": item.put("doctorName", value != null ? value.toString().trim() : null); break;
+            case "charge_item_id": item.put("chargeItemId", value != null ? value.toString().trim() : null); break;
+            case "item_name": item.put("itemName", value != null ? value.toString().trim() : null); break;
+            case "spec_model": item.put("specModel", value != null ? value.toString().trim() : null); break;
+            case "batch_no": item.put("batchNo", value != null ? value.toString().trim() : null); break;
+            case "expire_date": item.put("expireDate", processDateValue(value, sdf)); break;
+            case "charge_date": item.put("chargeDate", value); break;
+            case "quantity": item.put("quantity", value); break;
+            case "unit_price": item.put("unitPrice", value); break;
+            case "total_amount": item.put("totalAmount", value); break;
+            case "charge_operator": item.put("chargeOperator", value != null ? value.toString().trim() : null); break;
+            case "payment_type": item.put("paymentType", value != null ? value.toString().trim() : null); break;
+            case "receipt_no": item.put("receiptNo", value != null ? value.toString().trim() : null); break;
+            case "remark": item.put("remark", value != null ? value.toString().trim() : null); break;
+            default: break;
+        }
+    }
+
+    private void mergeBackfillInpatientExecDept(String tenantId, List<Map<String, Object>> dataList, HisExecDeptBackfillResult stats)
+    {
+        if (dataList == null || dataList.isEmpty())
+        {
+            return;
+        }
+        Set<String> seen = new HashSet<>();
+        for (Map<String, Object> m : dataList)
+        {
+            HisInpatientChargeMirrorRow r = mapToInpatientMirrorRow(m, tenantId, null, SYNC_CREATE_BY, new Date());
+            if (r == null || HisChargeMirrorSyncSupport.isBlank(r.getHisInpatientChargeId()) || !seen.add(r.getHisInpatientChargeId()))
+            {
+                continue;
+            }
+            if (HisChargeMirrorSyncSupport.isBlank(r.getExecDeptId()))
+            {
+                stats.setHisMissingExecCount(stats.getHisMissingExecCount() + 1);
+                continue;
+            }
+            if (applyInpatientExecDeptBackfill(tenantId, r))
+            {
+                stats.setUpdatedCount(stats.getUpdatedCount() + 1);
+            }
+            else if (hisInpatientChargeMirrorSyncMapper.selectMirrorIdByHisChargeId(tenantId, r.getHisInpatientChargeId()) == null)
+            {
+                stats.setNotFoundCount(stats.getNotFoundCount() + 1);
+            }
+            else
+            {
+                stats.setSkippedCount(stats.getSkippedCount() + 1);
+            }
+        }
+    }
+
+    private void mergeBackfillOutpatientExecDept(String tenantId, List<Map<String, Object>> dataList, HisExecDeptBackfillResult stats)
+    {
+        if (dataList == null || dataList.isEmpty())
+        {
+            return;
+        }
+        Set<String> seen = new HashSet<>();
+        for (Map<String, Object> m : dataList)
+        {
+            HisOutpatientChargeMirrorRow r = mapToOutpatientMirrorRow(m, tenantId, null, SYNC_CREATE_BY, new Date());
+            if (r == null || HisChargeMirrorSyncSupport.isBlank(r.getHisOutpatientChargeId()) || !seen.add(r.getHisOutpatientChargeId()))
+            {
+                continue;
+            }
+            if (HisChargeMirrorSyncSupport.isBlank(r.getExecDeptId()))
+            {
+                stats.setHisMissingExecCount(stats.getHisMissingExecCount() + 1);
+                continue;
+            }
+            if (applyOutpatientExecDeptBackfill(tenantId, r))
+            {
+                stats.setUpdatedCount(stats.getUpdatedCount() + 1);
+            }
+            else if (hisOutpatientChargeMirrorSyncMapper.selectMirrorIdByHisChargeId(tenantId, r.getHisOutpatientChargeId()) == null)
+            {
+                stats.setNotFoundCount(stats.getNotFoundCount() + 1);
+            }
+            else
+            {
+                stats.setSkippedCount(stats.getSkippedCount() + 1);
+            }
+        }
+    }
+
+    private boolean applyInpatientExecDeptBackfill(String tenantId, HisInpatientChargeMirrorRow r)
+    {
+        if (r == null || HisChargeMirrorSyncSupport.isBlank(r.getExecDeptId()) || HisChargeMirrorSyncSupport.isBlank(r.getHisInpatientChargeId()))
+        {
+            return false;
+        }
+        int n = hisInpatientChargeMirrorSyncMapper.updateExecDeptIfMissing(
+            tenantId, r.getHisInpatientChargeId(), r.getExecDeptId(), r.getExecDeptName(), r.getRowFingerprint(), SYNC_CREATE_BY);
+        if (n <= 0)
+        {
+            return false;
+        }
+        hisPatientChargeMirrorUnifiedSyncMapper.updateInpatientExecDeptIfMissing(
+            tenantId, r.getHisInpatientChargeId(), r.getExecDeptId(), r.getExecDeptName(), r.getRowFingerprint());
+        return true;
+    }
+
+    private boolean applyOutpatientExecDeptBackfill(String tenantId, HisOutpatientChargeMirrorRow r)
+    {
+        if (r == null || HisChargeMirrorSyncSupport.isBlank(r.getExecDeptId()) || HisChargeMirrorSyncSupport.isBlank(r.getHisOutpatientChargeId()))
+        {
+            return false;
+        }
+        int n = hisOutpatientChargeMirrorSyncMapper.updateExecDeptIfMissing(
+            tenantId, r.getHisOutpatientChargeId(), r.getExecDeptId(), r.getExecDeptName(), r.getRowFingerprint(), SYNC_CREATE_BY);
+        if (n <= 0)
+        {
+            return false;
+        }
+        hisPatientChargeMirrorUnifiedSyncMapper.updateOutpatientExecDeptIfMissing(
+            tenantId, r.getHisOutpatientChargeId(), r.getExecDeptId(), r.getExecDeptName(), r.getRowFingerprint());
+        return true;
     }
 
     /** SQL Server JDBC：避免仅 setQueryTimeout 仍出现 Read timed out（socket 默认较短） */
