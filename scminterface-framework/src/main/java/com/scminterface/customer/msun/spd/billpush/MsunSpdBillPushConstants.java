@@ -18,6 +18,11 @@ public final class MsunSpdBillPushConstants
     public static final String SAVE_CORRELATION_FLAG = "1";
     public static final String RETURN_TO_SUPPLIER_YES = "1";
 
+    /** 2.5.41 出库明细：批号为空时传 HIS 占位符 */
+    public static final String DEFAULT_OUTBOUND_BATCH_NO = "/";
+    /** 2.5.41 出库明细：有效期为空时传 HIS 占位截止时间 */
+    public static final String DEFAULT_OUTBOUND_EFFECTIVE_DATE = "2099-12-31 23:59:59";
+
     public static final String VERIFY_MSG_YK_DETAIL_MISSING = "HIS未生成出退库明细";
     public static final String VERIFY_MSG_BATCH_STOCK_MISSING = "HIS未查到批次库存";
     public static final String VERIFY_MSG_QUERY_FAILED = "推送后校验查询失败";

@@ -396,7 +396,7 @@ public class MsunSpdBillPushService
             line.put("invoiceCode", bill.get("bill_no"));
             line.put("produceDate", MsunHisDateTimeSupport.formatOrNow(entry.get("begin_time")));
             line.put("effectiveDate", formatHisEffectiveDate(entry.get("end_time")));
-            line.put("ycBatchNo", entry.get("batch_number"));
+            line.put("ycBatchNo", normalizeHisBatchNumber(entry.get("batch_number")));
             line.put("spdDetailId", spdDetailId);
             line.put("memo", memo);
             details.add(line);
@@ -1079,16 +1079,27 @@ public class MsunSpdBillPushService
         }
     }
 
-    /** 有效期：必填语义，无法解析时抛错便于排错。 */
+    /** 有效期：空值用占位截止时间；无法解析时抛错便于排错。 */
     private static String formatHisEffectiveDate(Object endTime)
     {
+        if (StringUtils.isEmpty(str(endTime)))
+        {
+            return MsunSpdBillPushConstants.DEFAULT_OUTBOUND_EFFECTIVE_DATE;
+        }
         String formatted = MsunHisDateTimeSupport.format(endTime);
         if (formatted != null)
         {
             return formatted;
         }
         throw new IllegalArgumentException("明细有效期(end_time)格式无效，要求 yyyy-MM-dd HH:mm:ss，实际="
-                + (endTime == null ? "null" : endTime));
+                + endTime);
+    }
+
+    /** 批号：空或空白时传 '/'，避免 HIS 空值校验失败。 */
+    private static String normalizeHisBatchNumber(Object batchNumber)
+    {
+        String batch = str(batchNumber);
+        return StringUtils.isNotEmpty(batch) ? batch : MsunSpdBillPushConstants.DEFAULT_OUTBOUND_BATCH_NO;
     }
 
     private static String firstNonEmpty(String a, String b)
