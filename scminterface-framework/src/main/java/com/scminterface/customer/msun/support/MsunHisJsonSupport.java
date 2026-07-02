@@ -22,6 +22,29 @@ public final class MsunHisJsonSupport
         return JSON.toJSONString(body, JSONWriter.Feature.WriteLongAsString);
     }
 
+    /** 日志/探针展示用：超长 JSON 截断，避免刷屏。 */
+    public static String truncateForLog(String text, int maxLen)
+    {
+        if (text == null)
+        {
+            return null;
+        }
+        if (maxLen <= 0 || text.length() <= maxLen)
+        {
+            return text;
+        }
+        return text.substring(0, maxLen) + "...(truncated, total " + text.length() + " chars)";
+    }
+
+    public static String truncateForLog(Object body, int maxLen)
+    {
+        if (body == null)
+        {
+            return null;
+        }
+        return truncateForLog(toRequestJson(body), maxLen);
+    }
+
     /** 校验整型 ID 后以字符串放入请求体，避免 JSON 数字精度丢失。 */
     public static String requireSnowflakeId(String val, String label)
     {

@@ -212,7 +212,7 @@ public class MsunSpdBillPushService
             {
                 Map<String, Object> partial = new LinkedHashMap<>(4);
                 partial.put("apiCode", billType == 401 ? "2.5.42" : "2.5.41");
-                partial.put("requestBody", pendingHisBody);
+                partial.put("requestBodySummary", MsunHisJsonSupport.truncateForLog(pendingHisBody, 1024));
                 partial.put("note", "HIS 未调用或调用前失败，仅展示已组装的入参");
                 fail.put("hisInvoke", partial);
             }

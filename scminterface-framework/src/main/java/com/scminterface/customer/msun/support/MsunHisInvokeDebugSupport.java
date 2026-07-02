@@ -41,14 +41,15 @@ public final class MsunHisInvokeDebugSupport
             String requestBodyRaw = http.getRequestBody();
             if (StringUtils.isNotEmpty(requestBodyRaw))
             {
-                debug.put("requestBodyRaw", requestBodyRaw);
+                debug.put("requestBodyRaw", MsunHisJsonSupport.truncateForLog(requestBodyRaw, 2048));
             }
             Object reqBody = parseRequestBodyForDebug(requestBodyRaw);
             if (reqBody != null)
             {
                 debug.put("requestBody", reqBody);
             }
-            debug.put("responseRaw", parseJsonOrRaw(http.getResponseBody()));
+            debug.put("responseRaw", MsunHisJsonSupport.truncateForLog(
+                http.getResponseBody() == null ? null : String.valueOf(http.getResponseBody()), 2048));
         }
         if (runtime != null)
         {
