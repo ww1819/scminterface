@@ -15,4 +15,14 @@ public interface HisOutpatientChargeMirrorSyncMapper
     int insertBatch(@Param("list") List<HisOutpatientChargeMirrorRow> list);
 
     List<HisIdFingerprintRow> selectFingerprintsByHisIds(@Param("tenantId") String tenantId, @Param("hisIds") List<String> hisIds);
+
+    int updateExecDeptIfMissing(
+        @Param("tenantId") String tenantId,
+        @Param("hisChargeId") String hisChargeId,
+        @Param("execDeptId") String execDeptId,
+        @Param("execDeptName") String execDeptName,
+        @Param("rowFingerprint") String rowFingerprint,
+        @Param("updateBy") String updateBy);
+
+    String selectMirrorIdByHisChargeId(@Param("tenantId") String tenantId, @Param("hisChargeId") String hisChargeId);
 }
