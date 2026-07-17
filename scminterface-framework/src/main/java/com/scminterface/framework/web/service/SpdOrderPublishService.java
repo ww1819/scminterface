@@ -10,6 +10,7 @@ import com.scminterface.common.annotation.DataSource;
 import com.scminterface.common.core.domain.AjaxResult;
 import com.scminterface.common.core.domain.PurchaseOrderDTO;
 import com.scminterface.common.enums.DataSourceType;
+import com.scminterface.common.utils.MoneyPrecisionUtils;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.framework.utils.HttpClientUtils;
 import com.scminterface.framework.web.mapper.SpdPurchaseOrderMapper;
@@ -97,7 +98,7 @@ public class SpdOrderPublishService
             dto.setApplyDepartmentName(trimToNull(getString(order, "applyDepartmentName")));
             dto.setSupplierIdStr(trimToNull(getString(order, "supplierIdStr")));
             dto.setOrderDate((java.util.Date) order.get("orderDate"));
-            dto.setTotalAmount(getBigDecimal(order, "totalAmount"));
+            dto.setTotalAmount(MoneyPrecisionUtils.preserve(getBigDecimal(order, "totalAmount")));
             dto.setOrderStatus(getString(order, "orderStatus"));
             dto.setRemark(getString(order, "remark"));
             dto.setSpdTenantId(trimToNull(getString(order, "spdTenantId")) != null
@@ -117,8 +118,8 @@ public class SpdOrderPublishService
                 item.setSpecification(getString(entry, "specification"));
                 item.setUnit(getString(entry, "unit"));
                 item.setQuantity(getBigDecimal(entry, "quantity"));
-                item.setUnitPrice(getBigDecimal(entry, "unitPrice"));
-                item.setAmount(getBigDecimal(entry, "amount"));
+                item.setUnitPrice(MoneyPrecisionUtils.preserve(getBigDecimal(entry, "unitPrice")));
+                item.setAmount(MoneyPrecisionUtils.preserve(getBigDecimal(entry, "amount")));
                 item.setRemark(getString(entry, "remark"));
                 items.add(item);
             }
@@ -210,12 +211,13 @@ public class SpdOrderPublishService
         {
             return (BigDecimal) value;
         }
-        if (value instanceof Number)
+        if (value instanceof Long || value instanceof Integer || value instanceof Short || value instanceof Byte)
         {
-            return BigDecimal.valueOf(((Number) value).doubleValue());
+            return BigDecimal.valueOf(((Number) value).longValue());
         }
         try
         {
+            // 用 toString 避免 Double 二进制误差（勿用 valueOf(double)）
             return new BigDecimal(value.toString());
         }
         catch (Exception e)

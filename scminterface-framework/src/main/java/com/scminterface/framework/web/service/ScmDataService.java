@@ -12,6 +12,7 @@ import com.scminterface.common.annotation.DataSource;
 import com.scminterface.common.core.domain.MaterialArchiveDTO;
 import com.scminterface.common.core.domain.PurchaseOrderDTO;
 import com.scminterface.common.enums.DataSourceType;
+import com.scminterface.common.utils.MoneyPrecisionUtils;
 import com.scminterface.framework.web.mapper.ScmMaterialMapper;
 import com.scminterface.framework.web.mapper.ScmOrderMapper;
 
@@ -275,7 +276,7 @@ public class ScmDataService
                 orderMap.put("orderDeptId", spdDeptId);
                 orderMap.put("orderDeptName", orderDeptNameForColumn);
                 orderMap.put("orderDate", order.getOrderDate());
-                orderMap.put("orderAmount", order.getTotalAmount());
+                orderMap.put("orderAmount", MoneyPrecisionUtils.preserve(order.getTotalAmount()));
                 // SPD“已审核”到 SCM 默认转为“待接收”
                 orderMap.put("orderStatus", "0");
                 orderMap.put("applyDept", applyDeptForColumn);
@@ -335,10 +336,10 @@ public class ScmDataService
                         detailMap.put("specification", item.getSpecification());
                         detailMap.put("model", null);
                         detailMap.put("unit", item.getUnit());
-                        detailMap.put("purchasePrice", item.getUnitPrice());
+                        detailMap.put("purchasePrice", MoneyPrecisionUtils.preserve(item.getUnitPrice()));
                         detailMap.put("orderQuantity", item.getQuantity());
                         detailMap.put("remainingQuantity", item.getQuantity() != null ? item.getQuantity().intValue() : 0);
-                        detailMap.put("amount", item.getAmount());
+                        detailMap.put("amount", MoneyPrecisionUtils.preserve(item.getAmount()));
                         detailMap.put("manufacturerName", item.getManufacturerName());
                         detailMap.put("registerNo", item.getRegisterNo());
                         detailMap.put("remark", item.getRemark());
