@@ -17,6 +17,7 @@
             order_no,
             hospital_id,
             supplier_id,
+            supplier_code,
             tenant_id,
             warehouse_id,
             warehouse_name,
@@ -42,6 +43,7 @@
             #{orderNo},
             #{hospitalId},
             #{supplierId},
+            #{supplierCode},
             #{tenantId},
             #{warehouseId},
             #{warehouseName},
@@ -70,6 +72,7 @@
         update scm_order
         set hospital_id = #{hospitalId},
             supplier_id = #{supplierId},
+            supplier_code = #{supplierCode},
             tenant_id = #{tenantId},
             warehouse_id = #{warehouseId},
             warehouse_name = #{warehouseName},
@@ -100,6 +103,11 @@
     <insert id="insertOrderDetail" parameterType="java.util.HashMap">
         insert into scm_order_detail(
             order_id,
+            order_no,
+            hospital_id,
+            hospital_code,
+            supplier_id,
+            supplier_code,
             material_id,
             material_code,
             material_name,
@@ -113,11 +121,17 @@
             manufacturer_name,
             register_no,
             remark,
+            spd_entry_id,
             create_by,
             create_time,
             del_flag
         ) values (
             #{orderId},
+            #{orderNo},
+            #{hospitalId},
+            #{hospitalCode},
+            #{supplierId},
+            #{supplierCode},
             #{materialId},
             #{materialCode},
             #{materialName},
@@ -131,6 +145,7 @@
             #{manufacturerName},
             #{registerNo},
             #{remark},
+            #{spdEntryId},
             #{createBy},
             now(),
             '0'

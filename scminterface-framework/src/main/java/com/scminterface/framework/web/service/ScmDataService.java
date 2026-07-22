@@ -268,6 +268,7 @@ public class ScmDataService
                 orderMap.put("orderNo", order.getOrderNo());
                 orderMap.put("hospitalId", scmHospitalId);
                 orderMap.put("supplierId", scmSupplierId);
+                orderMap.put("supplierCode", scmSupplierCode != null ? scmSupplierCode : "");
                 orderMap.put("spdSupplierId", spdPurchaseSupplierId);
                 orderMap.put("tenantId", trimToNull(order.getSpdTenantId()));
                 orderMap.put("warehouseId", spdWarehouseId);
@@ -330,6 +331,11 @@ public class ScmDataService
 
                         Map<String, Object> detailMap = new HashMap<>();
                         detailMap.put("orderId", orderId);
+                        detailMap.put("orderNo", order.getOrderNo());
+                        detailMap.put("hospitalId", scmHospitalId);
+                        detailMap.put("hospitalCode", scmHospitalCode != null ? scmHospitalCode : "");
+                        detailMap.put("supplierId", scmSupplierId);
+                        detailMap.put("supplierCode", scmSupplierCode != null ? scmSupplierCode : "");
                         detailMap.put("materialId", item.getMaterialId());
                         detailMap.put("materialCode", item.getMaterialCode());
                         detailMap.put("materialName", item.getMaterialName());
@@ -343,6 +349,7 @@ public class ScmDataService
                         detailMap.put("manufacturerName", item.getManufacturerName());
                         detailMap.put("registerNo", item.getRegisterNo());
                         detailMap.put("remark", item.getRemark());
+                        detailMap.put("spdEntryId", item.getEntryId());
                         detailMap.put("createBy", "spd-sync");
 
                         scmOrderMapper.insertOrderDetail(detailMap);
