@@ -39,12 +39,13 @@ public class SpdDeliveryController
 
     @ApiOperation("SPD内部下载配送单XML")
     @GetMapping("/download")
-    public ResponseEntity<byte[]> download(@RequestParam("deliveryNo") String deliveryNo)
+    public ResponseEntity<byte[]> download(@RequestParam("deliveryNo") String deliveryNo,
+        @RequestParam(value = "spdTenantId", required = false) String spdTenantId)
     {
         if (StringUtils.isEmpty(deliveryNo))
         {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("配送单号不能为空".getBytes(StandardCharsets.UTF_8));
         }
-        return httpClientUtils.downloadSpdDeliveryXml(deliveryNo);
+        return httpClientUtils.downloadSpdDeliveryXml(deliveryNo, spdTenantId);
     }
 }

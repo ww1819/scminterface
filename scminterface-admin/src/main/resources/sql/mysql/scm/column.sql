@@ -71,6 +71,12 @@ CALL add_table_column('scm_delivery', 'spd_ref_no', 'varchar(128)', 'SPD侧引�
 /
 CALL add_table_column('scm_delivery_detail', 'spd_order_entry_id', 'bigint(20)', 'SPD采购订单明细ID purchase_order_entry.id', NULL);
 /
+CALL add_table_column('scm_delivery_detail', 'order_id', 'varchar(64)', '来源订单主键 scm_order.order_id（字符串外键，十进制）', NULL);
+/
+CALL add_table_column('scm_delivery_detail', 'order_no', 'varchar(50)', '来源订单号（冗余自 scm_order）', '');
+/
+ALTER TABLE scm_delivery_detail MODIFY COLUMN order_id varchar(64) DEFAULT NULL COMMENT '来源订单主键 scm_order.order_id（字符串外键，十进制）';
+/
 CALL add_table_column('scm_order', 'spd_tenant_id', 'varchar(64)', 'SPD租户ID(sb_customer.customer_id，推送快照)', NULL);
 /
 CALL add_table_column('scm_order', 'spd_snapshot_hospital_code', 'varchar(64)', '推送时快照：平台医院编码', NULL);
@@ -208,6 +214,59 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 /
 CALL add_table_index('scm_order', 'idx_order_no', 'order_no');
+/
+
+-- ========== SCM-X-003：配送单幂等（明细订单冗余 + 配送单号按租户唯一）==========
+UPDATE scm_delivery
+SET spd_tenant_id = tenant_id
+WHERE (spd_tenant_id IS NULL OR TRIM(spd_tenant_id) = '')
+  AND tenant_id IS NOT NULL
+  AND TRIM(tenant_id) <> '';
+/
+UPDATE scm_delivery_detail dd
+INNER JOIN scm_order_detail sod ON sod.detail_id = dd.order_detail_id
+SET dd.order_id = CAST(sod.order_id AS CHAR),
+    dd.order_no = IFNULL(NULLIF(TRIM(dd.order_no), ''), sod.order_no),
+    dd.spd_order_entry_id = COALESCE(dd.spd_order_entry_id, sod.spd_entry_id)
+WHERE dd.order_detail_id IS NOT NULL
+  AND (dd.order_id IS NULL OR TRIM(IFNULL(dd.order_id, '')) = '' OR TRIM(IFNULL(dd.order_no, '')) = '');
+/
+UPDATE scm_delivery_detail dd
+INNER JOIN scm_delivery d ON d.delivery_id = dd.delivery_id
+SET dd.order_id = CAST(d.order_id AS CHAR),
+    dd.order_no = IFNULL(NULLIF(TRIM(dd.order_no), ''), d.order_no)
+WHERE (dd.order_id IS NULL OR TRIM(IFNULL(dd.order_id, '')) = '')
+  AND d.order_id IS NOT NULL;
+/
+SET @scm_x003_drop_uk := (
+  SELECT IF(COUNT(*) > 0,
+    'ALTER TABLE scm_delivery DROP INDEX uk_delivery_no',
+    'SELECT ''skip drop uk_delivery_no'' AS info')
+  FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'scm_delivery'
+    AND INDEX_NAME = 'uk_delivery_no'
+);
+PREPARE stmt FROM @scm_x003_drop_uk;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+/
+SET @scm_x003_add_uk := (
+  SELECT IF(COUNT(*) = 0,
+    'ALTER TABLE scm_delivery ADD UNIQUE KEY uk_scm_delivery_tenant_no (spd_tenant_id, delivery_no)',
+    'SELECT ''skip add uk_scm_delivery_tenant_no'' AS info')
+  FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'scm_delivery'
+    AND INDEX_NAME = 'uk_scm_delivery_tenant_no'
+);
+PREPARE stmt FROM @scm_x003_add_uk;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+/
+CALL add_table_index('scm_delivery', 'idx_delivery_no', 'delivery_no');
+/
+CALL add_table_index('scm_delivery_detail', 'idx_scm_dd_order_id', 'order_id');
 /
 
 CREATE TABLE IF NOT EXISTS `scm_supplier_export_log` (

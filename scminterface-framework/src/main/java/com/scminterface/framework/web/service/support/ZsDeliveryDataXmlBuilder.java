@@ -124,6 +124,11 @@ public final class ZsDeliveryDataXmlBuilder
         appendEl(sb, "ZTM", "");
         appendEl(sb, "FTM", "");
         appendEl(sb, "DSB", zd != null ? decPlain(zd.getDsb()) : "");
+        appendEl(sb, "SCM_ORDER_ID", StringUtils.trimToEmpty(dd.getOrderId()));
+        appendEl(sb, "SCM_ORDER_NO", dd.getOrderNo() != null ? dd.getOrderNo() : "");
+        appendEl(sb, "SCM_ORDER_DETAIL_ID", dd.getOrderDetailId() != null ? String.valueOf(dd.getOrderDetailId()) : "");
+        appendEl(sb, "SCM_DETAIL_ID", dd.getDetailId() != null ? String.valueOf(dd.getDetailId()) : "");
+        appendEl(sb, "SPD_ENTRY_ID", dd.getSpdOrderEntryId() != null ? String.valueOf(dd.getSpdOrderEntryId()) : "");
         appendEl(sb, "CKBH", z != null ? z.getCkno() : "");
         appendEl(sb, "PSDH", delivery.getDeliveryNo());
         appendEl(sb, "WD", "");

@@ -52,12 +52,19 @@ public class SpdDeliveryService
     @DataSource(DataSourceType.SCM)
     public String buildDeliveryXml(String deliveryNo)
     {
+        return buildDeliveryXml(deliveryNo, null);
+    }
+
+    @DataSource(DataSourceType.SCM)
+    public String buildDeliveryXml(String deliveryNo, String spdTenantId)
+    {
         if (StringUtils.isEmpty(deliveryNo))
         {
             throw new ServiceException("配送单号不能为空");
         }
         String no = deliveryNo.trim();
-        ScmDeliveryXmlRow d = spdDeliveryMapper.selectDeliveryByDeliveryNo(no);
+        String tenant = StringUtils.trimToNull(spdTenantId);
+        ScmDeliveryXmlRow d = spdDeliveryMapper.selectDeliveryByDeliveryNo(no, tenant);
         if (d == null)
         {
             throw new ServiceException("配送单不存在：" + no);

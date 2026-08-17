@@ -44,13 +44,14 @@ public class ScmSpdDeliveryController
 
     @ApiOperation("接收下载配送单XML")
     @GetMapping("/download")
-    public ResponseEntity<byte[]> download(@RequestParam("deliveryNo") String deliveryNo)
+    public ResponseEntity<byte[]> download(@RequestParam("deliveryNo") String deliveryNo,
+        @RequestParam(value = "spdTenantId", required = false) String spdTenantId)
     {
         if (StringUtils.isEmpty(deliveryNo))
         {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("配送单号不能为空".getBytes(StandardCharsets.UTF_8));
         }
-        String xml = spdDeliveryService.buildDeliveryXml(deliveryNo);
+        String xml = spdDeliveryService.buildDeliveryXml(deliveryNo, spdTenantId);
         byte[] body = xml.getBytes(StandardCharsets.UTF_8);
         String safe = deliveryNo.trim().replaceAll("[\\\\/:*?\"<>|]", "_");
         HttpHeaders headers = new HttpHeaders();

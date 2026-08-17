@@ -15,6 +15,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.scminterface.common.core.domain.AjaxResult;
 import com.scminterface.common.core.domain.PurchaseOrderDTO;
+import com.scminterface.common.utils.StringUtils;
 import com.scminterface.framework.config.properties.PublicInterfaceProperties;
 
 /**
@@ -178,6 +179,14 @@ public class HttpClientUtils
      */
     public ResponseEntity<byte[]> downloadSpdDeliveryXml(String deliveryNo)
     {
+        return downloadSpdDeliveryXml(deliveryNo, null);
+    }
+
+    /**
+     * 转发调用公网接口：下载配送单XML（可选 spdTenantId 按租户精确匹配）
+     */
+    public ResponseEntity<byte[]> downloadSpdDeliveryXml(String deliveryNo, String spdTenantId)
+    {
         String baseUrl = publicInterfaceProperties.getUrl();
         if (baseUrl == null || baseUrl.isEmpty() || baseUrl.contains("公网IP"))
         {
@@ -191,6 +200,10 @@ public class HttpClientUtils
         {
             String url = baseUrl + "api/scm/spd/delivery/download?deliveryNo="
                 + URLEncoder.encode(deliveryNo == null ? "" : deliveryNo, "UTF-8");
+            if (StringUtils.isNotEmpty(spdTenantId))
+            {
+                url += "&spdTenantId=" + URLEncoder.encode(spdTenantId.trim(), "UTF-8");
+            }
             log.info("调用公网interface接口下载配送单: {}", url);
             return restTemplate.exchange(url, HttpMethod.GET, null, byte[].class);
         }

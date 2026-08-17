@@ -11,6 +11,10 @@ import java.util.List;
 public class ScmDeliveryDetailXmlRow
 {
     private Long detailId;
+    private String orderId;
+    private String orderNo;
+    private Long orderDetailId;
+    private Long spdOrderEntryId;
     private String zsOrderDetailId;
     private String materialCode;
     private BigDecimal deliveryQuantity;
@@ -33,6 +37,46 @@ public class ScmDeliveryDetailXmlRow
     public void setDetailId(Long detailId)
     {
         this.detailId = detailId;
+    }
+
+    public String getOrderId()
+    {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId)
+    {
+        this.orderId = orderId;
+    }
+
+    public String getOrderNo()
+    {
+        return orderNo;
+    }
+
+    public void setOrderNo(String orderNo)
+    {
+        this.orderNo = orderNo;
+    }
+
+    public Long getOrderDetailId()
+    {
+        return orderDetailId;
+    }
+
+    public void setOrderDetailId(Long orderDetailId)
+    {
+        this.orderDetailId = orderDetailId;
+    }
+
+    public Long getSpdOrderEntryId()
+    {
+        return spdOrderEntryId;
+    }
+
+    public void setSpdOrderEntryId(Long spdOrderEntryId)
+    {
+        this.spdOrderEntryId = spdOrderEntryId;
     }
 
     public String getZsOrderDetailId()

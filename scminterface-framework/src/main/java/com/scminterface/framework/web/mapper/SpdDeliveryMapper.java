@@ -21,7 +21,8 @@ public interface SpdDeliveryMapper
      */
     List<ScmDeliveryListItemRow> selectDeliveriesForSpdQuery(@Param("keyword") String keyword);
 
-    ScmDeliveryXmlRow selectDeliveryByDeliveryNo(@Param("deliveryNo") String deliveryNo);
+    ScmDeliveryXmlRow selectDeliveryByDeliveryNo(@Param("deliveryNo") String deliveryNo,
+        @Param("spdTenantId") String spdTenantId);
 
     /**
      * 第一方采购订单头信息，映射为与 {@link ZsTpOrderXmlRow} 相同结构以便复用 XML 拼装

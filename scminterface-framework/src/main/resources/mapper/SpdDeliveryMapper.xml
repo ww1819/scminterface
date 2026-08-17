@@ -53,6 +53,9 @@
         from scm_delivery d
         where d.delivery_no = #{deliveryNo}
           and (d.del_flag is null or d.del_flag = '' or d.del_flag = '0')
+          <if test="spdTenantId != null and spdTenantId != ''">
+          and d.spd_tenant_id = #{spdTenantId}
+          </if>
         limit 1
     </select>
 
@@ -76,6 +79,10 @@
 
     <select id="selectDeliveryDetailsByDeliveryId" resultType="com.scminterface.framework.domain.zs.ScmDeliveryDetailXmlRow">
         select d.detail_id             as detailId,
+               d.order_id              as orderId,
+               d.order_no              as orderNo,
+               d.order_detail_id       as orderDetailId,
+               d.spd_order_entry_id    as spdOrderEntryId,
                d.zs_order_detail_id    as zsOrderDetailId,
                d.material_code         as materialCode,
                d.delivery_quantity     as deliveryQuantity,
