@@ -29,6 +29,7 @@ import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.customer.hengsuiThird.his.mapper.HisInpatientChargeMirrorSyncMapper;
 import com.scminterface.customer.hengsuiThird.his.mapper.HisOutpatientChargeMirrorSyncMapper;
 import com.scminterface.customer.hengsuiThird.his.mapper.HisPatientChargeMirrorUnifiedSyncMapper;
+import com.scminterface.customer.hengsuiThird.his.mapper.HisChargeFetchBatchSyncMapper;
 import com.scminterface.customer.hengsuiThird.his.model.HisExecDeptBackfillResult;
 import com.scminterface.customer.hengsuiThird.his.model.HisIdFingerprintRow;
 import com.scminterface.customer.hengsuiThird.his.model.HisInpatientChargeMirrorRow;
@@ -77,6 +78,9 @@ public class HengshuiTaskService
 
     @Autowired
     private HisPatientChargeMirrorUnifiedSyncMapper hisPatientChargeMirrorUnifiedSyncMapper;
+
+    @Autowired
+    private HisChargeFetchBatchSyncMapper hisChargeFetchBatchSyncMapper;
 
     @Autowired
     private SpdPatientChargeInternalClient spdPatientChargeInternalClient;
@@ -542,6 +546,7 @@ public class HengshuiTaskService
             log.info("HIS住院收费明细镜像同步完成，总计: {}, 新增: {}, 跳过: {}, drift: {}, batch: {}",
                 dataList.size(), inserted, skipped, drift, fetchBatchId);
 
+            saveChargeFetchBatchLog(tenantId, "INPATIENT", fetchBatchId, createTime, inserted, skipped, drift);
             triggerSpdAutoProcessAfterSync(tenantId, fetchBatchId, "INPATIENT", inserted);
         }
         catch (Exception e)
@@ -733,6 +738,7 @@ public class HengshuiTaskService
             log.info("HIS门诊收费明细镜像同步完成，总计: {}, 新增: {}, 跳过: {}, drift: {}, batch: {}",
                 dataList.size(), inserted, skipped, drift, fetchBatchId);
 
+            saveChargeFetchBatchLog(tenantId, "OUTPATIENT", fetchBatchId, createTime, inserted, skipped, drift);
             triggerSpdAutoProcessAfterSync(tenantId, fetchBatchId, "OUTPATIENT", inserted);
         }
         catch (Exception e)
@@ -1079,6 +1085,40 @@ public class HengshuiTaskService
         catch (Exception e)
         {
             log.warn("触发 SPD 计费自动处理失败 batch={} visitKind={} err={}", fetchBatchId, visitKind, e.toString());
+        }
+    }
+
+    /**
+     * 写入 his_charge_fetch_batch，供 SPD「抓取记录」追溯（窗口与昨今同步 SQL 一致：昨天0点～明天0点）。
+     */
+    private void saveChargeFetchBatchLog(String tenantId, String chargeKind, String fetchBatchId, Date createTime,
+        int inserted, int skipped, int drift)
+    {
+        if (HisChargeMirrorSyncSupport.isBlank(tenantId) || HisChargeMirrorSyncSupport.isBlank(fetchBatchId))
+        {
+            return;
+        }
+        try
+        {
+            LocalDate today = LocalDate.now();
+            Date windowStart = java.sql.Timestamp.valueOf(today.minusDays(1).atStartOfDay());
+            Date windowEnd = java.sql.Timestamp.valueOf(today.plusDays(1).atStartOfDay());
+            hisChargeFetchBatchSyncMapper.insertFetchBatch(
+                fetchBatchId,
+                tenantId,
+                chargeKind,
+                windowStart,
+                windowEnd,
+                inserted,
+                skipped,
+                drift,
+                "定时同步（昨天～今天）",
+                SYNC_CREATE_BY,
+                createTime != null ? createTime : new Date());
+        }
+        catch (Exception e)
+        {
+            log.warn("写入计费抓取批次日志失败 batch={} kind={} err={}", fetchBatchId, chargeKind, e.toString());
         }
     }
 
