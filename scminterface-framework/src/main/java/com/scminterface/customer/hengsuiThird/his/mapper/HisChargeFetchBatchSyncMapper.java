@@ -1,11 +1,13 @@
 package com.scminterface.customer.hengsuiThird.his.mapper;
 
 import java.util.Date;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
  * 计费抓取批次日志（与 SPD his_charge_fetch_batch 对齐）。
  */
+@Mapper
 public interface HisChargeFetchBatchSyncMapper
 {
     int insertFetchBatch(

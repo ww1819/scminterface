@@ -138,6 +138,65 @@ BEGIN
     SET @dynamic_sql = NULL;
 END;
 /
+DROP PROCEDURE IF EXISTS `migrate_table_unique_key`;
+/
+CREATE PROCEDURE `migrate_table_unique_key`(
+    IN p_table_name VARCHAR(64),
+    IN p_old_index_name VARCHAR(64),
+    IN p_new_index_name VARCHAR(64),
+    IN p_new_index_columns VARCHAR(512)
+)
+migrate_uk_block:
+BEGIN
+    DECLARE v_table_exists INT DEFAULT 0;
+    DECLARE v_old_exists INT DEFAULT 0;
+    DECLARE v_new_exists INT DEFAULT 0;
+    IF p_table_name IS NULL OR p_table_name = ''
+        OR p_new_index_name IS NULL OR p_new_index_name = ''
+        OR p_new_index_columns IS NULL OR p_new_index_columns = '' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = '错误：表名、新唯一键名、新唯一键列为必填参数，不能为空！';
+    END IF;
+    SELECT COUNT(*) INTO v_table_exists
+    FROM information_schema.TABLES
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = p_table_name;
+    IF v_table_exists = 0 THEN
+        SELECT CONCAT('跳过：表【', p_table_name, '】不存在') AS migrate_table_unique_key_result;
+        LEAVE migrate_uk_block;
+    END IF;
+    IF p_old_index_name IS NOT NULL AND TRIM(p_old_index_name) <> '' THEN
+        SELECT COUNT(*) INTO v_old_exists
+        FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = p_table_name
+          AND INDEX_NAME = p_old_index_name;
+        IF v_old_exists > 0 THEN
+            SET @dynamic_sql = CONCAT('ALTER TABLE `', p_table_name, '` DROP INDEX `', p_old_index_name, '`');
+            PREPARE stmt FROM @dynamic_sql;
+            EXECUTE stmt;
+            DEALLOCATE PREPARE stmt;
+        END IF;
+    END IF;
+    SELECT COUNT(*) INTO v_new_exists
+    FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = p_table_name
+      AND INDEX_NAME = p_new_index_name;
+    IF v_new_exists = 0 THEN
+        SET @dynamic_sql = CONCAT(
+            'ALTER TABLE `', p_table_name, '` ADD UNIQUE KEY `', p_new_index_name, '` (', p_new_index_columns, ')'
+        );
+        PREPARE stmt FROM @dynamic_sql;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+        SELECT CONCAT('成功：唯一键【', p_new_index_name, '】已添加到表【', p_table_name, '】') AS migrate_table_unique_key_result;
+    ELSE
+        SELECT CONCAT('提示：唯一键【', p_new_index_name, '】已存在于表【', p_table_name, '】，无需重复添加') AS migrate_table_unique_key_result;
+    END IF;
+    SET @dynamic_sql = NULL;
+END;
+/
 CALL add_table_index('scm_order_detail', 'idx_order_no', 'order_no');
 /
 UPDATE scm_order_detail d
@@ -187,31 +246,7 @@ WHERE (spd_tenant_id IS NULL OR TRIM(spd_tenant_id) = '')
   AND tenant_id IS NOT NULL
   AND TRIM(tenant_id) <> '';
 /
-SET @scm_x002_drop_uk := (
-  SELECT IF(COUNT(*) > 0,
-    'ALTER TABLE scm_order DROP INDEX uk_order_no',
-    'SELECT ''skip drop uk_order_no'' AS info')
-  FROM information_schema.STATISTICS
-  WHERE TABLE_SCHEMA = DATABASE()
-    AND TABLE_NAME = 'scm_order'
-    AND INDEX_NAME = 'uk_order_no'
-);
-PREPARE stmt FROM @scm_x002_drop_uk;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-/
-SET @scm_x002_add_uk := (
-  SELECT IF(COUNT(*) = 0,
-    'ALTER TABLE scm_order ADD UNIQUE KEY uk_scm_order_tenant_order_no (spd_tenant_id, order_no)',
-    'SELECT ''skip add uk_scm_order_tenant_order_no'' AS info')
-  FROM information_schema.STATISTICS
-  WHERE TABLE_SCHEMA = DATABASE()
-    AND TABLE_NAME = 'scm_order'
-    AND INDEX_NAME = 'uk_scm_order_tenant_order_no'
-);
-PREPARE stmt FROM @scm_x002_add_uk;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+CALL migrate_table_unique_key('scm_order', 'uk_order_no', 'uk_scm_order_tenant_order_no', 'spd_tenant_id, order_no');
 /
 CALL add_table_index('scm_order', 'idx_order_no', 'order_no');
 /
@@ -238,31 +273,7 @@ SET dd.order_id = CAST(d.order_id AS CHAR),
 WHERE (dd.order_id IS NULL OR TRIM(IFNULL(dd.order_id, '')) = '')
   AND d.order_id IS NOT NULL;
 /
-SET @scm_x003_drop_uk := (
-  SELECT IF(COUNT(*) > 0,
-    'ALTER TABLE scm_delivery DROP INDEX uk_delivery_no',
-    'SELECT ''skip drop uk_delivery_no'' AS info')
-  FROM information_schema.STATISTICS
-  WHERE TABLE_SCHEMA = DATABASE()
-    AND TABLE_NAME = 'scm_delivery'
-    AND INDEX_NAME = 'uk_delivery_no'
-);
-PREPARE stmt FROM @scm_x003_drop_uk;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-/
-SET @scm_x003_add_uk := (
-  SELECT IF(COUNT(*) = 0,
-    'ALTER TABLE scm_delivery ADD UNIQUE KEY uk_scm_delivery_tenant_no (spd_tenant_id, delivery_no)',
-    'SELECT ''skip add uk_scm_delivery_tenant_no'' AS info')
-  FROM information_schema.STATISTICS
-  WHERE TABLE_SCHEMA = DATABASE()
-    AND TABLE_NAME = 'scm_delivery'
-    AND INDEX_NAME = 'uk_scm_delivery_tenant_no'
-);
-PREPARE stmt FROM @scm_x003_add_uk;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+CALL migrate_table_unique_key('scm_delivery', 'uk_delivery_no', 'uk_scm_delivery_tenant_no', 'spd_tenant_id, delivery_no');
 /
 CALL add_table_index('scm_delivery', 'idx_delivery_no', 'delivery_no');
 /

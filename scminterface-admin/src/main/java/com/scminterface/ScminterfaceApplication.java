@@ -5,13 +5,17 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 
 /**
  * 启动程序
  *
  * @author scminterface
  */
-@SpringBootApplication(scanBasePackages = {"com.scminterface"}, exclude = { DataSourceAutoConfiguration.class })
+@SpringBootApplication(scanBasePackages = {"com.scminterface"}, exclude = {
+    DataSourceAutoConfiguration.class,
+    DruidDataSourceAutoConfigure.class
+})
 @EnableScheduling
 public class ScminterfaceApplication
 {
