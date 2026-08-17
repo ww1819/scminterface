@@ -4,10 +4,37 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.scminterface.framework.web.mapper.ScmOrderMapper">
 
+    <select id="selectOrderIdByTenantAndOrderNo" resultType="Long">
+        select order_id
+        from scm_order
+        where order_no = #{orderNo}
+          and del_flag = '0'
+          and (
+            spd_tenant_id = #{spdTenantId}
+            or (
+              (spd_tenant_id is null or TRIM(spd_tenant_id) = '')
+              and tenant_id = #{spdTenantId}
+            )
+          )
+        limit 1
+    </select>
+
     <select id="selectOrderIdByOrderNo" parameterType="String" resultType="Long">
         select order_id
         from scm_order
         where order_no = #{orderNo}
+          and del_flag = '0'
+        limit 1
+    </select>
+
+    <select id="selectOrderSnapshotByOrderId" resultType="java.util.HashMap">
+        select order_id as orderId,
+               order_no as orderNo,
+               hospital_id as hospitalId,
+               tenant_id as tenantId,
+               spd_tenant_id as spdTenantId
+        from scm_order
+        where order_id = #{orderId}
           and del_flag = '0'
         limit 1
     </select>
@@ -153,4 +180,3 @@
     </insert>
 
 </mapper>
-

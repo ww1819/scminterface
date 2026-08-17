@@ -174,6 +174,42 @@ WHERE d.hospital_id IS NULL
    OR TRIM(IFNULL(d.supplier_code, '')) = '';
 /
 
+-- ========== SCM-X-002：order_no 按 SPD 租户唯一（多医院可同号）==========
+UPDATE scm_order
+SET spd_tenant_id = tenant_id
+WHERE (spd_tenant_id IS NULL OR TRIM(spd_tenant_id) = '')
+  AND tenant_id IS NOT NULL
+  AND TRIM(tenant_id) <> '';
+/
+SET @scm_x002_drop_uk := (
+  SELECT IF(COUNT(*) > 0,
+    'ALTER TABLE scm_order DROP INDEX uk_order_no',
+    'SELECT ''skip drop uk_order_no'' AS info')
+  FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'scm_order'
+    AND INDEX_NAME = 'uk_order_no'
+);
+PREPARE stmt FROM @scm_x002_drop_uk;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+/
+SET @scm_x002_add_uk := (
+  SELECT IF(COUNT(*) = 0,
+    'ALTER TABLE scm_order ADD UNIQUE KEY uk_scm_order_tenant_order_no (spd_tenant_id, order_no)',
+    'SELECT ''skip add uk_scm_order_tenant_order_no'' AS info')
+  FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'scm_order'
+    AND INDEX_NAME = 'uk_scm_order_tenant_order_no'
+);
+PREPARE stmt FROM @scm_x002_add_uk;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+/
+CALL add_table_index('scm_order', 'idx_order_no', 'order_no');
+/
+
 CREATE TABLE IF NOT EXISTS `scm_supplier_export_log` (
   `id` varchar(36) NOT NULL COMMENT '主键UUID7（36位）',
   `hospital_code` varchar(64) NOT NULL COMMENT '平台医院编码',

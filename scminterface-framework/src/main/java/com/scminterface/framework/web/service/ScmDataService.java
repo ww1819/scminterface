@@ -197,8 +197,11 @@ public class ScmDataService
                 {
                     throw new RuntimeException("订单号为空");
                 }
-
-                Long orderId = scmOrderMapper.selectOrderIdByOrderNo(order.getOrderNo());
+                String spdTenantId = trimToNull(order.getSpdTenantId());
+                if (spdTenantId == null)
+                {
+                    throw new RuntimeException("订单「" + order.getOrderNo() + "」缺少 SPD 租户ID（spdTenantId），无法推送");
+                }
 
                 String supplierName = trimToNull(order.getSupplierName());
                 String hospitalName = trimToNull(order.getHospitalName());
@@ -270,7 +273,7 @@ public class ScmDataService
                 orderMap.put("supplierId", scmSupplierId);
                 orderMap.put("supplierCode", scmSupplierCode != null ? scmSupplierCode : "");
                 orderMap.put("spdSupplierId", spdPurchaseSupplierId);
-                orderMap.put("tenantId", trimToNull(order.getSpdTenantId()));
+                orderMap.put("tenantId", spdTenantId);
                 orderMap.put("warehouseId", spdWarehouseId);
                 orderMap.put("warehouseName", trimToNull(order.getWarehouseName()));
                 orderMap.put("orderSupplierName", trimToNull(order.getSupplierName()));
@@ -286,30 +289,43 @@ public class ScmDataService
                 orderMap.put("updateBy", "spd-sync");
                 orderMap.put("spdOrderId", order.getOrderId());
                 orderMap.put("sourceSystem", "SPD");
-                orderMap.put("spdTenantId", trimToNull(order.getSpdTenantId()));
+                orderMap.put("spdTenantId", spdTenantId);
                 orderMap.put("spdSnapshotHospitalCode", scmHospitalCode != null ? scmHospitalCode : "");
                 orderMap.put("spdSnapshotSupplierCode", scmSupplierCode != null ? scmSupplierCode : "");
                 orderMap.put("hsBindSnapshot", hsBindSnapshot);
 
+                Long orderId = scmOrderMapper.selectOrderIdByTenantAndOrderNo(spdTenantId, order.getOrderNo());
+
                 if (orderId == null)
                 {
-                    scmOrderMapper.insertOrder(orderMap);
+                    try
+                    {
+                        scmOrderMapper.insertOrder(orderMap);
+                    }
+                    catch (Exception insertEx)
+                    {
+                        if (isDuplicateOrderNoException(insertEx))
+                        {
+                            throw new RuntimeException(
+                                "订单号「" + order.getOrderNo() + "」在平台已被其他医院/租户占用。"
+                                    + "若为多租户同号，请先执行 docs/sql/SCM-X-002-order-no-tenant-unique.sql 后再推送",
+                                insertEx);
+                        }
+                        throw insertEx;
+                    }
                     Object idObj = orderMap.get("orderId");
                     if (idObj instanceof Number)
                     {
                         orderId = ((Number) idObj).longValue();
                     }
-                    else
-                    {
-                        orderId = null;
-                    }
                     if (orderId == null)
                     {
-                        orderId = scmOrderMapper.selectOrderIdByOrderNo(order.getOrderNo());
+                        orderId = scmOrderMapper.selectOrderIdByTenantAndOrderNo(spdTenantId, order.getOrderNo());
                     }
                 }
                 else
                 {
+                    assertOrderSnapshotMatchesPush(orderId, spdTenantId, scmHospitalId, order.getOrderNo());
                     orderMap.put("orderId", orderId);
                     scmOrderMapper.updateOrder(orderMap);
                     scmOrderMapper.deleteOrderDetailsByOrderId(orderId);
@@ -413,6 +429,59 @@ public class ScmDataService
             return s;
         }
         return s.substring(0, maxLen);
+    }
+
+    private void assertOrderSnapshotMatchesPush(Long orderId, String spdTenantId, Long hospitalId, String orderNo)
+    {
+        Map<String, Object> snap = scmOrderMapper.selectOrderSnapshotByOrderId(orderId);
+        if (snap == null || snap.isEmpty())
+        {
+            return;
+        }
+        String existTenant = trimToNull((String) snap.get("spdTenantId"));
+        if (existTenant == null)
+        {
+            existTenant = trimToNull((String) snap.get("tenantId"));
+        }
+        if (existTenant != null && !existTenant.equals(spdTenantId))
+        {
+            throw new RuntimeException("订单号「" + orderNo + "」命中平台订单属于其他租户（" + existTenant + "），拒绝覆盖");
+        }
+        Long existHospitalId = toLongSafe(snap.get("hospitalId"));
+        if (existHospitalId != null && hospitalId != null && !existHospitalId.equals(hospitalId))
+        {
+            throw new RuntimeException("订单号「" + orderNo + "」命中平台订单属于其他医院，拒绝覆盖");
+        }
+    }
+
+    private static Long toLongSafe(Object v)
+    {
+        if (v instanceof Number)
+        {
+            return ((Number) v).longValue();
+        }
+        return parseLongSafe(v != null ? v.toString() : null);
+    }
+
+    private static boolean isDuplicateOrderNoException(Throwable e)
+    {
+        Throwable cur = e;
+        while (cur != null)
+        {
+            String msg = cur.getMessage();
+            if (msg != null)
+            {
+                String lower = msg.toLowerCase();
+                if (lower.contains("duplicate entry")
+                    || lower.contains("uk_order_no")
+                    || lower.contains("uk_scm_order_tenant_order_no"))
+                {
+                    return true;
+                }
+            }
+            cur = cur.getCause();
+        }
+        return false;
     }
 }
 
