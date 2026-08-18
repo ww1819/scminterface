@@ -276,9 +276,11 @@ public class ScmDataService
                 orderMap.put("tenantId", spdTenantId);
                 orderMap.put("warehouseId", spdWarehouseId);
                 orderMap.put("warehouseName", trimToNull(order.getWarehouseName()));
+                orderMap.put("warehouseCode", trimToNull(order.getWarehouseCode()));
                 orderMap.put("orderSupplierName", trimToNull(order.getSupplierName()));
                 orderMap.put("orderDeptId", spdDeptId);
                 orderMap.put("orderDeptName", orderDeptNameForColumn);
+                orderMap.put("orderDeptCode", trimToNull(order.getDepartmentCode()));
                 orderMap.put("orderDate", order.getOrderDate());
                 orderMap.put("orderAmount", MoneyPrecisionUtils.preserve(order.getTotalAmount()));
                 // SPD“已审核”到 SCM 默认转为“待接收”

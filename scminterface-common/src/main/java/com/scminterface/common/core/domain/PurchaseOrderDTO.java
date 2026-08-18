@@ -41,6 +41,9 @@ public class PurchaseOrderDTO implements Serializable
     /** 要货仓库名称（SPD fd_warehouse.name，写入 SCM scm_order.warehouse_name） */
     private String warehouseName;
 
+    /** 仓库编码（SPD fd_warehouse.code，写入 SCM scm_order.warehouse_code） */
+    private String warehouseCode;
+
     /** 科室ID（SPD端，可能为空） */
     private Long departmentId;
 
@@ -48,6 +51,9 @@ public class PurchaseOrderDTO implements Serializable
      * 申请科室名称（SPD fd_department.name；写入 SCM scm_order.apply_dept / order_dept_name）
      */
     private String applyDepartmentName;
+
+    /** 科室编码（SPD fd_department.code，写入 SCM scm_order.order_dept_code） */
+    private String departmentCode;
 
     /**
      * SPD 仓库主键（字符串，varchar 传输；可与 {@link #warehouseId} 并存）
@@ -168,6 +174,16 @@ public class PurchaseOrderDTO implements Serializable
         this.warehouseName = warehouseName;
     }
 
+    public String getWarehouseCode()
+    {
+        return warehouseCode;
+    }
+
+    public void setWarehouseCode(String warehouseCode)
+    {
+        this.warehouseCode = warehouseCode;
+    }
+
     public Long getDepartmentId()
     {
         return departmentId;
@@ -186,6 +202,16 @@ public class PurchaseOrderDTO implements Serializable
     public void setApplyDepartmentName(String applyDepartmentName)
     {
         this.applyDepartmentName = applyDepartmentName;
+    }
+
+    public String getDepartmentCode()
+    {
+        return departmentCode;
+    }
+
+    public void setDepartmentCode(String departmentCode)
+    {
+        this.departmentCode = departmentCode;
     }
 
     public String getWarehouseIdStr()

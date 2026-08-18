@@ -92,10 +92,12 @@ public class SpdOrderPublishService
             dto.setHospitalName(trimToNull(getString(order, "hospitalName")));
             dto.setWarehouseId(getLong(order, "warehouseId"));
             dto.setWarehouseName(trimToNull(getString(order, "warehouseName")));
+            dto.setWarehouseCode(trimToNull(getString(order, "warehouseCode")));
             dto.setWarehouseIdStr(trimToNull(getString(order, "warehouseIdStr")));
             dto.setDepartmentId(getLong(order, "departmentId"));
             dto.setApplyDeptIdStr(trimToNull(getString(order, "applyDeptIdStr")));
             dto.setApplyDepartmentName(trimToNull(getString(order, "applyDepartmentName")));
+            dto.setDepartmentCode(trimToNull(getString(order, "departmentCode")));
             dto.setSupplierIdStr(trimToNull(getString(order, "supplierIdStr")));
             dto.setOrderDate((java.util.Date) order.get("orderDate"));
             dto.setTotalAmount(MoneyPrecisionUtils.preserve(getBigDecimal(order, "totalAmount")));

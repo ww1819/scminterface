@@ -213,6 +213,10 @@ UPDATE scm_order
 SET supplier_code = IFNULL(spd_snapshot_supplier_code, '')
 WHERE TRIM(IFNULL(supplier_code, '')) = '' AND IFNULL(spd_snapshot_supplier_code, '') <> '';
 /
+CALL add_table_column('scm_order', 'warehouse_code', 'varchar(64)', '订单仓库编码（SPD fd_warehouse.code 快照）', '');
+/
+CALL add_table_column('scm_order', 'order_dept_code', 'varchar(64)', '订单科室编码（SPD fd_department.code 快照）', '');
+/
 CALL add_table_column('scm_order_detail', 'hospital_id', 'bigint(20)', '医院ID（冗余自 scm_order，便于行级筛选）', NULL);
 /
 CALL add_table_column('scm_order_detail', 'hospital_code', 'varchar(64)', '平台医院编码（冗余自 scm_order.spd_snapshot_hospital_code）', '');

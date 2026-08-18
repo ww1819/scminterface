@@ -26,7 +26,9 @@
             s.name            as supplierName,
             c.customer_name   as hospitalName,
             wh.name           as warehouseName,
-            dep.name          as applyDepartmentName
+            wh.code           as warehouseCode,
+            dep.name          as applyDepartmentName,
+            dep.code          as departmentCode
         from purchase_order po
         left join fd_supplier s on po.supplier_id = s.id and (s.del_flag = 0 or s.del_flag is null)
         left join sb_customer c on po.tenant_id = c.customer_id
