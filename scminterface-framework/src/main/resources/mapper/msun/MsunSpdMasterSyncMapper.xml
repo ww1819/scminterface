@@ -340,8 +340,12 @@
             sale_price = #{salePrice},
             </if>
             referred_name = #{referredName},
+            <if test="skipRegisterNoUpdate == null or !skipRegisterNoUpdate">
             register_no = #{registerNo},
+            </if>
+            <if test="skipMedicalNoUpdate == null or !skipMedicalNoUpdate">
             medical_no = #{medicalNo},
+            </if>
             tenant_id = #{tenantId},
             his_id = #{hisId},
             his_spec_packing_id = #{hisSpecPackingId},
@@ -349,7 +353,9 @@
             <if test="skipSupplierUpdate == null or !skipSupplierUpdate">
             supplier_id = #{supplierId},
             </if>
+            <if test="skipFactoryUpdate == null or !skipFactoryUpdate">
             factory_id = #{factoryId},
+            </if>
             storeroom_id = #{storeroomId},
             unit_id = #{unitId},
             update_by = #{updateBy},

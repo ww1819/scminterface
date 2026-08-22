@@ -376,6 +376,7 @@ public class MsunSpdMasterSyncExecutor
      * 若 SPD 已逻辑删除（del_flag=1）则跳过，避免字典同步覆盖人工删除。
      * 供应商/生产厂家/库房分类/单位：优先用 SPD 已有主数据（含独立镜像批次同步结果）；
      * 若 SPD 中不存在，则以本行字典字段补全（不依赖供应商/厂商/分类镜像表是否已拉取）。
+     * 枣强更新已有档案：注册证号、医保编码、生产厂家不覆盖（以 SPD 人工维护为准）；新建仍从 HIS 填全。
      */
     private int syncMaterials(MsunHospitalRuntime runtime, String batchNo)
     {
@@ -428,7 +429,8 @@ public class MsunSpdMasterSyncExecutor
             {
                 supplierId = resolveOrEnsureSupplierId(tenantId, row);
             }
-            Long factoryId = resolveOrEnsureFactoryId(tenantId, row);
+            // 枣强已有档案：注册证号/医保编码/生产厂家以 SPD 人工维护为准，不覆盖
+            Long factoryId = zaoqiangUpdate ? null : resolveOrEnsureFactoryId(tenantId, row);
             Long storeroomId = resolveOrEnsureWarehouseCategoryId(tenantId, row);
             Long unitId = resolveOrEnsureUnitId(tenantId, row);
 
@@ -440,8 +442,19 @@ public class MsunSpdMasterSyncExecutor
             spd.put("model", MsunSpdFieldSupport.truncate(str(row, "model_type"), 100));
             applyZaoqiangMaterialPriceFields(spd, zaoqiangUpdate, buyPrice, retailPrice);
             spd.put("referredName", MsunSpdFieldSupport.truncate(str(row, "input_code"), 100));
-            spd.put("registerNo", MsunSpdFieldSupport.truncate(str(row, "approved_no"), 100));
-            spd.put("medicalNo", MsunSpdFieldSupport.truncate(str(row, "national_medical_insurance_code"), 100));
+            if (zaoqiangUpdate)
+            {
+                spd.put("skipRegisterNoUpdate", Boolean.TRUE);
+                spd.put("skipMedicalNoUpdate", Boolean.TRUE);
+                spd.put("skipFactoryUpdate", Boolean.TRUE);
+            }
+            else
+            {
+                spd.put("registerNo", MsunSpdFieldSupport.truncate(str(row, "approved_no"), 100));
+                spd.put("medicalNo", MsunSpdFieldSupport.truncate(
+                        str(row, "national_medical_insurance_code"), 100));
+                spd.put("factoryId", factoryId);
+            }
             spd.put("hisId", drugId);
             // his_spec_packing_id：众阳HIS产品档案唯一键（drug_spec_packing_id）
             spd.put("hisSpecPackingId", specPackingId);
@@ -456,7 +469,6 @@ public class MsunSpdMasterSyncExecutor
             {
                 spd.put("supplierId", supplierId);
             }
-            spd.put("factoryId", factoryId);
             spd.put("storeroomId", storeroomId);
             spd.put("unitId", unitId);
             spd.put("createBy", MsunSpdFieldSupport.syncBy());
