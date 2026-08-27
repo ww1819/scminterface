@@ -52,6 +52,10 @@ scminterface:
       bootstrap: false
       # 某段 SQL 失败时是否中止启动（false 仅打日志，便于联调）
       fail-on-error: false
+    # 公网 SCM 应用根地址，首次写入订单后回调微信模板；与 SCM scm.wechat.mp.internal-api-key 一致
+    app:
+      url: ${SCM_APP_URL:https://aisipu.asia}
+      api-key: ${SCM_INTERNAL_API_KEY:scm-internal-wx-notify}
   # 众阳 HIS 厂家 — 各医院客户独立配置（凭证见各医院 *MsunEnvProfile.java）
   vendor:
     msun:

@@ -35,6 +35,9 @@ public class ScmDataService
     @Autowired
     private HospitalSupplierBindSnapshotService hospitalSupplierBindSnapshotService;
 
+    @Autowired
+    private ScmOrderWxNotifyClient scmOrderWxNotifyClient;
+
     /**
      * 保存示例数据
      * 
@@ -297,8 +300,9 @@ public class ScmDataService
                 orderMap.put("hsBindSnapshot", hsBindSnapshot);
 
                 Long orderId = scmOrderMapper.selectOrderIdByTenantAndOrderNo(spdTenantId, order.getOrderNo());
+                boolean firstInsert = (orderId == null);
 
-                if (orderId == null)
+                if (firstInsert)
                 {
                     try
                     {
@@ -372,6 +376,11 @@ public class ScmDataService
 
                         scmOrderMapper.insertOrderDetail(detailMap);
                     }
+                }
+
+                if (firstInsert)
+                {
+                    scmOrderWxNotifyClient.notifyOrderCreatedAfterCommit(orderId);
                 }
 
                 successCount++;
