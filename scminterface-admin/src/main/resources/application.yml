@@ -46,9 +46,16 @@ scminterface:
   public:
     interface:
       url: http://106.53.83.190:8088
+  # 稳态桥：院内 SPD 调 /api/bridge/v1 → 默认 forward 到公网云端；联调同机可改 local
+  bridge:
+    mode: forward
+    cloud-path: api/cloud/spd/bridge/v1
+    token: ${SCM_BRIDGE_TOKEN:}
   # SCM 库结构补全：仅当 spring.datasource.druid.scm.enabled=true 且本项为 true 时执行 sql/mysql/scm/*.sql
   scm:
     schema:
+      # 必要表幂等补全（essential.sql）：scm.enabled 时默认开启，发版即建 scm_bridge_inbox 等
+      essential: true
       bootstrap: false
       # 某段 SQL 失败时是否中止启动（false 仅打日志，便于联调）
       fail-on-error: false

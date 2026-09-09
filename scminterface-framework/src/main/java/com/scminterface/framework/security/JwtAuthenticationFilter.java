@@ -57,7 +57,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
         "/api/spd/msun/hospitals",        // SPD 调用众阳 HIS（按 hospitalKey：sync/push/query，系统间调用）
         "/api/scm/spd/delivery",          // SCM接收SPD配送单查询/下载接口（系统间调用）
         "/api/scm/pushPurchaseOrders",    // SCM接收采购订单接口（系统间调用）
-        "/api/scm/zs"                     // SCM接收第三方数据(ZS)（系统间调用）
+        "/api/scm/zs",                    // SCM接收第三方数据(ZS)（系统间调用）
+        "/api/spd/scmSupplier",           // SPD 平台供应商列表/档案（系统间调用）
+        "/api/bridge/v1",                 // 院内稳态桥（透传，业务不进前置机）
+        "/api/cloud/spd/bridge/v1"        // 云端稳态桥入口（前置机转发目标）
     };
 
     private AntPathMatcher pathMatcher = new AntPathMatcher();

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.ScmBridgeInboxMapper">
+
+    <select id="selectPending" resultType="java.util.HashMap">
+        select id as messageId,
+               hospital_code as hospitalCode,
+               tenant_id as tenantId,
+               msg_type as msgType,
+               payload_json as payloadJson,
+               status as status,
+               create_time as createTime
+        from scm_bridge_inbox
+        where hospital_code = #{hospitalCode}
+          and status = '0'
+          <if test="tenantId != null and tenantId != ''">
+            and (tenant_id is null or tenant_id = '' or tenant_id = #{tenantId})
+          </if>
+        order by create_time asc
+        limit #{limit}
+    </select>
+
+    <update id="ackByIds">
+        update scm_bridge_inbox
+        set status = #{ackedStatus},
+            ack_time = now()
+        where hospital_code = #{hospitalCode}
+          and status = '0'
+          and id in
+          <foreach collection="messageIds" item="id" open="(" separator="," close=")">
+              #{id}
+          </foreach>
+    </update>
+
+    <insert id="insert">
+        insert into scm_bridge_inbox(id, hospital_code, tenant_id, msg_type, payload_json, status, create_by, create_time)
+        values (#{id}, #{hospitalCode}, #{tenantId}, #{msgType}, #{payloadJson}, #{status}, #{createBy}, now())
+    </insert>
+</mapper>
