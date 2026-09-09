@@ -44,9 +44,15 @@ public interface ScmPartyLookupMapper
     Map<String, Object> selectScmSupplierRowByCode(@Param("supplierCode") String supplierCode);
 
     /**
-     * 某医院编码下已关联的平台供应商简要列表
+     * 某医院下可下载范围的平台供应商（曾审过并绑定过，含解绑/停用/过期；不含待审）
      */
     List<Map<String, Object>> selectSuppliersByHospitalCode(@Param("hospitalCode") String hospitalCode);
+
+    /**
+     * 按医院编码+供应商编码取关联行（未删除）
+     */
+    Map<String, Object> selectHospitalSupplierRelationByCodes(@Param("hospitalCode") String hospitalCode,
+        @Param("supplierCode") String supplierCode);
 
     int insertScmSupplierExportLog(@Param("id") String id,
         @Param("hospitalCode") String hospitalCode,
