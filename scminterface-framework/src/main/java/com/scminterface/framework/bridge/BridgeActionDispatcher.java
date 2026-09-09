@@ -22,6 +22,7 @@ import com.scminterface.common.core.domain.PurchaseOrderDTO;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.framework.config.properties.BridgeProperties;
 import com.scminterface.framework.domain.zs.ScmDeliveryListItemRow;
+import com.scminterface.framework.web.service.HospitalMaterialArchiveInterfaceService;
 import com.scminterface.framework.web.service.ScmSupplierInterfaceService;
 import com.scminterface.framework.web.service.SpdDeliveryService;
 import com.scminterface.framework.web.service.SpdOrderPublishService;
@@ -46,6 +47,9 @@ public class BridgeActionDispatcher
 
     @Autowired
     private BridgeInboxService bridgeInboxService;
+
+    @Autowired
+    private HospitalMaterialArchiveInterfaceService hospitalMaterialArchiveInterfaceService;
 
     public AjaxResult invoke(BridgeInvokeRequest req, HttpServletRequest httpRequest)
     {
@@ -133,6 +137,83 @@ public class BridgeActionDispatcher
                         return AjaxResult.error("订单列表为空");
                     }
                     return spdOrderPublishService.publishOrdersFromPayload(orders);
+                }
+
+                case BridgeActions.MATERIAL_ARCHIVE_PUSH:
+                {
+                    if (StringUtils.isEmpty(hospitalCode))
+                    {
+                        return AjaxResult.error("hospitalCode 不能为空");
+                    }
+                    @SuppressWarnings("unchecked")
+                    List<String> whitelist = payload.get("fieldWhitelist") instanceof List
+                        ? (List<String>) payload.get("fieldWhitelist") : null;
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> items = payload.get("items") instanceof List
+                        ? (List<Map<String, Object>>) payload.get("items") : null;
+                    if (items == null)
+                    {
+                        return AjaxResult.error("payload.items 不能为空");
+                    }
+                    String pushBy = firstNonEmpty(str(payload.get("pushBy")), str(payload.get("operBy")), "spd");
+                    String requestId = firstNonEmpty(req.getRequestId(), str(payload.get("requestId")));
+                    return AjaxResult.success(hospitalMaterialArchiveInterfaceService.pushFromHospital(
+                        hospitalCode, tenantId, pushBy, requestId, whitelist, items));
+                }
+
+                case BridgeActions.MATERIAL_ARCHIVE_PULL:
+                {
+                    if (StringUtils.isEmpty(hospitalCode))
+                    {
+                        return AjaxResult.error("hospitalCode 不能为空");
+                    }
+                    String supplierCode = firstNonEmpty(str(payload.get("scmSupplierCode")), str(payload.get("supplierCode")));
+                    String keyword = str(payload.get("keyword"));
+                    return AjaxResult.success(hospitalMaterialArchiveInterfaceService.pull(hospitalCode, supplierCode, keyword));
+                }
+
+                case BridgeActions.MATERIAL_ARCHIVE_SUBMIT_APPLY:
+                {
+                    String archiveId = str(payload.get("archiveId"));
+                    String supplierCode = firstNonEmpty(str(payload.get("scmSupplierCode")), str(payload.get("supplierCode")));
+                    if (StringUtils.isEmpty(archiveId) || StringUtils.isEmpty(hospitalCode) || StringUtils.isEmpty(supplierCode))
+                    {
+                        return AjaxResult.error("archiveId/hospitalCode/scmSupplierCode 不能为空");
+                    }
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> propose = payload.get("propose") instanceof Map
+                        ? (Map<String, Object>) payload.get("propose") : payload;
+                    @SuppressWarnings("unchecked")
+                    List<String> changed = payload.get("changedFields") instanceof List
+                        ? (List<String>) payload.get("changedFields") : null;
+                    String applyBy = firstNonEmpty(str(payload.get("applyBy")), str(payload.get("operBy")), "supplier");
+                    String id = hospitalMaterialArchiveInterfaceService.submitModifyApply(
+                        archiveId, hospitalCode, supplierCode, applyBy, propose, changed);
+                    Map<String, Object> data = new LinkedHashMap<>();
+                    data.put("applyId", id);
+                    return AjaxResult.success(data);
+                }
+
+                case BridgeActions.MATERIAL_ARCHIVE_AUDIT_APPLY:
+                {
+                    String applyId = str(payload.get("applyId"));
+                    String decision = str(payload.get("decision"));
+                    if (StringUtils.isEmpty(applyId) || StringUtils.isEmpty(decision))
+                    {
+                        return AjaxResult.error("applyId/decision 不能为空");
+                    }
+                    String auditBy = firstNonEmpty(str(payload.get("auditBy")), str(payload.get("operBy")), "hospital");
+                    hospitalMaterialArchiveInterfaceService.auditModifyApply(applyId, decision, auditBy,
+                        str(payload.get("auditRemark")));
+                    return AjaxResult.success();
+                }
+
+                case BridgeActions.MATERIAL_ARCHIVE_LIST_APPLIES:
+                {
+                    String supplierCode = firstNonEmpty(str(payload.get("scmSupplierCode")), str(payload.get("supplierCode")));
+                    String applyStatus = str(payload.get("applyStatus"));
+                    return AjaxResult.success(hospitalMaterialArchiveInterfaceService.listModifyApplies(
+                        hospitalCode, supplierCode, applyStatus));
                 }
 
                 default:

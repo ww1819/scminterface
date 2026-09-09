@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scminterface.framework.web.mapper.HospitalMaterialArchiveMapper">
+
+    <select id="selectArchiveByHospitalAndSpdMaterial" resultType="java.util.HashMap">
+        select * from scm_hospital_material_archive
+        where hospital_code = #{hospitalCode}
+          and spd_material_id = #{spdMaterialId}
+          and (del_flag is null or del_flag = '0')
+        limit 1
+    </select>
+
+    <select id="selectArchiveById" resultType="java.util.HashMap">
+        select * from scm_hospital_material_archive
+        where id = #{id} and (del_flag is null or del_flag = '0')
+        limit 1
+    </select>
+
+    <select id="selectArchivesForPull" resultType="java.util.HashMap">
+        select * from scm_hospital_material_archive
+        where hospital_code = #{hospitalCode}
+          and (del_flag is null or del_flag = '0')
+          <if test="scmSupplierCode != null and scmSupplierCode != ''">
+            and scm_supplier_code = #{scmSupplierCode}
+          </if>
+          <if test="keyword != null and keyword != ''">
+            and (
+              material_name like concat('%', #{keyword}, '%')
+              or spd_material_code like concat('%', #{keyword}, '%')
+              or ifnull(pinyin_code,'') like concat('%', #{keyword}, '%')
+            )
+          </if>
+        order by update_time desc, create_time desc
+        limit 500
+    </select>
+
+    <insert id="insertArchive">
+        insert into scm_hospital_material_archive(
+          id, hospital_code, scm_supplier_code, spd_tenant_id, spd_material_id, spd_material_code,
+          material_name, pinyin_code, specification, model, unit_name, price, sale_price,
+          register_no, register_name, manufacturer_name, udi_code, medical_name, medical_no,
+          brand, useto, quality, function_desc, is_way, country_no, country_name, description,
+          period_date, package_speci, min_package_qty, is_gz, is_billing, ext_json,
+          archive_status, last_push_batch_id, del_flag, create_by, create_time, remark
+        ) values (
+          #{id}, #{hospital_code}, #{scm_supplier_code}, #{spd_tenant_id}, #{spd_material_id}, #{spd_material_code},
+          #{material_name}, #{pinyin_code}, #{specification}, #{model}, #{unit_name}, #{price}, #{sale_price},
+          #{register_no}, #{register_name}, #{manufacturer_name}, #{udi_code}, #{medical_name}, #{medical_no},
+          #{brand}, #{useto}, #{quality}, #{function_desc}, #{is_way}, #{country_no}, #{country_name}, #{description},
+          #{period_date}, #{package_speci}, #{min_package_qty}, #{is_gz}, #{is_billing}, #{ext_json},
+          #{archive_status}, #{last_push_batch_id}, '0', #{create_by}, now(), #{remark}
+        )
+    </insert>
+
+    <update id="updateArchive">
+        update scm_hospital_material_archive
+        <set>
+            <if test="scm_supplier_code != null">scm_supplier_code = #{scm_supplier_code},</if>
+            <if test="spd_tenant_id != null">spd_tenant_id = #{spd_tenant_id},</if>
+            <if test="spd_material_code != null">spd_material_code = #{spd_material_code},</if>
+            <if test="material_name != null">material_name = #{material_name},</if>
+            <if test="pinyin_code != null">pinyin_code = #{pinyin_code},</if>
+            <if test="specification != null">specification = #{specification},</if>
+            <if test="model != null">model = #{model},</if>
+            <if test="unit_name != null">unit_name = #{unit_name},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="sale_price != null">sale_price = #{sale_price},</if>
+            <if test="register_no != null">register_no = #{register_no},</if>
+            <if test="register_name != null">register_name = #{register_name},</if>
+            <if test="manufacturer_name != null">manufacturer_name = #{manufacturer_name},</if>
+            <if test="udi_code != null">udi_code = #{udi_code},</if>
+            <if test="medical_name != null">medical_name = #{medical_name},</if>
+            <if test="medical_no != null">medical_no = #{medical_no},</if>
+            <if test="brand != null">brand = #{brand},</if>
+            <if test="useto != null">useto = #{useto},</if>
+            <if test="quality != null">quality = #{quality},</if>
+            <if test="function_desc != null">function_desc = #{function_desc},</if>
+            <if test="is_way != null">is_way = #{is_way},</if>
+            <if test="country_no != null">country_no = #{country_no},</if>
+            <if test="country_name != null">country_name = #{country_name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="period_date != null">period_date = #{period_date},</if>
+            <if test="package_speci != null">package_speci = #{package_speci},</if>
+            <if test="min_package_qty != null">min_package_qty = #{min_package_qty},</if>
+            <if test="is_gz != null">is_gz = #{is_gz},</if>
+            <if test="is_billing != null">is_billing = #{is_billing},</if>
+            <if test="ext_json != null">ext_json = #{ext_json},</if>
+            <if test="archive_status != null">archive_status = #{archive_status},</if>
+            <if test="last_push_batch_id != null">last_push_batch_id = #{last_push_batch_id},</if>
+            <if test="last_apply_id != null">last_apply_id = #{last_apply_id},</if>
+            <if test="update_by != null">update_by = #{update_by},</if>
+            update_time = now()
+        </set>
+        where id = #{id}
+    </update>
+
+    <insert id="insertPushBatch">
+        insert into scm_hospital_material_push_batch(
+          id, hospital_code, spd_tenant_id, push_by, push_time, item_count, success_count, fail_count,
+          field_whitelist_json, request_id, result_status, result_msg, del_flag, create_by, create_time
+        ) values (
+          #{id}, #{hospital_code}, #{spd_tenant_id}, #{push_by}, now(), #{item_count}, #{success_count}, #{fail_count},
+          #{field_whitelist_json}, #{request_id}, #{result_status}, #{result_msg}, '0', #{create_by}, now()
+        )
+    </insert>
+
+    <update id="updatePushBatch">
+        update scm_hospital_material_push_batch
+        set success_count = #{success_count}, fail_count = #{fail_count},
+            result_status = #{result_status}, result_msg = #{result_msg}, update_time = now()
+        where id = #{id}
+    </update>
+
+    <insert id="insertPushItem">
+        insert into scm_hospital_material_push_item(
+          id, batch_id, archive_id, spd_material_id, scm_supplier_code, action_type,
+          payload_json, before_json, after_json, error_msg, create_time
+        ) values (
+          #{id}, #{batch_id}, #{archive_id}, #{spd_material_id}, #{scm_supplier_code}, #{action_type},
+          #{payload_json}, #{before_json}, #{after_json}, #{error_msg}, now()
+        )
+    </insert>
+
+    <insert id="insertChangeLog">
+        insert into scm_hospital_material_change_log(
+          id, archive_id, hospital_code, change_source, source_id, before_json, after_json,
+          changed_fields, oper_by, oper_time, remark
+        ) values (
+          #{id}, #{archive_id}, #{hospital_code}, #{change_source}, #{source_id}, #{before_json}, #{after_json},
+          #{changed_fields}, #{oper_by}, now(), #{remark}
+        )
+    </insert>
+
+    <insert id="insertModifyApply">
+        insert into scm_hospital_material_modify_apply(
+          id, archive_id, hospital_code, scm_supplier_code, apply_status, propose_json, base_json,
+          changed_fields, apply_by, apply_time, del_flag, create_by, create_time
+        ) values (
+          #{id}, #{archive_id}, #{hospital_code}, #{scm_supplier_code}, '0', #{propose_json}, #{base_json},
+          #{changed_fields}, #{apply_by}, now(), '0', #{create_by}, now()
+        )
+    </insert>
+
+    <select id="selectModifyApplyById" resultType="java.util.HashMap">
+        select * from scm_hospital_material_modify_apply where id = #{id} limit 1
+    </select>
+
+    <select id="selectPendingApplies" resultType="java.util.HashMap">
+        select * from scm_hospital_material_modify_apply
+        where archive_id = #{archiveId}
+          and apply_status = '0'
+          and (del_flag is null or del_flag = '0')
+          <if test="scmSupplierCode != null and scmSupplierCode != ''">
+            and scm_supplier_code = #{scmSupplierCode}
+          </if>
+    </select>
+
+    <update id="voidPendingApplies">
+        update scm_hospital_material_modify_apply
+        set apply_status = '3', audit_by = #{auditBy}, audit_time = now(), audit_remark = #{auditRemark}, update_time = now()
+        where archive_id = #{archiveId} and apply_status = '0' and (del_flag is null or del_flag = '0')
+    </update>
+
+    <update id="updateModifyApply">
+        update scm_hospital_material_modify_apply
+        set apply_status = #{apply_status},
+            audit_by = #{audit_by},
+            audit_time = now(),
+            audit_remark = #{audit_remark},
+            update_by = #{update_by},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <select id="selectModifyApplies" resultType="java.util.HashMap">
+        select * from scm_hospital_material_modify_apply
+        where (del_flag is null or del_flag = '0')
+          <if test="hospitalCode != null and hospitalCode != ''">
+            and hospital_code = #{hospitalCode}
+          </if>
+          <if test="scmSupplierCode != null and scmSupplierCode != ''">
+            and scm_supplier_code = #{scmSupplierCode}
+          </if>
+          <if test="applyStatus != null and applyStatus != ''">
+            and apply_status = #{applyStatus}
+          </if>
+        order by apply_time desc
+        limit 200
+    </select>
+</mapper>
