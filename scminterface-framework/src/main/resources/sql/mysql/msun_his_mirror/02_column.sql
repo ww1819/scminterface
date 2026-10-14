@@ -104,3 +104,12 @@ CALL add_mirror_column('m_msun_merge_stock', 'hospital_id', 'varchar(64)', '2.5.
 /
 CALL add_mirror_column('m_msun_merge_stock', 'org_id', 'varchar(64)', '2.5.82 回参 orgId', 'hospital_id');
 /
+
+-- ========== 2.5.44 药品材料字典：回参 drugBaseCode / materialQuality* ==========
+-- 枣强等存量库缺列会导致 upsert 报 Unknown column 'drug_base_code'
+CALL add_mirror_column('m_msun_drug_dict', 'drug_base_code', 'varchar(128)', '2.5.44 回参 drugBaseCode 药品/材料基础编码', 'drug_id');
+/
+CALL add_mirror_column('m_msun_drug_dict', 'material_quality_id', 'varchar(64)', '2.5.44 回参 materialQualityId 材质ID', 'material_or_drug');
+/
+CALL add_mirror_column('m_msun_drug_dict', 'material_quality_name', 'varchar(128)', '2.5.44 回参 materialQualityName 材质名称', 'material_quality_id');
+/
