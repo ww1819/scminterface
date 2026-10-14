@@ -8,6 +8,7 @@ import com.scminterface.common.enums.DataSourceType;
 import com.scminterface.common.utils.StringUtils;
 import com.scminterface.customer.msun.hospital.MsunHospitalRuntime;
 import com.scminterface.customer.msun.mirror.mapper.MsunHisMirrorMapper;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorColumnCatalog;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorRowSupport;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
 import java.util.HashMap;
@@ -23,10 +24,14 @@ public class MsunHisMirrorSyncExecutor
     private static final String MIRROR_SOURCE_API = "api";
 
     private final MsunHisMirrorMapper mirrorMapper;
+    private final MsunHisMirrorColumnCatalog columnCatalog;
 
-    public MsunHisMirrorSyncExecutor(MsunHisMirrorMapper mirrorMapper)
+    public MsunHisMirrorSyncExecutor(
+            MsunHisMirrorMapper mirrorMapper,
+            MsunHisMirrorColumnCatalog columnCatalog)
     {
         this.mirrorMapper = mirrorMapper;
+        this.columnCatalog = columnCatalog;
     }
 
     @DataSource(DataSourceType.SPD)
@@ -317,7 +322,9 @@ public class MsunHisMirrorSyncExecutor
     {
         MsunHisMirrorRowSupport.ensurePrimaryKey(table, row);
         MsunHisMirrorRowSupport.stampTimestamps(row);
-        mirrorMapper.upsertMirrorRow(table, row);
+        // HIS 回参新增字段未建列时：忽略该列，完整 JSON 仍在 raw_item_json，避免 Unknown column
+        Map<String, Object> safeRow = columnCatalog.retainExistingColumns(table, row);
+        mirrorMapper.upsertMirrorRow(table, safeRow);
     }
 
     private static String resolveAccountNo(Object account)

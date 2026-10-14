@@ -1,6 +1,7 @@
 package com.scminterface.customer.msun.mirror.service;
 
 import com.scminterface.common.enums.DataSourceType;
+import com.scminterface.customer.msun.mirror.support.MsunHisMirrorColumnCatalog;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorColumnPatch;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorSchemaScriptLoader;
 import com.scminterface.customer.msun.mirror.support.MsunHisMirrorTableNames;
@@ -25,13 +26,16 @@ public class MsunHisMirrorSchemaExecutor
 
     private final ObjectProvider<javax.sql.DataSource> spdDataSourceProvider;
     private final MsunHisMirrorSchemaScriptLoader scriptLoader;
+    private final MsunHisMirrorColumnCatalog columnCatalog;
 
     public MsunHisMirrorSchemaExecutor(
             @Qualifier("spdDataSource") ObjectProvider<javax.sql.DataSource> spdDataSourceProvider,
-            MsunHisMirrorSchemaScriptLoader scriptLoader)
+            MsunHisMirrorSchemaScriptLoader scriptLoader,
+            MsunHisMirrorColumnCatalog columnCatalog)
     {
         this.spdDataSourceProvider = spdDataSourceProvider;
         this.scriptLoader = scriptLoader;
+        this.columnCatalog = columnCatalog;
     }
 
     @com.scminterface.common.annotation.DataSource(DataSourceType.SPD)
@@ -60,6 +64,7 @@ public class MsunHisMirrorSchemaExecutor
             {
                 widenPushLogMsgColumn(conn);
             }
+            columnCatalog.invalidate(tableName);
         }
         catch (Exception ex)
         {
